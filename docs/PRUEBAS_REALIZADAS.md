@@ -6,10 +6,10 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
 
 | Batería | Qué prueba | Resultado |
 |---|---|---|
-| **A. API en vivo** | 360 comprobaciones sobre 314 peticiones reales: matriz de autenticación (13 variantes × 7 rutas), 6 métodos HTTP, nombres de ruta hostiles, 40 valores del parámetro `q` (inyección SQL, unicode, comodines, 10.000 caracteres, byte nulo), forma de cada respuesta contra el OpenAPI, ráfaga de 60 peticiones simultáneas | **360 / 360** (tras corregir 2 fallos) |
+| **A. API en vivo** | 460 comprobaciones sobre 387 peticiones reales: matriz de autenticación (13 variantes × 8 rutas), 6 métodos HTTP, nombres de ruta hostiles, 40 valores del parámetro `q` (inyección SQL, unicode, comodines, 10.000 caracteres, byte nulo), forma de cada respuesta contra el OpenAPI, **filtros** (valores válidos que filtran de verdad y 15 casos no válidos que dan 400 con mensaje), **`resumen_general`** coherente con las demás vistas, **panel web** (cabeceras de seguridad, CSP, tipos de archivo, archivos internos no publicados), ráfaga de 60 peticiones simultáneas | **460 / 460** (tras corregir 2 fallos) |
 | **B. Permisos de los 4 roles** | 397 comprobaciones en Neon real: cada rol × cada tabla × 5 operaciones, 29 operaciones de DDL y escape (crear/alterar/borrar, `SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, atributos de los roles, contraseñas falsas, sin SSL | **397 / 397** |
 | **C. Código real de sync** | El módulo de cada app contra Neon con su rol, con datos extremos: vacío, 501 materiales, 300 proyectos × 20 tareas, 10.000 propiedades, textos hostiles, números enormes, reemplazo e idempotencia, fallo del origen. Para el Scraper, además, el controlador HTTP de Neon que usa Netlify | MRP **60 / 60**, Scraper **49 / 49**, Planner **46 / 46** (2 casos informativos que no pueden ocurrir con datos reales) |
-| **D. Datos reales** | 45 comprobaciones de integridad de lo que hay ahora en la base central, y que la API devuelva exactamente lo que hay en la base, fila por fila | **45 / 45** (con datos de las tres apps) |
+| **D. Datos reales** | 49 comprobaciones de integridad de lo que hay ahora en la base central, y que cada vista de la API (las consultas se toman de `lib/vistas.js`) devuelva exactamente lo que hay en la base, fila por fila | **49 / 49** (con datos de las tres apps) |
 
 ## Fallos encontrados y qué se hizo
 
@@ -20,6 +20,15 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
    (`numeric field overflow`). **Corregido y fusionado** (MRP: PR #4, Scraper: PR #2).
 4. **No corregido, porque no puede ocurrir con datos reales:** un byte nulo o un carácter UTF-16 inválido en un texto
    (Postgres no puede guardarlos) y claves duplicadas en el origen (lo impiden las claves primarias y únicas).
+
+## Pruebas automáticas de `coze-api` (sin red)
+
+`npm test` en `coze-api/` ejecuta cinco suites: humo (autenticación, métodos, nombres heredados), cada consulta y cada filtro contra
+el esquema real en un Postgres de prueba, el manejo de filtros no válidos, que `openapi.yaml` esté al día respecto de `lib/vistas.js`,
+y el formato y la seguridad estática del panel (sin `innerHTML`, sin scripts ni estilos en línea, enlaces solo `http(s)`).
+
+El panel además se verificó en un servidor local con las mismas cabeceras que Vercel: token incorrecto, datos reales, filtro, API
+caída, estado vacío, móvil (375 px) y cierre de sesión.
 
 ## Prueba de producción del Scraper (13/11/2026)
 

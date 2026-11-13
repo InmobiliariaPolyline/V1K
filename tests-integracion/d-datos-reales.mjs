@@ -83,19 +83,20 @@ nota(`scraper: ${sp.length} propiedades copiadas, ${sr.reduce((a, r) => a + r.to
 // ── 5) La API devuelve exactamente lo que hay en la base ───────────────────────────
 const api = async (ruta) => (await (await fetch(`https://v1k-coze-api.vercel.app/api/${ruta}`, { headers: { Authorization: `Bearer ${TOKEN}` } })).json());
 const norm = (v) => JSON.stringify(v, (k, x) => (x instanceof Date ? x.toISOString() : x));
-const comparaciones = {
-  proyectos: `SELECT proyecto_id, nombre, responsable, estado, avance_pct, inicio, fin, tareas_total, tareas_atrasadas, proximo_hito, proximo_hito_fecha, actualizado_en FROM central.planner_proyectos ORDER BY (estado = 'atrasado') DESC, nombre LIMIT 200`,
-  hitos: `SELECT h.fecha, h.descripcion, p.nombre AS proyecto FROM central.planner_hitos h LEFT JOIN central.planner_proyectos p USING (proyecto_id) ORDER BY h.fecha LIMIT 200`,
-  'stock-bajo': 'SELECT * FROM central.v_stock_bajo LIMIT 25',
-  pedidos: `SELECT pedido_id, proveedor, obra, estado, llegada_estimada, lineas, cantidad_pedida, cantidad_recibida, creado_en FROM central.mrp_pedidos ORDER BY llegada_estimada NULLS LAST, pedido_id LIMIT 200`,
-  frescura: 'SELECT app, ultima_sync FROM central.sync_estado ORDER BY app',
-  'propiedades-resumen': 'SELECT portal, operacion, total, ultima_vista FROM central.scraper_resumen ORDER BY portal, operacion',
-};
-for (const [ruta, consulta] of Object.entries(comparaciones)) {
-  const [r, filas] = await Promise.all([api(ruta), q(consulta)]);
-  check(`[API↔base] ${ruta}: mismo número de filas`, r.total === filas.length, `${r.total} vs ${filas.length}`);
-  const iguales = r.datos.length === filas.length && r.datos.every((f, i) => norm(f) === norm(filas[i]));
-  check(`[API↔base] ${ruta}: filas idénticas y en el mismo orden`, iguales, iguales ? '' : `1ª API=${norm(r.datos[0]).slice(0, 90)} | base=${norm(filas[0]).slice(0, 90)}`);
+// Las consultas salen de coze-api/lib/vistas.js: son EXACTAMENTE las que ejecuta la API
+const { construirConsulta, VISTAS } = await import(pathToFileURL(path.join(RAIZ, 'coze-api', 'lib', 'vistas.js')).href);
+// hace_horas cambia con cada segundo que pasa: se ignora al comparar
+const sinVolatiles = (v) => JSON.parse(JSON.stringify(v, (k, x) => (k === 'hace_horas' ? undefined : x)));
+for (const vista of Object.keys(VISTAS)) {
+  const { text, params } = construirConsulta(VISTAS[vista], {});
+  let r, filas;
+  for (let intento = 0; intento < 2; intento++) {   // un reintento por si una sincronización cae entre las dos lecturas
+    [r, filas] = await Promise.all([api(vista), q(text, params)]);
+    if (norm(sinVolatiles(r.datos)) === norm(sinVolatiles(filas))) break;
+  }
+  check(`[API↔base] ${vista}: mismo número de filas`, r.total === filas.length, `${r.total} vs ${filas.length}`);
+  const iguales = norm(sinVolatiles(r.datos)) === norm(sinVolatiles(filas));
+  check(`[API↔base] ${vista}: filas idénticas y en el mismo orden`, iguales, iguales ? '' : `1ª API=${norm(r.datos[0]).slice(0, 90)} | base=${norm(filas[0]).slice(0, 90)}`);
 }
 
 console.log('--- Resumen de lo que hay ahora mismo en la base central ---');

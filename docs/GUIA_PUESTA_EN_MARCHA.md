@@ -10,11 +10,11 @@ variable se comportan exactamente como antes.
 | Pieza | Dónde | Estado |
 |---|---|---|
 | Base central | Neon, esquema `central` | En producción |
-| API de solo lectura | Vercel (`coze-api/`) | En producción |
+| API de solo lectura y panel web | Vercel (`coze-api/`) | En producción |
 | Sincronización del Planner | Render, `planner-backend` (PR #1) | En producción |
 | Sincronización del MRP | Streamlit, `Sistema-MRP-EDC-VII` (PR #2, #3 y #4) | En producción |
 | Sincronización del Scraper | Netlify, `REAL_ESTATE_SCRAPER` (PR #1 y #2) | En producción |
-| Plugin y agente | Coze | Creados; falta la prueba conversacional (créditos) |
+| Plugin y agente | Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 
 ## Orden recomendado (para reproducirlo desde cero)
 
@@ -35,9 +35,11 @@ variable se comportan exactamente como antes.
 4. **Vercel.** Importa el repositorio, con *Root Directory* `coze-api` y *Framework Preset* `Other`. En
    *Deployment Protection* desactiva **Vercel Authentication**, o Coze no podrá llamar a la API (ya se protege con su token).
 5. **Comprobar la API:** `GET /api/frescura` con `Authorization: Bearer <API_TOKEN>`. Sin token debe responder 401.
-6. **Coze.** Crea un plugin con *Cloud Plugin → Create based on existing services*, importando `coze-api/openapi.yaml`;
+   La raíz del dominio muestra el **Panel V1K**: se abre pegando el mismo token y no gasta créditos de Coze.
+6. **Coze.** Crea un plugin con *Cloud Plugin → Create based on existing services*, importando `coze-api/openapi.yaml` (8 herramientas);
    autorización *Service token / API key* en la cabecera `Authorization` con el valor `Bearer <API_TOKEN>`. Prueba y
    habilita cada herramienta, publica el plugin y añádelo a un agente con [`INSTRUCCIONES_AGENTE.md`](INSTRUCCIONES_AGENTE.md).
+   El resto de la configuración (preguntas iniciales, atajos, glosario) está en [`coze/GUIA_SKILLS.md`](coze/GUIA_SKILLS.md).
 7. **Comprobar el conjunto:** ejecuta las baterías de [`tests-integracion/`](../tests-integracion).
 
 ## Qué se copia y qué no
@@ -88,3 +90,5 @@ variable se comportan exactamente como antes.
   La API devuelve solo los 25 con mayor faltante.
 - **Render y Streamlit se duermen:** la sincronización de arranque ocurre cuando despiertan, no antes.
 - **Fechas:** las columnas de fecha llegan como `2026-10-30T00:00:00.000Z`; el agente las muestra como DD/MM/AAAA.
+- **Contrato OpenAPI:** `coze-api/openapi.yaml` se genera con `npm run openapi` desde `lib/vistas.js`; una prueba falla si
+  están desincronizados. Si cambias un filtro, hay que **volver a importar el contrato** en el plugin de Coze.

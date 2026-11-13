@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="t d">
+  <title id="t">Panel V1K</title>
+  <desc id="d">Interfaz web de solo lectura: frescura de las tres apps, indicadores, proyectos atrasados con su avance, próximos hitos, mayor faltante de stock y propiedades por portal. Datos de ejemplo.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <radialGradient id="gV" cx="0.95" cy="0" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gC" cx="0" cy="1" r="0.5"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2029"/><stop offset="1" stop-color="#151a22"/></linearGradient>
+    <linearGradient id="barra" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#4ade80"/></linearGradient>
+    <linearGradient id="barraV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+    <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+
+  <rect width="1280" height="760" rx="26" fill="url(#bg)"/>
+  <rect width="1280" height="760" rx="26" fill="url(#gV)"/>
+  <rect width="1280" height="760" rx="26" fill="url(#gC)"/>
+  <rect x="1" y="1" width="1278" height="758" rx="25" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <!-- cabecera -->
+    <rect x="0" y="0" width="1280" height="76" rx="26" fill="#0b0e13" fill-opacity="0.85"/>
+    <rect x="0" y="60" width="1280" height="16" fill="#0b0e13" fill-opacity="0.85"/>
+    <line x1="0" y1="76" x2="1280" y2="76" stroke="#ffffff" stroke-opacity="0.08"/>
+    <rect x="32" y="19" width="38" height="38" rx="11" fill="url(#logo)"/>
+    <g fill="none" stroke="#052e16" stroke-width="2.2" stroke-linecap="round" transform="translate(32 19) scale(1.1875)"><ellipse cx="16" cy="10.5" rx="7" ry="3"/><path d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/><path d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/></g>
+    <text x="82" y="38" font-size="21" font-weight="700" fill="#e6edf3">Panel V1K</text>
+    <text x="82" y="58" font-size="13" fill="#8b949e">Vista central · solo lectura</text>
+    <rect x="800" y="24" width="118" height="28" rx="14" fill="#4ade80" fill-opacity="0.15"/>
+    <text x="859" y="43" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="0.6" fill="#4ade80">CONECTADO</text>
+    <rect x="938" y="27" width="16" height="16" rx="4" fill="none" stroke="#6e7681"/>
+    <text x="962" y="40" font-size="13" fill="#8b949e">Actualizar cada minuto</text>
+    <rect x="1118" y="22" width="98" height="34" rx="10" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.1"/>
+    <text x="1167" y="44" text-anchor="middle" font-size="14" font-weight="600" fill="#e6edf3">Actualizar</text>
+    <rect x="1226" y="22" width="0" height="34"/>
+
+    <!-- frescura -->
+    <text x="32" y="112" font-size="16" font-weight="700" fill="#e6edf3">Frescura de los datos</text>
+    <g filter="url(#sh)">
+      <rect x="32" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="448" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="864" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+    </g>
+    <rect x="32" y="146" width="4" height="64" rx="2" fill="#22d3ee"/><rect x="448" y="146" width="4" height="64" rx="2" fill="#fbbf24"/><rect x="864" y="146" width="4" height="64" rx="2" fill="#a78bfa"/>
+    <text x="56" y="158" font-size="16" font-weight="700" fill="#e6edf3">Planner</text><circle cx="392" cy="153" r="5" fill="#4ade80"/>
+    <text x="56" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 1.6 h</text>
+    <text x="56" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 12:44</text>
+    <text x="472" y="158" font-size="16" font-weight="700" fill="#e6edf3">MRP</text><circle cx="808" cy="153" r="5" fill="#4ade80"/>
+    <text x="472" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 1.3 h</text>
+    <text x="472" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 13:02</text>
+    <text x="888" y="158" font-size="16" font-weight="700" fill="#e6edf3">Scraper</text><circle cx="1224" cy="153" r="5" fill="#4ade80"/>
+    <text x="888" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 30 min</text>
+    <text x="888" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 13:49</text>
+
+    <!-- KPIs -->
+    <text x="32" y="266" font-size="16" font-weight="700" fill="#e6edf3">En números</text>
+    <g filter="url(#sh)">
+      <rect x="32" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="276" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="520" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="764" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="1008" y="280" width="240" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+    </g>
+    <text x="52" y="326" font-size="34" font-weight="800" fill="#e6edf3">8</text><text x="52" y="351" font-size="13" fill="#8b949e">Proyectos</text>
+    <text x="296" y="326" font-size="34" font-weight="800" fill="#f2706b">2</text><text x="296" y="351" font-size="13" fill="#8b949e">Proyectos atrasados</text>
+    <text x="540" y="326" font-size="34" font-weight="800" fill="#f2706b">5</text><text x="540" y="351" font-size="13" fill="#8b949e">Tareas atrasadas</text>
+    <text x="784" y="326" font-size="34" font-weight="800" fill="#f2706b">42</text><text x="784" y="351" font-size="13" fill="#8b949e">Materiales bajo mínimo (de 120)</text>
+    <text x="1028" y="326" font-size="34" font-weight="800" fill="#e6edf3">4,753</text><text x="1028" y="351" font-size="13" fill="#8b949e">Propiedades en el catálogo</text>
+
+    <!-- proyectos atrasados -->
+    <g filter="url(#sh)"><rect x="32" y="396" width="610" height="206" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="54" y="428" font-size="16" font-weight="700" fill="#e6edf3">Proyectos atrasados</text>
+    <rect x="54" y="442" width="566" height="64" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
+    <text x="70" y="465" font-size="15" font-weight="650" fill="#e6edf3">Torre Norte</text><text x="604" y="465" text-anchor="end" font-size="13" fill="#8b949e">40 % de avance</text>
+    <text x="70" y="483" font-size="12" fill="#8b949e">Ana · debía terminar el 31/10/2026 · 3 tareas atrasadas</text>
+    <rect x="70" y="492" width="534" height="6" rx="3" fill="#ffffff" fill-opacity="0.08"/><rect x="70" y="492" width="214" height="6" rx="3" fill="url(#barra)"/>
+    <rect x="54" y="516" width="566" height="64" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
+    <text x="70" y="539" font-size="15" font-weight="650" fill="#e6edf3">Casa Sur</text><text x="604" y="539" text-anchor="end" font-size="13" fill="#8b949e">75 % de avance</text>
+    <text x="70" y="557" font-size="12" fill="#8b949e">Luis · debía terminar el 05/11/2026 · 2 tareas atrasadas</text>
+    <rect x="70" y="566" width="534" height="6" rx="3" fill="#ffffff" fill-opacity="0.08"/><rect x="70" y="566" width="400" height="6" rx="3" fill="url(#barra)"/>
+
+    <!-- hitos y pedidos -->
+    <g filter="url(#sh)"><rect x="662" y="396" width="586" height="206" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="684" y="428" font-size="16" font-weight="700" fill="#e6edf3">Próximos hitos</text>
+    <rect x="684" y="442" width="542" height="50" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
+    <text x="700" y="464" font-size="14" font-weight="650" fill="#e6edf3">Vaciado de losa</text><text x="1210" y="464" text-anchor="end" font-size="12" fill="#8b949e">20/11/2026</text>
+    <text x="700" y="482" font-size="12" fill="#8b949e">Torre Norte</text>
+    <text x="684" y="522" font-size="16" font-weight="700" fill="#e6edf3">Pedidos abiertos</text>
+    <rect x="684" y="536" width="542" height="50" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
+    <text x="700" y="558" font-size="14" font-weight="650" fill="#e6edf3">OC-0042 · Aceros del Sur</text><text x="1210" y="558" text-anchor="end" font-size="12" fill="#8b949e">llega 18/11/2026</text>
+    <text x="700" y="576" font-size="12" fill="#8b949e">enviada · Torre Norte</text>
+
+    <!-- propiedades -->
+    <g filter="url(#sh)"><rect x="32" y="626" width="1216" height="106" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="54" y="656" font-size="16" font-weight="700" fill="#e6edf3">Propiedades por portal</text>
+    <g font-size="12" fill="#c9d1d9">
+      <text x="54" y="682">infocasas · venta</text><rect x="180" y="674" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="674" width="860" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="682" text-anchor="end" fill="#8b949e">2,717</text>
+      <text x="54" y="702">infocasas · alquiler</text><rect x="180" y="694" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="694" width="520" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="702" text-anchor="end" fill="#8b949e">1,650</text>
+      <text x="54" y="722">adondevivir · venta</text><rect x="180" y="714" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="714" width="60" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="722" text-anchor="end" fill="#8b949e">184</text>
+    </g>
+  </g>
+</svg>

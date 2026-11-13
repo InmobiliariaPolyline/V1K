@@ -10,7 +10,7 @@ const texto = fs.readFileSync(path.join(RAIZ, 'db', 'conexiones.local.txt'), 'ut
 const TOKEN = texto.match(/^API_TOKEN = (\S+)/m)[1];
 const spec = YAML.parse(fs.readFileSync(path.join(RAIZ, 'coze-api', 'openapi.yaml'), 'utf8'));
 
-const RUTAS = ['frescura', 'proyectos', 'hitos', 'stock-bajo', 'pedidos', 'propiedades', 'propiedades-resumen'];
+const RUTAS = ['frescura', 'proyectos', 'hitos', 'stock-bajo', 'pedidos', 'propiedades', 'propiedades-resumen', 'resumen-general'];
 let total = 0, ok = 0;
 const fallos = [];
 const lat = [];
@@ -105,7 +105,10 @@ const nombresHostiles = [
     const r = await llama(n.includes('%') || /[\s;'<>${}]/.test(n) ? n : encodeURIComponent(n), { headers: A() });
     const c = json(r.cuerpo);
     // Aceptable: 404 (o 200 solo si es una ruta real). Jamás 5xx ni 200 con datos de otra cosa.
-    chequea(`[ruta hostil] "${n.slice(0, 30)}"`, [404, 400, 401, 405].includes(r.status) && r.status < 500, `-> ${r.status} ${String(r.cuerpo).slice(0, 80)}`);
+    // `/api/..` lo normaliza el cliente a `/`, que sirve el panel (HTML, sin datos): es lo único que puede dar 200
+    const esRaiz = ['..', '%2e%2e', '.'].includes(n);
+    const ok = esRaiz ? (r.status === 200 && /^<!doctype html>/i.test(r.cuerpo) && !/proyecto_id|material_id/.test(r.cuerpo)) || [404, 400].includes(r.status) : [404, 400, 401, 405].includes(r.status);
+    chequea(`[ruta hostil] "${n.slice(0, 30)}"`, ok && r.status < 500, `-> ${r.status} ${String(r.cuerpo).slice(0, 80)}`);
   });
   await lote(tareas);
 }
@@ -171,7 +174,7 @@ for (const ruta of RUTAS) {
   }
   chequea(`[forma] ${ruta} cuerpo < 1 MB`, r.cuerpo.length < 1_000_000);
 }
-chequea('[límite] stock-bajo ≤ 25 filas', (datosVivos['stock-bajo']?.datos?.length ?? 99) <= 25);
+chequea('[límite] stock-bajo ≤ 25 filas por defecto', (datosVivos['stock-bajo']?.datos?.length ?? 99) <= 25);
 chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?.length ?? 99) <= 50);
 
 // ── 6) Ráfaga concurrente y latencia ────────────────────────────────────────────────
@@ -186,6 +189,126 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   const tiempos = (await lote(tareas, 10)).sort((a, b) => a - b);
   console.log(`ráfaga: 60 peticiones en ${Date.now() - t0} ms | p50=${tiempos[30]} ms p95=${tiempos[57]} ms max=${tiempos[59]} ms`);
   chequea('[ráfaga] p95 < 5 s', tiempos[57] < 5000, `p95=${tiempos[57]}`);
+}
+
+// ── 6b) Filtros nuevos: valores válidos filtran de verdad; los no válidos dan 400 con explicación ──
+{
+  const datos = async (ruta, query) => { const r = await llama(ruta, { headers: A(), query }); return { r, c: json(r.cuerpo) }; };
+  const todos = (c, fn) => Array.isArray(c?.datos) && c.datos.every(fn);
+
+  let x = await datos('propiedades', '?operacion=VENTA&limite=20');
+  chequea('[filtro] propiedades operacion=VENTA => 200 y todas VENTA', x.r.status === 200 && x.c.total > 0 && todos(x.c, (f) => f.operacion === 'VENTA'), `-> ${x.r.status}`);
+  x = await datos('propiedades', '?operacion=alquiler&limite=20');
+  chequea('[filtro] operacion sin distinguir mayúsculas', x.r.status === 200 && todos(x.c, (f) => f.operacion === 'ALQUILER'));
+  x = await datos('propiedades', '?operacion=VENTA&distrito=arequipa&precio_max_usd=200000&limite=3');
+  chequea('[filtro] propiedades combinando 4 filtros respeta limite y precio', x.r.status === 200 && x.c.total <= 3 && todos(x.c, (f) => f.operacion === 'VENTA' && Number(f.precio_usd) > 0 && Number(f.precio_usd) <= 200000), `-> ${x.r.status}`);
+  x = await datos('propiedades', '?precio_min_usd=150000&precio_max_usd=160000&limite=30');
+  chequea('[filtro] rango de precio mínimo y máximo', x.r.status === 200 && todos(x.c, (f) => Number(f.precio_usd) >= 150000 && Number(f.precio_usd) <= 160000));
+  x = await datos('propiedades', '?portal=infocasas&limite=10');
+  chequea('[filtro] portal=infocasas', x.r.status === 200 && todos(x.c, (f) => f.portal === 'infocasas'));
+  x = await datos('propiedades', '?limite=7');
+  chequea('[filtro] limite=7 devuelve como máximo 7', x.r.status === 200 && x.c.total <= 7);
+  x = await datos('propiedades', '?limite=100');
+  chequea('[filtro] limite=100 (máximo permitido) funciona', x.r.status === 200 && x.c.total <= 100);
+  x = await datos('proyectos', '?estado=atrasado');
+  chequea('[filtro] proyectos estado=atrasado', x.r.status === 200 && todos(x.c, (f) => f.estado === 'atrasado'));
+  x = await datos('proyectos', '?estado=terminado');
+  chequea('[filtro] proyectos estado=terminado => 200 (puede estar vacío)', x.r.status === 200 && todos(x.c, (f) => f.estado === 'terminado'));
+  x = await datos('stock-bajo', '?limite=3');
+  chequea('[filtro] stock-bajo limite=3', x.r.status === 200 && x.c.total <= 3);
+  x = await datos('stock-bajo', '?categoria=acero&limite=10');
+  chequea('[filtro] stock-bajo categoria=acero', x.r.status === 200 && todos(x.c, (f) => /acero/i.test(f.categoria ?? '')));
+  x = await datos('hitos', '?desde=2099-01-01');
+  chequea('[filtro] hitos desde 2099 => 200 y vacío', x.r.status === 200 && x.c.total === 0);
+  x = await datos('hitos', '?desde=2000-01-01&hasta=2099-12-31');
+  chequea('[filtro] hitos con rango de fechas', x.r.status === 200);
+  x = await datos('pedidos', '?estado=pendiente');
+  chequea('[filtro] pedidos estado=pendiente', x.r.status === 200 && todos(x.c, (f) => f.estado === 'pendiente'));
+  x = await datos('propiedades-resumen', '?portal=infocasas&operacion=VENTA');
+  chequea('[filtro] propiedades-resumen portal y operacion', x.r.status === 200 && todos(x.c, (f) => f.portal === 'infocasas' && f.operacion === 'VENTA'));
+
+  // No válidos => 400 con un mensaje que explica qué se acepta
+  const malos = [
+    ['propiedades', '?operacion=REGALO', /VENTA, ALQUILER/],
+    ['propiedades', '?portal=otro', /valores permitidos/],
+    ['propiedades', '?precio_max_usd=caro', /número/],
+    ['propiedades', '?precio_min_usd=-1', /número/],
+    ['propiedades', '?precio_max_usd=1e309', /número/],
+    ['propiedades', '?limite=0', /entre 1 y 100/],
+    ['propiedades', '?limite=101', /entre 1 y 100/],
+    ['propiedades', '?limite=2.5', /entero/],
+    ['proyectos', '?estado=inventado', /por iniciar, en curso, atrasado, terminado/],
+    ['proyectos', "?estado=%27%3B%20DROP%20TABLE%20central.planner_proyectos%3B%20--", /valores permitidos/],
+    ['pedidos', '?estado=cerrado', /pendiente, enviada, parcial/],
+    ['hitos', '?desde=ayer', /AAAA-MM-DD/],
+    ['hitos', '?hasta=2026-02-31', /AAAA-MM-DD/],
+    ['stock-bajo', '?limite=101', /entre 1 y 100/],
+    ['proyectos', '?limite=201', /entre 1 y 200/],
+  ];
+  for (const [ruta, query, patron] of malos) {
+    const { r, c } = await datos(ruta, query);
+    chequea(`[400] ${ruta}${query.slice(0, 40)}`, r.status === 400 && typeof c?.error === 'string' && patron.test(c.error), `-> ${r.status} ${String(r.cuerpo).slice(0, 90)}`);
+  }
+  // Un valor no válido nunca llega a la base: tampoco como inyección en un enum
+  x = await datos('proyectos', '');
+  chequea('[400] tras los intentos de inyección la tabla sigue intacta', x.r.status === 200 && x.c.total >= 0 && datosVivos.proyectos.total === x.c.total);
+  // Los filtros de texto aceptan cualquier cosa sin romper
+  x = await datos('propiedades', `?distrito=${encodeURIComponent("' OR 1=1 --")}&inmueble=${encodeURIComponent('%')}`);
+  chequea('[filtro] texto hostil en distrito/inmueble => 200', x.r.status === 200);
+  // Filtros desconocidos se ignoran
+  x = await datos('propiedades', '?evil=1&estado=x&limite=2');
+  chequea('[filtro] parámetros desconocidos se ignoran', x.r.status === 200 && x.c.total <= 2);
+}
+
+// ── 6c) resumen-general: forma y coherencia con las demás vistas ────────────────────────
+{
+  const r = await llama('resumen-general', { headers: A() });
+  const c = json(r.cuerpo);
+  const f = c?.datos?.[0];
+  chequea('[resumen] 200, una sola fila', r.status === 200 && c.total === 1 && f);
+  if (f) {
+    const claves = ['proyectos', 'proyectos_atrasados', 'proximos_hitos', 'stock', 'mayor_faltante', 'pedidos', 'proximos_pedidos', 'propiedades', 'propiedades_por_portal', 'frescura'];
+    chequea('[resumen] trae las 10 secciones', claves.every((k) => k in f), claves.filter((k) => !(k in f)).join(','));
+    chequea('[resumen] proyectos: total = suma de estados', f.proyectos.total === f.proyectos.atrasados + f.proyectos.en_curso + f.proyectos.por_iniciar + f.proyectos.terminados, JSON.stringify(f.proyectos));
+    const pr = datosVivos.proyectos?.datos ?? [];
+    chequea('[resumen] coincide con la vista proyectos (total y atrasados)', f.proyectos.total === pr.length && f.proyectos.atrasados === pr.filter((p) => p.estado === 'atrasado').length);
+    chequea('[resumen] la lista de atrasados es de proyectos atrasados (máx. 5)', f.proyectos_atrasados.length <= 5 && f.proyectos_atrasados.length === Math.min(5, f.proyectos.atrasados));
+    chequea('[resumen] stock: en_stock_bajo ≤ materiales_con_minimo', f.stock.en_stock_bajo <= f.stock.materiales_con_minimo && f.stock.sin_existencias <= f.stock.materiales_con_minimo);
+    chequea('[resumen] mayor_faltante en orden descendente y ≤ 5', f.mayor_faltante.length <= 5 && f.mayor_faltante.every((m, i, a) => i === 0 || a[i - 1].faltante >= m.faltante));
+    chequea('[resumen] mayor_faltante coincide con stock-bajo (mismo primer material)', !f.mayor_faltante.length || f.mayor_faltante[0].material === datosVivos['stock-bajo']?.datos?.[0]?.material);
+    chequea('[resumen] pedidos: abiertos coincide con la vista pedidos', f.pedidos.abiertos === (datosVivos.pedidos?.total ?? -1));
+    const sumaPortales = f.propiedades_por_portal.reduce((a, p) => a + p.total, 0);
+    chequea('[resumen] propiedades: total_catalogo = suma por portal', f.propiedades.total_catalogo === sumaPortales, `${f.propiedades.total_catalogo} vs ${sumaPortales}`);
+    chequea('[resumen] frescura con hace_horas numérico y las apps conocidas', f.frescura.every((x) => typeof x.hace_horas === 'number' && ['planner', 'mrp', 'scraper'].includes(x.app)));
+    chequea('[resumen] números como números (no texto) dentro de las secciones', typeof f.proyectos.total === 'number' && f.mayor_faltante.every((m) => typeof m.faltante === 'number') && f.proyectos_atrasados.every((p) => typeof p.avance_pct === 'number'));
+    chequea('[resumen] fechas dentro del resumen en formato AAAA-MM-DD', [...f.proximos_hitos.map((h) => h.fecha), ...f.proyectos_atrasados.map((p) => p.fin)].every((d) => /^\d{4}-\d{2}-\d{2}/.test(d)));
+  }
+}
+
+// ── 6d) Panel web (raíz) y cabeceras de seguridad ───────────────────────────────────────
+{
+  const raiz = await llama('/', { raw: true });
+  chequea('[panel] GET / => 200 HTML', raiz.status === 200 && /text\/html/.test(raiz.headers.get('content-type') || ''), `-> ${raiz.status}`);
+  chequea('[panel] la página es el panel V1K', /<title>V1K · Panel<\/title>/.test(raiz.cuerpo));
+  chequea('[panel] sin scripts ni estilos en línea', !/<script(?![^>]*\bsrc=)[^>]*>/i.test(raiz.cuerpo) && !/<style[\s>]/i.test(raiz.cuerpo) && !/\sstyle\s*=/i.test(raiz.cuerpo));
+  chequea('[panel] la página no contiene el token ni datos de negocio', !raiz.cuerpo.includes(TOKEN) && !/proyecto_id|material_id/.test(raiz.cuerpo));
+  const csp = raiz.headers.get('content-security-policy') || '';
+  chequea('[panel] CSP estricta (default-src none, script/style/connect solo self)', /default-src 'none'/.test(csp) && /script-src 'self'/.test(csp) && /style-src 'self'/.test(csp) && /connect-src 'self'/.test(csp) && /frame-ancestors 'none'/.test(csp), csp);
+  chequea('[panel] X-Frame-Options DENY', raiz.headers.get('x-frame-options') === 'DENY');
+  chequea('[panel] X-Content-Type-Options nosniff', raiz.headers.get('x-content-type-options') === 'nosniff');
+  chequea('[panel] Referrer-Policy no-referrer', raiz.headers.get('referrer-policy') === 'no-referrer');
+  chequea('[panel] Permissions-Policy restringe cámara, micrófono y ubicación', /camera=\(\)/.test(raiz.headers.get('permissions-policy') || ''));
+  for (const [ruta, tipo] of [['/panel.js', /javascript/], ['/formato.js', /javascript/], ['/panel.css', /text\/css/], ['/hero.svg', /image\/svg\+xml/], ['/favicon.svg', /image\/svg\+xml/]]) {
+    const a = await llama(ruta, { raw: true });
+    chequea(`[panel] ${ruta} => 200 y tipo correcto`, a.status === 200 && tipo.test(a.headers.get('content-type') || ''), `-> ${a.status} ${a.headers.get('content-type')}`);
+  }
+  for (const ruta of ['/.env', '/package.json', '/lib/vistas.js', '/api/../lib/vistas.js', '/test/smoke.mjs', '/vercel.json', '/openapi.yaml', '/node_modules/yaml/package.json']) {
+    const a = await llama(ruta, { raw: true });
+    chequea(`[panel] ${ruta} NO se publica`, a.status === 404 || a.status === 401 || a.status === 400, `-> ${a.status}`);
+  }
+  const js = await llama('/panel.js', { raw: true });
+  chequea('[panel] panel.js no usa APIs que interpreten HTML', !/innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(/.test(js.cuerpo.replace(/^\s*\/\/.*$/gm, '')));
+  chequea('[panel] ningún recurso externo (CDN, fuentes)', !/(https?:)?\/\/(cdn|unpkg|fonts|cdnjs)\./i.test(raiz.cuerpo + js.cuerpo));
 }
 
 // ── 7) La base sigue intacta tras todos los intentos hostiles ───────────────────────
