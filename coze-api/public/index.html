@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <title>V1K · Panel</title>
+  <meta name="description" content="Panel de solo lectura de la vista central: Planner, MRP y Scraper.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <!-- ───────────── Entrada con token ───────────── -->
+  <main id="vista-entrada" class="entrada" hidden>
+    <img class="entrada__hero" src="hero.svg" alt="V1K: agente de Coze sobre una vista central" width="1280" height="420">
+    <form id="form-entrada" class="tarjeta entrada__form" autocomplete="off">
+      <h1>Panel V1K</h1>
+      <p class="suave">Vista de solo lectura de lo que sincronizan el Planner, el MRP y el Scraper. Pega el token de la API para entrar.</p>
+      <label for="token">Token de la API</label>
+      <input id="token" name="token" type="password" required minlength="24" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token">
+      <label class="casilla"><input id="recordar" type="checkbox"> Recordar en este navegador</label>
+      <button type="submit" class="boton boton--primario">Entrar</button>
+      <p id="error-entrada" class="error" role="alert" aria-live="assertive"></p>
+      <p class="nota">El token se queda solo en tu navegador y se envía únicamente a esta misma dirección. La página no guarda nada en servidores.</p>
+    </form>
+  </main>
+
+  <!-- ───────────── Panel ───────────── -->
+  <div id="vista-panel" hidden>
+    <header class="cabecera">
+      <div class="cabecera__marca">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><g fill="none" stroke="#052e16" stroke-width="2.2" stroke-linecap="round"><ellipse cx="16" cy="10.5" rx="7" ry="3"/><path d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/><path d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/></g></svg>
+        <div>
+          <h1>Panel V1K</h1>
+          <p class="suave" id="subtitulo">Vista central · solo lectura</p>
+        </div>
+      </div>
+      <div class="cabecera__acciones">
+        <span id="estado-conexion" class="pastilla" role="status">Cargando…</span>
+        <label class="casilla casilla--chica"><input id="auto" type="checkbox"> Actualizar cada minuto</label>
+        <button id="btn-actualizar" class="boton" type="button">Actualizar</button>
+        <button id="btn-salir" class="boton boton--fantasma" type="button">Salir</button>
+      </div>
+    </header>
+
+    <p id="aviso" class="aviso" role="alert" hidden></p>
+
+    <main class="contenido">
+      <section aria-labelledby="t-frescura">
+        <h2 id="t-frescura">Frescura de los datos</h2>
+        <div id="frescura" class="rejilla rejilla--3"></div>
+      </section>
+
+      <section aria-labelledby="t-kpi">
+        <h2 id="t-kpi">En números</h2>
+        <div id="kpis" class="rejilla rejilla--5"></div>
+      </section>
+
+      <div class="dos-columnas">
+        <section aria-labelledby="t-atrasados" class="tarjeta">
+          <h2 id="t-atrasados">Proyectos atrasados</h2>
+          <ul id="lista-atrasados" class="lista"></ul>
+        </section>
+        <section aria-labelledby="t-hitos" class="tarjeta">
+          <h2 id="t-hitos">Próximos hitos</h2>
+          <ul id="lista-hitos" class="lista"></ul>
+          <h2 id="t-pedidos" class="subtitulo">Pedidos abiertos</h2>
+          <ul id="lista-pedidos" class="lista"></ul>
+        </section>
+      </div>
+
+      <section aria-labelledby="t-stock" class="tarjeta">
+        <h2 id="t-stock">Mayor faltante de stock</h2>
+        <p class="suave" id="nota-stock"></p>
+        <div class="tabla-envoltorio"><table id="tabla-stock"><thead><tr><th>Material</th><th>Categoría</th><th class="num">Cantidad</th><th class="num">Mínimo</th><th class="num">Falta</th></tr></thead><tbody></tbody></table></div>
+      </section>
+
+      <section aria-labelledby="t-props" class="tarjeta">
+        <h2 id="t-props">Propiedades</h2>
+        <div id="portales" class="barras"></div>
+        <form id="form-props" class="filtros" autocomplete="off">
+          <label>Operación
+            <select id="f-operacion"><option value="">Todas</option><option value="VENTA">Venta</option><option value="ALQUILER">Alquiler</option></select>
+          </label>
+          <label>Distrito
+            <input id="f-distrito" type="text" maxlength="40" placeholder="Ej. Miraflores">
+          </label>
+          <label>Precio máx. (US$)
+            <input id="f-precio" type="number" min="0" step="1000" placeholder="Ej. 200000">
+          </label>
+          <button type="submit" class="boton">Filtrar</button>
+        </form>
+        <p class="suave" id="nota-props"></p>
+        <div class="tabla-envoltorio"><table id="tabla-props"><thead><tr><th>Propiedad</th><th>Operación</th><th>Distrito</th><th class="num">Precio</th><th>Portal</th></tr></thead><tbody></tbody></table></div>
+      </section>
+    </main>
+
+    <footer class="pie">
+      <span id="generado">—</span>
+      <span>V1K · solo lectura · los datos son resúmenes sincronizados desde cada app</span>
+    </footer>
+  </div>
+
+  <script type="module" src="panel.js"></script>
+</body>
+</html>

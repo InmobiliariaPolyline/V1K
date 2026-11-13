@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs",
+    "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs && node test/panel.test.mjs",
     "openapi": "node scripts/generar-openapi.mjs"
   },
   "dependencies": {
