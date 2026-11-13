@@ -5,7 +5,7 @@
 <br />
 
 <img src="docs/assets/badges/sincroniza.svg" alt="Sincroniza 3 apps" />
-<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 957 OK" />
+<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1162 OK" />
 <img src="docs/assets/badges/api.svg" alt="API solo lectura" />
 <img src="docs/assets/badges/roles.svg" alt="Roles 4 con RLS" />
 <br />
@@ -72,7 +72,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
   <tr>
     <td width="33%"><img src="docs/assets/card-solo-lectura.svg" alt="Solo lectura" width="100%" /></td>
     <td width="33%"><img src="docs/assets/card-rapida.svg" alt="Respuesta en unos 150 ms" width="100%" /></td>
-    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="957 comprobaciones" width="100%" /></td>
+    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="1162 comprobaciones" width="100%" /></td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/assets/card-opcional.svg" alt="Apagado por defecto" width="100%" /></td>
