@@ -17,7 +17,7 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
 2. **API:** un `q` con byte nulo daba 502. **Corregido y desplegado.** Además, `%`, `_` y `\` en la búsqueda ahora se
    tratan como texto literal.
 3. **MRP y Scraper:** una cantidad o un precio mayor a 999.999.999.999,99 hacía fallar toda la sincronización
-   (`numeric field overflow`). **Corregido en ramas `hardening/vista-central-numeros` de cada repo.**
+   (`numeric field overflow`). **Corregido y fusionado** (MRP: PR #4, Scraper: PR #2).
 4. **No corregido, porque no puede ocurrir con datos reales:** un byte nulo o un carácter UTF-16 inválido en un texto
    (Postgres no puede guardarlos) y claves duplicadas en el origen (lo impiden las claves primarias y únicas).
 
