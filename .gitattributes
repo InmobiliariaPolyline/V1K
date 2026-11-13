@@ -1,0 +1,2 @@
+# Los parches se guardan tal cual: cambiar sus saltos de línea los rompería.
+*.patch -text

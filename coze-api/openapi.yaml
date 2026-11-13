@@ -1,0 +1,56 @@
+openapi: 3.0.1
+info:
+  title: Vista Central (solo lectura)
+  description: Resúmenes de proyectos, materiales y propiedades. Solo consulta.
+  version: 1.0.0
+servers:
+  - url: https://REEMPLAZA-CON-TU-DOMINIO.vercel.app
+paths:
+  /api/proyectos:
+    get:
+      operationId: proyectos
+      summary: Proyectos del Planner con estado, avance, tareas atrasadas y próximo hito (los atrasados primero)
+      responses:
+        '200': { description: OK }
+  /api/hitos:
+    get:
+      operationId: hitos_proyectos
+      summary: Próximas fechas clave (hitos) de los proyectos, con el nombre del proyecto
+      responses:
+        '200': { description: OK }
+  /api/stock-bajo:
+    get:
+      operationId: stock_bajo
+      summary: Materiales del MRP con stock igual o menor al mínimo y cuánto falta para llegar al mínimo
+      responses:
+        '200': { description: OK }
+  /api/pedidos:
+    get:
+      operationId: pedidos_pendientes
+      summary: Órdenes de compra abiertas del MRP (pendiente, enviada o parcial) con fecha estimada de llegada
+      responses:
+        '200': { description: OK }
+  /api/propiedades:
+    get:
+      operationId: propiedades
+      summary: Las 50 propiedades más recientes del scraper, con búsqueda opcional
+      parameters:
+        - name: q
+          in: query
+          required: false
+          description: Texto a buscar en título, distrito o tipo de inmueble
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/propiedades-resumen:
+    get:
+      operationId: propiedades_resumen
+      summary: Total de propiedades del catálogo por portal y operación (venta o alquiler)
+      responses:
+        '200': { description: OK }
+  /api/frescura:
+    get:
+      operationId: frescura_datos
+      summary: Cuándo se sincronizó por última vez cada app
+      responses:
+        '200': { description: OK }

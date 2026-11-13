@@ -1,0 +1,388 @@
+diff --git a/.env.example b/.env.example
+index 7906b5d..409e9d2 100644
+--- a/.env.example
++++ b/.env.example
+@@ -6,6 +6,10 @@
+ # ni la pongas en variables VITE_* (se expondrían en el navegador).
+ DATABASE_URL=postgresql://USUARIO:CLAVE@HOST.neon.tech/neondb?sslmode=require
+ 
++# ── Vista central para el agente de Coze (opcional) ──────────────────────────
++# Cadena de conexión del rol `writer_scraper` de la base central. Solo servidor. Sin ella, no se sincroniza.
++# CENTRAL_DATABASE_URL=…
++
+ # ── API: opcional ────────────────────────────────────────────────────────────
+ # Tipo de cambio PEN por 1 USD (usar el mismo valor que VITE_USD_TO_PEN_RATE).
+ USD_TO_PEN_RATE=3.75
+diff --git a/README.md b/README.md
+index 232337e..4d640f5 100644
+--- a/README.md
++++ b/README.md
+@@ -173,6 +173,7 @@ Requiere Node 22 y pnpm (la versión exacta está en `package.json`).
+ | `CARGA_URLS`, `CARGA_URLS_URBANIA`, `CARGA_URLS_INFOCASAS`, `CARGA_URLS_PROPERATI` | No | Búsquedas a rotar de cada fuente (ver [`docs/URLS_BUSQUEDA.md`](docs/URLS_BUSQUEDA.md)) |
+ | `APIFY_CREDIT_USD`, `APIFY_COST_PER_1000` | No | Crédito mensual de Apify (5) y costo por 1 000 avisos (3), para calcular los topes |
+ | `ALERT_WEBHOOK_URL`, `ALERT_STALE_HOURS` | No | Alertas del watchdog: webhook (Slack, Discord o compatible) y horas sin actividad (24 por defecto) |
++| `CENTRAL_DATABASE_URL` | No | Vista central para el agente de Coze: cadena de Neon del rol `writer_scraper`. Tras guardar avisos, copia un resumen (las 200 propiedades más recientes y conteos por portal). Sin ella no se sincroniza nada |
+ | `CRON_SECRET` | No | Permite a un planificador externo llamar a `POST /api/internal/watchdog` (cabecera `x-cron-secret`) |
+ | `VITE_API_URL` | No | Solo si la API vive en otro dominio (por defecto, el mismo origen) |
+ 
+diff --git a/api/carga.ts b/api/carga.ts
+index 3d71f9b..f041575 100644
+--- a/api/carga.ts
++++ b/api/carga.ts
+@@ -2,6 +2,7 @@ import type { Db } from "./db"
+ import type { ApiEnv } from "./env"
+ import { usdToPenRate } from "./env"
+ import { guardarAvisos, type Aviso } from "./ingest"
++import { sincronizarSiConfigurado } from "./vistaCentral"
+ import { limpiarUnidades, unirUnidades, type UnidadProyecto } from "../shared/proyectos"
+ 
+ /**
+@@ -1198,6 +1199,8 @@ export async function procesarResultado(db: Db, env: ApiEnv, evento: EventoApify
+     const fuente = fuentesDeCarga(env)[FUENTES_IDS.includes(corrida.fuente as FuenteId) ? (corrida.fuente as FuenteId) : "adondevivir"]
+     const avisos = validos.map(fuente.mapear).filter((a): a is Aviso => a !== null)
+     const { guardados } = avisos.length > 0 ? await guardarAvisos(db, avisos, usdToPenRate(env)) : { guardados: 0 }
++    // Vista central para el agente de Coze (opcional; nunca rompe la carga).
++    if (guardados > 0) await sincronizarSiConfigurado(db, env)
+ 
+     // Los registros de error del actor no son avisos ni se cobran: no cuentan como recibidos.
+     const { estado, detalle } = veredicto(exito, evento.eventType, validos.length, errores, fuente.nombre)
+diff --git a/api/env.ts b/api/env.ts
+index b825363..75fc72c 100644
+--- a/api/env.ts
++++ b/api/env.ts
+@@ -3,6 +3,8 @@ import { DEFAULT_USD_TO_PEN_RATE } from "../shared/constants"
+ /** Variables de entorno que usa la API (todas opcionales salvo DATABASE_URL). */
+ export interface ApiEnv {
+   DATABASE_URL?: string
++  /** Vista central para el agente de Coze (opcional): cadena de Neon del rol `writer_scraper`. Sin ella no se sincroniza nada. */
++  CENTRAL_DATABASE_URL?: string
+   /** Tipo de cambio PEN por 1 USD; debe coincidir con VITE_USD_TO_PEN_RATE del cliente. */
+   USD_TO_PEN_RATE?: string
+   /** Alertas del watchdog: webhook (Slack/Discord compatible) y horas sin actividad para alertar. */
+diff --git a/api/routes/ingesta.ts b/api/routes/ingesta.ts
+index 4203954..195aceb 100644
+--- a/api/routes/ingesta.ts
++++ b/api/routes/ingesta.ts
+@@ -1,6 +1,7 @@
+ import { guardarAvisos, PORTALES, quitarRetirados, type Aviso } from "../ingest"
+ import { limpiarUnidades } from "../../shared/proyectos"
+ import { usdToPenRate } from "../env"
++import { sincronizarSiConfigurado } from "../vistaCentral"
+ import { HttpError, badRequest, forbidden, readJson, timingSafeEqual } from "../http"
+ import type { Route } from "../router"
+ 
+@@ -84,6 +85,8 @@ export const ingestaRoutes: Route[] = [
+ 
+       const avisos = body.avisos.map(comoAviso).filter((a): a is Aviso => a !== null)
+       const { guardados, descartados } = await guardarAvisos(db, avisos, usdToPenRate(env))
++      // Vista central para el agente de Coze (opcional; nunca rompe la ingesta).
++      await sincronizarSiConfigurado(db, env)
+       return {
+         recibidos: body.avisos.length,
+         retirados,
+diff --git a/api/vistaCentral.test.ts b/api/vistaCentral.test.ts
+new file mode 100644
+index 0000000..dc91d62
+--- /dev/null
++++ b/api/vistaCentral.test.ts
+@@ -0,0 +1,157 @@
++import fs from "node:fs"
++import path from "node:path"
++import { PGlite } from "@electric-sql/pglite"
++import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto"
++import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
++import {
++  INTERVALO_MIN_MS,
++  MAX_PROPIEDADES_VISTA,
++  reiniciarLimitador,
++  sincronizarSiConfigurado,
++  sincronizarVistaCentral,
++} from "./vistaCentral"
++
++const root = path.resolve(import.meta.dirname, "..")
++
++// Mismo contrato que `01_schema.sql` de la vista central (solo las tablas del scraper).
++const ESQUEMA_CENTRAL = `
++  CREATE SCHEMA central;
++  CREATE TABLE central.scraper_propiedades (
++    propiedad_id text PRIMARY KEY, portal text NOT NULL, operacion text, inmueble text, titulo text,
++    precio numeric(14,2), moneda text, precio_usd numeric(14,2), distrito text, dormitorios text,
++    banios text, area text, url text, encontrada_en timestamptz NOT NULL, ultima_vista_en timestamptz);
++  CREATE TABLE central.scraper_resumen (
++    portal text NOT NULL, operacion text NOT NULL DEFAULT '', total integer NOT NULL,
++    ultima_vista timestamptz, PRIMARY KEY (portal, operacion));
++  CREATE TABLE central.sync_estado (app text PRIMARY KEY, ultima_sync timestamptz NOT NULL DEFAULT now());
++`
++
++let origen: PGlite
++let central: PGlite
++const dbOrigen = { query: async (t: string, p: unknown[] = []) => origen.query(t, p).then(r => r.rows as never[]) }
++const dbCentral = { query: async (t: string, p: unknown[] = []) => central.query(t, p).then(r => r.rows as never[]) }
++
++async function insertar(id: string, portal: string, operacion: string, creado: string) {
++  await origen.query(
++    `INSERT INTO public.propiedades (id, portal, operacion, inmueble, titulo, precio, precio_usd, moneda, distrito, creado_en)
++     VALUES ($1, $2, $3, 'Departamento', $4, 100000, 100000, 'USD', 'Miraflores', $5)`,
++    [id, portal, operacion, `Aviso ${id}`, creado],
++  )
++}
++
++beforeAll(async () => {
++  origen = new PGlite({ extensions: { pgcrypto } })
++  await origen.exec(fs.readFileSync(path.join(root, "db/001_schema.sql"), "utf8"))
++  central = new PGlite()
++  await central.exec(ESQUEMA_CENTRAL)
++})
++
++beforeEach(async () => {
++  reiniciarLimitador()
++  await origen.exec("DELETE FROM public.propiedades")
++  await central.exec("DELETE FROM central.scraper_propiedades; DELETE FROM central.scraper_resumen; DELETE FROM central.sync_estado")
++})
++
++describe("sincronizarVistaCentral", () => {
++  it("copia las propiedades, el resumen por portal y marca la hora de sincronización", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    await insertar("urbania:2", "urbania", "ALQUILER", "2026-01-02T10:00:00Z")
++    await insertar("infocasas:1", "infocasas", "VENTA", "2026-01-03T10:00:00Z")
++
++    const r = await sincronizarVistaCentral(dbOrigen, dbCentral)
++    expect(r).toEqual({ propiedades: 3, resumenes: 3 })
++
++    const props = await central.query("SELECT propiedad_id FROM central.scraper_propiedades ORDER BY propiedad_id")
++    expect(props.rows.map((x: any) => x.propiedad_id)).toEqual(["infocasas:1", "urbania:1", "urbania:2"])
++    const res = await central.query("SELECT portal, operacion, total FROM central.scraper_resumen ORDER BY portal, operacion")
++    expect(res.rows).toEqual([
++      { portal: "infocasas", operacion: "VENTA", total: 1 },
++      { portal: "urbania", operacion: "ALQUILER", total: 1 },
++      { portal: "urbania", operacion: "VENTA", total: 1 },
++    ])
++    const est = await central.query("SELECT app FROM central.sync_estado")
++    expect(est.rows).toEqual([{ app: "scraper" }])
++  })
++
++  it("es idempotente: repetirla no duplica filas", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++    const n = await central.query("SELECT count(*)::int AS n FROM central.scraper_propiedades")
++    expect((n.rows[0] as any).n).toBe(1)
++  })
++
++  it("quita de la foto lo que ya no existe y refleja cambios de precio", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    await insertar("urbania:2", "urbania", "VENTA", "2026-01-02T10:00:00Z")
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++
++    await origen.query("DELETE FROM public.propiedades WHERE id = 'urbania:1'")
++    await origen.query("UPDATE public.propiedades SET precio = 555 WHERE id = 'urbania:2'")
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++
++    const props = await central.query("SELECT propiedad_id, precio FROM central.scraper_propiedades")
++    expect(props.rows).toEqual([{ propiedad_id: "urbania:2", precio: "555.00" }])
++    const res = await central.query("SELECT total FROM central.scraper_resumen")
++    expect(res.rows).toEqual([{ total: 1 }])
++  })
++
++  it(`copia como máximo ${MAX_PROPIEDADES_VISTA} propiedades, las más recientes, pero cuenta todas en el resumen`, async () => {
++    await origen.query(
++      `INSERT INTO public.propiedades (id, portal, operacion, precio, precio_usd, moneda, creado_en)
++       SELECT 'p:' || g, 'urbania', 'VENTA', 1, 1, 'USD', now() - (g || ' minutes')::interval
++         FROM generate_series(1, ${MAX_PROPIEDADES_VISTA + 25}) g`,
++    )
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++    const n = await central.query("SELECT count(*)::int AS n FROM central.scraper_propiedades")
++    expect((n.rows[0] as any).n).toBe(MAX_PROPIEDADES_VISTA)
++    const masNueva = await central.query("SELECT 1 FROM central.scraper_propiedades WHERE propiedad_id = 'p:1'")
++    expect(masNueva.rows.length).toBe(1)
++    const resumen = await central.query("SELECT total FROM central.scraper_resumen")
++    expect((resumen.rows[0] as any).total).toBe(MAX_PROPIEDADES_VISTA + 25)
++  })
++
++  it("no copia columnas sensibles ni de otras tablas", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    await sincronizarVistaCentral(dbOrigen, dbCentral)
++    const cols = await central.query(
++      "SELECT column_name FROM information_schema.columns WHERE table_schema = 'central' AND table_name = 'scraper_propiedades'",
++    )
++    const nombres = cols.rows.map((c: any) => c.column_name)
++    for (const prohibida of ["descripcion", "direccion", "publicador", "latitud", "longitud", "imagenes"]) {
++      expect(nombres).not.toContain(prohibida)
++    }
++  })
++})
++
++describe("sincronizarSiConfigurado", () => {
++  it("no hace nada sin CENTRAL_DATABASE_URL", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    expect(await sincronizarSiConfigurado(dbOrigen, {})).toBe(false)
++    const n = await central.query("SELECT count(*)::int AS n FROM central.scraper_propiedades")
++    expect((n.rows[0] as any).n).toBe(0)
++  })
++
++  it("sincroniza una vez y limita las llamadas seguidas", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    let reloj = 1_000_000
++    const opciones = { central: dbCentral, ahora: () => reloj }
++    expect(await sincronizarSiConfigurado(dbOrigen, {}, opciones)).toBe(true)
++    reloj += 1000
++    expect(await sincronizarSiConfigurado(dbOrigen, {}, opciones)).toBe(false)
++    reloj += INTERVALO_MIN_MS
++    expect(await sincronizarSiConfigurado(dbOrigen, {}, opciones)).toBe(true)
++  })
++
++  it("si la base central falla, no lanza, no filtra la conexión y permite reintentar", async () => {
++    await insertar("urbania:1", "urbania", "VENTA", "2026-01-01T10:00:00Z")
++    const aviso = vi.spyOn(console, "warn").mockImplementation(() => {})
++    const rota = { query: async () => { throw new Error("connection refused postgres://u:secreto@host/db") } }
++    await expect(sincronizarSiConfigurado(dbOrigen, {}, { central: rota as never })).resolves.toBe(false)
++    expect(aviso).toHaveBeenCalled()
++    expect(JSON.stringify(aviso.mock.calls)).not.toContain("secreto")
++    // Se reintenta de inmediato en la siguiente llamada (el límite se reinicia tras un fallo).
++    expect(await sincronizarSiConfigurado(dbOrigen, {}, { central: dbCentral })).toBe(true)
++    aviso.mockRestore()
++  })
++})
+diff --git a/api/vistaCentral.ts b/api/vistaCentral.ts
+new file mode 100644
+index 0000000..533e281
+--- /dev/null
++++ b/api/vistaCentral.ts
+@@ -0,0 +1,137 @@
++import { neon } from "@neondatabase/serverless"
++import type { Db } from "./db"
++
++/**
++ * Sincronización con la «vista central» que lee el agente de Coze (solo resúmenes, nada de usuarios).
++ *
++ * - Es OPCIONAL: sin `CENTRAL_DATABASE_URL` no hace nada, así que no cambia el comportamiento de la app.
++ * - Nunca rompe la operación principal: cualquier error o demora se registra y se ignora.
++ * - Escribe con el rol `writer_scraper`, que solo puede tocar las tablas del scraper en el esquema `central`.
++ * - Es idempotente: cada llamada deja la «foto» completa, así que repetirla no duplica nada.
++ */
++
++/** Cuántas propiedades recientes se copian (el resto se resume en `scraper_resumen`). */
++export const MAX_PROPIEDADES_VISTA = 200
++/** Mínimo de milisegundos entre dos sincronizaciones de una misma instancia (la ingesta llega en lotes). */
++export const INTERVALO_MIN_MS = 60_000
++/** Tiempo máximo que se espera al servidor central antes de seguir sin él. */
++export const TIEMPO_MAX_MS = 4_000
++
++export interface ResultadoSync {
++  propiedades: number
++  resumenes: number
++}
++
++const COLUMNAS_PROPIEDAD = `id, portal, operacion, inmueble, titulo, precio, precio_usd, moneda, distrito,
++  dormitorios, banios, area, url, creado_en, ultima_vista_en`
++
++/** Copia la foto de `origen` (la base de la app) hacia `central`. Lanza si algo falla. */
++export async function sincronizarVistaCentral(origen: Db, central: Db): Promise<ResultadoSync> {
++  const propiedades = await origen.query(
++    `SELECT ${COLUMNAS_PROPIEDAD} FROM public.propiedades ORDER BY creado_en DESC, id DESC LIMIT ${MAX_PROPIEDADES_VISTA}`,
++  )
++  const resumen = await origen.query(
++    `SELECT portal, COALESCE(operacion, '') AS operacion, COUNT(*)::int AS total, MAX(ultima_vista_en) AS ultima_vista
++       FROM public.propiedades GROUP BY portal, COALESCE(operacion, '')`,
++  )
++
++  const jsonProps = JSON.stringify(propiedades)
++  const jsonResumen = JSON.stringify(resumen)
++
++  await central.query(
++    `INSERT INTO central.scraper_propiedades
++       (propiedad_id, portal, operacion, inmueble, titulo, precio, moneda, precio_usd, distrito,
++        dormitorios, banios, area, url, encontrada_en, ultima_vista_en)
++     SELECT t.id, t.portal, t.operacion, t.inmueble, t.titulo, t.precio, t.moneda, t.precio_usd, t.distrito,
++            t.dormitorios, t.banios, t.area, t.url, t.creado_en, t.ultima_vista_en
++       FROM jsonb_to_recordset($1::jsonb) AS t(
++         id text, portal text, operacion text, inmueble text, titulo text, precio numeric, precio_usd numeric,
++         moneda text, distrito text, dormitorios text, banios text, area text, url text,
++         creado_en timestamptz, ultima_vista_en timestamptz)
++     ON CONFLICT (propiedad_id) DO UPDATE SET
++       portal = EXCLUDED.portal, operacion = EXCLUDED.operacion, inmueble = EXCLUDED.inmueble,
++       titulo = EXCLUDED.titulo, precio = EXCLUDED.precio, moneda = EXCLUDED.moneda,
++       precio_usd = EXCLUDED.precio_usd, distrito = EXCLUDED.distrito, dormitorios = EXCLUDED.dormitorios,
++       banios = EXCLUDED.banios, area = EXCLUDED.area, url = EXCLUDED.url,
++       encontrada_en = EXCLUDED.encontrada_en, ultima_vista_en = EXCLUDED.ultima_vista_en`,
++    [jsonProps],
++  )
++  // Lo que ya no está entre las más recientes sale de la foto.
++  await central.query(
++    `DELETE FROM central.scraper_propiedades
++      WHERE propiedad_id NOT IN (SELECT t.id FROM jsonb_to_recordset($1::jsonb) AS t(id text))`,
++    [jsonProps],
++  )
++
++  await central.query(
++    `INSERT INTO central.scraper_resumen (portal, operacion, total, ultima_vista)
++     SELECT t.portal, t.operacion, t.total, t.ultima_vista
++       FROM jsonb_to_recordset($1::jsonb) AS t(portal text, operacion text, total int, ultima_vista timestamptz)
++     ON CONFLICT (portal, operacion) DO UPDATE SET total = EXCLUDED.total, ultima_vista = EXCLUDED.ultima_vista`,
++    [jsonResumen],
++  )
++  await central.query(
++    `DELETE FROM central.scraper_resumen r
++      WHERE NOT EXISTS (
++        SELECT 1 FROM jsonb_to_recordset($1::jsonb) AS t(portal text, operacion text)
++         WHERE t.portal = r.portal AND t.operacion = r.operacion)`,
++    [jsonResumen],
++  )
++
++  await central.query(
++    `INSERT INTO central.sync_estado (app, ultima_sync) VALUES ('scraper', now())
++     ON CONFLICT (app) DO UPDATE SET ultima_sync = now()`,
++  )
++
++  return { propiedades: propiedades.length, resumenes: resumen.length }
++}
++
++let ultimaSync = 0
++
++/** Solo para pruebas. */
++export function reiniciarLimitador(): void {
++  ultimaSync = 0
++}
++
++/**
++ * Punto de entrada que usan las rutas tras guardar avisos. No lanza nunca.
++ * Devuelve `true` si sincronizó, `false` si estaba desactivada, limitada, o falló.
++ */
++export async function sincronizarSiConfigurado(
++  origen: Db,
++  env: { CENTRAL_DATABASE_URL?: string },
++  opciones: { central?: Db; ahora?: () => number } = {},
++): Promise<boolean> {
++  const url = env.CENTRAL_DATABASE_URL
++  if (!url && !opciones.central) return false
++
++  const ahora = (opciones.ahora ?? Date.now)()
++  if (ahora - ultimaSync < INTERVALO_MIN_MS) return false
++  ultimaSync = ahora
++
++  try {
++    const central: Db =
++      opciones.central ??
++      (() => {
++        const sql = neon(url as string)
++        return { query: async (text, params = []) => (await sql.query(text, params)) as never }
++      })()
++
++    let temporizador: ReturnType<typeof setTimeout> | undefined
++    const limite = new Promise<never>((_, rechazar) => {
++      temporizador = setTimeout(() => rechazar(new Error("tiempo agotado")), TIEMPO_MAX_MS)
++    })
++    try {
++      await Promise.race([sincronizarVistaCentral(origen, central), limite])
++    } finally {
++      clearTimeout(temporizador)
++    }
++    return true
++  } catch (err) {
++    ultimaSync = 0 // que el siguiente lote reintente
++    // Solo el mensaje y sin cadenas de conexión: nunca credenciales en los registros.
++    const mensaje = err instanceof Error ? err.message.replace(/postgres(ql)?:\/\/\S+/gi, "[conexión]") : "error"
++    console.warn("vista central: no se pudo sincronizar:", mensaje)
++    return false
++  }
++}

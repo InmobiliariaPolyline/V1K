@@ -1,0 +1,19 @@
+{
+  "name": "coze-central-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API de solo lectura sobre la vista central (Neon) para el agente de Coze",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node test/smoke.mjs && node test/sql.test.mjs"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "1.2.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10"
+  }
+}

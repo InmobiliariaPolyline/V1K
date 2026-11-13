@@ -1,0 +1,21 @@
+# Copias de trabajo de los repos de las apps: son repositorios aparte (ver README).
+# Si las subes aquí quedarían como repos anidados y con su propio historial.
+/apps/
+
+# Dependencias y compilados
+node_modules/
+.vercel/
+
+# Secretos: nunca al repositorio
+.env
+.env.*
+!.env.example
+*.pem
+secrets.toml
+!secrets.toml.example
+
+# Archivos del sistema y del editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
