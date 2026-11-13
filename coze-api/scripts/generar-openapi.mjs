@@ -1,5 +1,7 @@
-// Genera openapi.yaml a partir de lib/vistas.js, para que el contrato que se importa en Coze no pueda desincronizarse
-// de las consultas reales.   Uso:  npm run openapi        (la prueba test/openapi.test.mjs verifica que esté al día)
+// Genera, desde lib/vistas.js (la única fuente de verdad):
+//   · openapi.yaml        el contrato que se importa en Coze (SIN las vistas marcadas `panel: true`)
+//   · public/vistas.json  los metadatos que usa el Explorador de API del panel (CON todas las vistas)
+// Uso:  npm run openapi        (test/openapi.test.mjs verifica que ambos estén al día)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,9 +20,12 @@ function parametro(nombre, f) {
   return { name: nombre, in: 'query', required: false, description: f.descripcion, schema: s };
 }
 
+/** Vistas que forman parte del contrato de Coze (el agente): todas menos las exclusivas del panel. */
+export const vistasDeCoze = () => Object.entries(VISTAS).filter(([, v]) => !v.panel);
+
 export function construirOpenApi() {
   const paths = {};
-  for (const [nombre, v] of Object.entries(VISTAS)) {
+  for (const [nombre, v] of vistasDeCoze()) {
     const parametros = Object.entries(v.filtros ?? {}).map(([n, f]) => parametro(n, f));
     if (v.select) {
       parametros.push({
@@ -66,9 +71,33 @@ export function textoOpenApi() {
   return YAML.stringify(construirOpenApi(), { lineWidth: 0 });
 }
 
-// Solo escribe el archivo cuando se ejecuta directamente (no cuando lo importa una prueba)
+/** Metadatos de TODAS las vistas para el Explorador del panel: filtros con su tipo y valores, límites y campos. */
+export function construirVistasJson() {
+  const vistas = Object.entries(VISTAS).map(([nombre, v]) => ({
+    nombre,
+    titulo: v.titulo,
+    soloPanel: Boolean(v.panel),
+    limite: v.select ? v.limite : null,
+    limiteMax: v.select ? v.limiteMax : null,
+    filtros: Object.entries(v.filtros ?? {}).map(([n, f]) => ({
+      nombre: n, tipo: f.tipo, descripcion: f.descripcion,
+      ...(f.valores ? { valores: f.valores } : {}),
+      ...(f.min !== undefined ? { min: f.min, max: f.max } : {}),
+    })),
+    campos: Object.keys(v.campos),
+  }));
+  return { servidor: SERVIDOR, vistas };
+}
+
+export function textoVistasJson() {
+  return `${JSON.stringify(construirVistasJson(), null, 2)}\n`;
+}
+
+// Solo escribe los archivos cuando se ejecuta directamente (no cuando lo importa una prueba)
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const destino = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'openapi.yaml');
-  fs.writeFileSync(destino, textoOpenApi(), 'utf8');
-  console.log(`openapi.yaml generado: ${Object.keys(VISTAS).length} herramientas`);
+  const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+  fs.writeFileSync(path.join(raiz, 'openapi.yaml'), textoOpenApi(), 'utf8');
+  fs.mkdirSync(path.join(raiz, 'public'), { recursive: true });
+  fs.writeFileSync(path.join(raiz, 'public', 'vistas.json'), textoVistasJson(), 'utf8');
+  console.log(`openapi.yaml generado (${vistasDeCoze().length} herramientas de Coze) y public/vistas.json (${Object.keys(VISTAS).length} vistas)`);
 }

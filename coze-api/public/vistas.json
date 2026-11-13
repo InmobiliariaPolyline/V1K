@@ -1,0 +1,310 @@
+{
+  "servidor": "https://v1k-coze-api.vercel.app",
+  "vistas": [
+    {
+      "nombre": "proyectos",
+      "titulo": "Proyectos del Planner con estado, avance, tareas atrasadas y próximo hito (los atrasados primero)",
+      "soloPanel": false,
+      "limite": 200,
+      "limiteMax": 200,
+      "filtros": [
+        {
+          "nombre": "estado",
+          "tipo": "enum",
+          "descripcion": "Solo los proyectos en ese estado",
+          "valores": [
+            "por iniciar",
+            "en curso",
+            "atrasado",
+            "terminado"
+          ]
+        },
+        {
+          "nombre": "q",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el nombre o el responsable"
+        }
+      ],
+      "campos": [
+        "proyecto_id",
+        "nombre",
+        "responsable",
+        "estado",
+        "avance_pct",
+        "inicio",
+        "fin",
+        "tareas_total",
+        "tareas_atrasadas",
+        "proximo_hito",
+        "proximo_hito_fecha",
+        "actualizado_en"
+      ]
+    },
+    {
+      "nombre": "hitos",
+      "titulo": "Próximas fechas clave (hitos) de los proyectos, con el nombre del proyecto",
+      "soloPanel": false,
+      "limite": 200,
+      "limiteMax": 200,
+      "filtros": [
+        {
+          "nombre": "proyecto",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el nombre del proyecto"
+        },
+        {
+          "nombre": "desde",
+          "tipo": "fecha",
+          "descripcion": "Solo hitos desde esta fecha (AAAA-MM-DD)"
+        },
+        {
+          "nombre": "hasta",
+          "tipo": "fecha",
+          "descripcion": "Solo hitos hasta esta fecha (AAAA-MM-DD)"
+        }
+      ],
+      "campos": [
+        "fecha",
+        "descripcion",
+        "proyecto"
+      ]
+    },
+    {
+      "nombre": "stock-bajo",
+      "titulo": "Materiales del MRP con stock igual o menor al mínimo, ordenados por cuánto falta (por defecto los 25 con mayor faltante)",
+      "soloPanel": false,
+      "limite": 25,
+      "limiteMax": 100,
+      "filtros": [
+        {
+          "nombre": "categoria",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en la categoría (por ejemplo «Acero»)"
+        },
+        {
+          "nombre": "q",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el nombre del material"
+        }
+      ],
+      "campos": [
+        "material",
+        "categoria",
+        "cantidad",
+        "unidad",
+        "minimo",
+        "faltante"
+      ]
+    },
+    {
+      "nombre": "pedidos",
+      "titulo": "Órdenes de compra abiertas del MRP (pendiente, enviada o parcial) con fecha estimada de llegada",
+      "soloPanel": false,
+      "limite": 200,
+      "limiteMax": 200,
+      "filtros": [
+        {
+          "nombre": "estado",
+          "tipo": "enum",
+          "descripcion": "Solo las órdenes en ese estado",
+          "valores": [
+            "pendiente",
+            "enviada",
+            "parcial"
+          ]
+        },
+        {
+          "nombre": "q",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el proveedor, la obra o el código de la orden"
+        }
+      ],
+      "campos": [
+        "pedido_id",
+        "proveedor",
+        "obra",
+        "estado",
+        "llegada_estimada",
+        "lineas",
+        "cantidad_pedida",
+        "cantidad_recibida",
+        "creado_en"
+      ]
+    },
+    {
+      "nombre": "propiedades",
+      "titulo": "Propiedades recientes del scraper (por defecto las 50 más nuevas), con filtros por operación, distrito, tipo, portal y precio",
+      "soloPanel": false,
+      "limite": 50,
+      "limiteMax": 100,
+      "filtros": [
+        {
+          "nombre": "q",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el título, el distrito o el tipo de inmueble"
+        },
+        {
+          "nombre": "operacion",
+          "tipo": "enum",
+          "descripcion": "VENTA o ALQUILER",
+          "valores": [
+            "VENTA",
+            "ALQUILER"
+          ]
+        },
+        {
+          "nombre": "inmueble",
+          "tipo": "texto",
+          "descripcion": "Tipo de inmueble (por ejemplo «Casa» o «Departamento»)"
+        },
+        {
+          "nombre": "distrito",
+          "tipo": "texto",
+          "descripcion": "Texto a buscar en el distrito"
+        },
+        {
+          "nombre": "portal",
+          "tipo": "enum",
+          "descripcion": "Portal de origen",
+          "valores": [
+            "infocasas",
+            "urbania",
+            "adondevivir",
+            "properati",
+            "babilonia"
+          ]
+        },
+        {
+          "nombre": "precio_min_usd",
+          "tipo": "numero",
+          "descripcion": "Precio mínimo en dólares",
+          "min": 0,
+          "max": 1000000000
+        },
+        {
+          "nombre": "precio_max_usd",
+          "tipo": "numero",
+          "descripcion": "Precio máximo en dólares (excluye avisos sin precio)",
+          "min": 0,
+          "max": 1000000000
+        }
+      ],
+      "campos": [
+        "propiedad_id",
+        "portal",
+        "operacion",
+        "inmueble",
+        "titulo",
+        "precio",
+        "moneda",
+        "precio_usd",
+        "distrito",
+        "dormitorios",
+        "banios",
+        "area",
+        "url",
+        "encontrada_en"
+      ]
+    },
+    {
+      "nombre": "propiedades-resumen",
+      "titulo": "Total de propiedades del catálogo por portal y operación (venta o alquiler)",
+      "soloPanel": false,
+      "limite": 50,
+      "limiteMax": 50,
+      "filtros": [
+        {
+          "nombre": "portal",
+          "tipo": "enum",
+          "descripcion": "Solo ese portal",
+          "valores": [
+            "infocasas",
+            "urbania",
+            "adondevivir",
+            "properati",
+            "babilonia"
+          ]
+        },
+        {
+          "nombre": "operacion",
+          "tipo": "enum",
+          "descripcion": "VENTA o ALQUILER",
+          "valores": [
+            "VENTA",
+            "ALQUILER"
+          ]
+        }
+      ],
+      "campos": [
+        "portal",
+        "operacion",
+        "total",
+        "ultima_vista"
+      ]
+    },
+    {
+      "nombre": "frescura",
+      "titulo": "Cuándo se sincronizó por última vez cada app (planner, mrp, scraper) y hace cuántas horas",
+      "soloPanel": false,
+      "limite": 10,
+      "limiteMax": 10,
+      "filtros": [],
+      "campos": [
+        "app",
+        "ultima_sync",
+        "hace_horas"
+      ]
+    },
+    {
+      "nombre": "resumen-general",
+      "titulo": "Panorama completo en una sola llamada: proyectos, hitos, stock, pedidos, propiedades y frescura de los datos",
+      "soloPanel": false,
+      "limite": null,
+      "limiteMax": null,
+      "filtros": [],
+      "campos": [
+        "proyectos",
+        "proyectos_atrasados",
+        "proximos_hitos",
+        "stock",
+        "mayor_faltante",
+        "pedidos",
+        "proximos_pedidos",
+        "propiedades",
+        "propiedades_por_portal",
+        "frescura"
+      ]
+    },
+    {
+      "nombre": "stock-categorias",
+      "titulo": "Materiales del MRP agrupados por categoría: cuántos hay, cuántos están bajo su mínimo y el faltante total",
+      "soloPanel": true,
+      "limite": null,
+      "limiteMax": null,
+      "filtros": [],
+      "campos": [
+        "categoria",
+        "materiales",
+        "en_stock_bajo",
+        "sin_existencias",
+        "faltante_total"
+      ]
+    },
+    {
+      "nombre": "propiedades-distritos",
+      "titulo": "Avisos y precios en dólares por distrito y operación, sobre las propiedades más recientes copiadas",
+      "soloPanel": true,
+      "limite": null,
+      "limiteMax": null,
+      "filtros": [],
+      "campos": [
+        "distrito",
+        "operacion",
+        "avisos",
+        "precio_prom_usd",
+        "precio_min_usd",
+        "precio_max_usd"
+      ]
+    }
+  ]
+}

@@ -43,6 +43,7 @@ await pg.exec(`
 // ── 1) Cada vista, sin filtros ───────────────────────────────────────────────────────
 const esperadas = {
   proyectos: 4, hitos: 3, 'stock-bajo': 2, pedidos: 2, propiedades: 4, 'propiedades-resumen': 3, frescura: 3, 'resumen-general': 1,
+  'stock-categorias': 2, 'propiedades-distritos': 3,
 };
 for (const nombre of Object.keys(VISTAS)) {
   assert.ok(nombre in esperadas, `la vista nueva «${nombre}» necesita su caso de prueba`);
@@ -91,6 +92,29 @@ assert.deepEqual(ids(await ejecuta('propiedades', { operacion: 'VENTA', distrito
 assert.equal((await ejecuta('propiedades', { q: 'jardín' })).length, 1, 'la búsqueda de texto sigue funcionando (con acentos)');
 
 assert.deepEqual(ids(await ejecuta('propiedades-resumen', { portal: 'infocasas', operacion: 'venta' }), 'total'), [900]);
+
+// ── 2b) Vistas solo para el panel (gráficos) ─────────────────────────────────────────
+{
+  const cats = await ejecuta('stock-categorias');
+  assert.deepEqual(cats.map((c) => c.categoria), ['Acero', 'Concreto'], 'ordenadas por faltante total descendente');
+  assert.deepEqual(cats[0], { categoria: 'Acero', materiales: 2, en_stock_bajo: 1, sin_existencias: 1, faltante_total: 30 });
+  assert.deepEqual(cats[1], { categoria: 'Concreto', materiales: 1, en_stock_bajo: 1, sin_existencias: 0, faltante_total: 12 });
+  assert.equal(typeof cats[0].faltante_total, 'number', 'números como números');
+
+  const dist = await ejecuta('propiedades-distritos');
+  const surco = dist.find((d) => d.distrito === 'Surco' && d.operacion === 'VENTA');
+  assert.equal(surco.avisos, 2);
+  assert.equal(surco.precio_prom_usd, 210000, 'el promedio ignora los avisos sin precio (0)');
+  assert.equal(surco.precio_min_usd, 210000);
+  assert.equal(surco.precio_max_usd, 210000);
+  const mira = dist.find((d) => d.distrito === 'Miraflores' && d.operacion === 'ALQUILER');
+  assert.deepEqual([mira.avisos, mira.precio_prom_usd], [1, 650]);
+  assert.ok(VISTAS['stock-categorias'].panel && VISTAS['propiedades-distritos'].panel, 'son vistas solo del panel');
+  // Sin filas con precio el promedio es null, no un error
+  await pg.exec(`INSERT INTO central.scraper_propiedades (propiedad_id, portal, operacion, distrito, precio_usd, encontrada_en) VALUES ('z1','x','VENTA','Lince',0,now())`);
+  assert.equal((await ejecuta('propiedades-distritos')).find((d) => d.distrito === 'Lince').precio_prom_usd, null);
+  await pg.exec(`DELETE FROM central.scraper_propiedades WHERE propiedad_id = 'z1'`);
+}
 
 // ── 3) Valores no válidos: ErrorFiltro (la API responde 400 explicando qué se acepta) ──
 const rechaza = (nombre, query, texto) => assert.throws(() => construirConsulta(VISTAS[nombre], query), (e) => e instanceof ErrorFiltro && e.message.includes(texto), `${nombre} ${JSON.stringify(query)}`);

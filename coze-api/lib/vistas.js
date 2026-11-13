@@ -263,4 +263,41 @@ export const VISTAS = {
       frescura: { type: 'array', description: 'Última sincronización de cada app y hace cuántas horas', items: { type: 'object', properties: { app: { type: S }, ultima_sync: { type: S }, hace_horas: { type: N } } } },
     },
   },
+
+  // ── Vistas SOLO para el panel web (gráficos). No van en el contrato de Coze: el agente no las necesita y cada
+  //    herramienta de más se envía en cada pregunta (créditos). `panel: true` las excluye de openapi.yaml.
+  'stock-categorias': {
+    panel: true,
+    operationId: 'stock_categorias',
+    titulo: 'Materiales del MRP agrupados por categoría: cuántos hay, cuántos están bajo su mínimo y el faltante total',
+    sql: `SELECT coalesce(categoria, 'Sin categoría') AS categoria,
+                 count(*)::int AS materiales,
+                 count(*) FILTER (WHERE stock_bajo)::int AS en_stock_bajo,
+                 count(*) FILTER (WHERE cantidad = 0)::int AS sin_existencias,
+                 round(coalesce(sum(faltante), 0))::float8 AS faltante_total
+            FROM central.mrp_stock
+           GROUP BY 1
+           ORDER BY faltante_total DESC, categoria
+           LIMIT 100`,
+    filtros: {},
+    campos: { categoria: S, materiales: I, en_stock_bajo: I, sin_existencias: I, faltante_total: N },
+  },
+
+  'propiedades-distritos': {
+    panel: true,
+    operationId: 'propiedades_distritos',
+    titulo: 'Avisos y precios en dólares por distrito y operación, sobre las propiedades más recientes copiadas',
+    sql: `SELECT distrito, operacion,
+                 count(*)::int AS avisos,
+                 round(avg(precio_usd) FILTER (WHERE precio_usd > 0))::float8 AS precio_prom_usd,
+                 min(precio_usd) FILTER (WHERE precio_usd > 0)::float8 AS precio_min_usd,
+                 max(precio_usd)::float8 AS precio_max_usd
+            FROM central.scraper_propiedades
+           WHERE distrito IS NOT NULL AND distrito <> ''
+           GROUP BY distrito, operacion
+           ORDER BY avisos DESC, distrito
+           LIMIT 40`,
+    filtros: {},
+    campos: { distrito: S, operacion: S, avisos: I, precio_prom_usd: N, precio_min_usd: N, precio_max_usd: N },
+  },
 };
