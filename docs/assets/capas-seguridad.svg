@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="440" viewBox="0 0 1280 440" role="img" aria-labelledby="t d">
+  <title id="t">Capas de seguridad de la API</title>
+  <desc id="d">Una petición legítima con token atraviesa cuatro capas: token, lista cerrada de consultas, rol de solo lectura y una base con solo resúmenes. Una petición con SQL malicioso se detiene en la lista cerrada.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <radialGradient id="gV" cx="0.9" cy="0.05" r="0.55"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gC" cx="0.05" cy="1" r="0.55"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.09"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.03"/></linearGradient>
+    <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#16a34a"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.035"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+    <filter id="dot" x="-200%" y="-200%" width="500%" height="500%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.9"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#4ade80" flood-opacity="0.5"/></filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
+    <style>
+    .vibra { animation: vibra 9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes vibra { 0%, 52% { transform: translateX(0); } 54%, 58%, 62% { transform: translateX(-4px); } 56%, 60%, 64% { transform: translateX(4px); } 66%, 100% { transform: translateX(0); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
+  </defs>
+  <rect width="1280" height="440" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="440" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="440" rx="28" fill="url(#gV)"/>
+  <rect width="1280" height="440" rx="28" fill="url(#gC)"/>
+  <rect x="1" y="1" width="1278" height="438" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <text x="40" y="52" font-size="13" font-weight="700" letter-spacing="2" fill="#6e7681">CUATRO CAPAS ENTRE EL INTERNET Y TUS DATOS</text>
+    <rect x="40" y="170" width="150" height="100" rx="18" fill="#6366f1" fill-opacity="0.2" stroke="#6366f1" stroke-opacity="0.6"/>
+    <text x="115" y="214" text-anchor="middle" font-size="18" font-weight="700" fill="#c7d2fe">Coze / panel</text><text x="115" y="236" text-anchor="middle" font-size="12" fill="#a5b4fc">o cualquiera</text>
+    <g filter="url(#sh)"><rect x="270" y="80" width="170" height="290" rx="20" fill="url(#glass)" stroke="#22d3ee" stroke-opacity="0.55"/></g>
+    <rect x="270" y="80" width="170" height="290" rx="20" fill="#22d3ee" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;0.2;0.2;0;0" keyTimes="0;0.024;0.054;0.126;0.156;1"/></rect>
+    <text x="355" y="112" text-anchor="middle" font-size="15.5" font-weight="700" fill="#f0f6fc">1 · Token</text>
+    <rect x="284" y="130" width="142" height="6" rx="3" fill="#22d3ee" fill-opacity="0.5"/>
+    <text x="355" y="318" text-anchor="middle" font-size="12" fill="#9aa4b2">Bearer, comparado</text><text x="355" y="336" text-anchor="middle" font-size="12" fill="#9aa4b2">en tiempo constante</text>
+    <path d="M300 220 H 410" stroke="#22d3ee" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 6"/>
+    <g filter="url(#sh)"><rect x="480" y="80" width="170" height="290" rx="20" fill="url(#glass)" stroke="#fbbf24" stroke-opacity="0.55"/></g>
+    <rect x="480" y="80" width="170" height="290" rx="20" fill="#fbbf24" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;0.2;0.2;0;0" keyTimes="0;0.113;0.143;0.216;0.246;1"/></rect>
+    <text x="565" y="112" text-anchor="middle" font-size="15.5" font-weight="700" fill="#f0f6fc">2 · Lista cerrada</text>
+    <rect x="494" y="130" width="142" height="6" rx="3" fill="#fbbf24" fill-opacity="0.5"/>
+    <text x="565" y="318" text-anchor="middle" font-size="12" fill="#9aa4b2">8 consultas fijas,</text><text x="565" y="336" text-anchor="middle" font-size="12" fill="#9aa4b2">filtros validados</text>
+    <path d="M510 220 H 620" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 6"/>
+    <g filter="url(#sh)"><rect x="690" y="80" width="170" height="290" rx="20" fill="url(#glass)" stroke="#a78bfa" stroke-opacity="0.55"/></g>
+    <rect x="690" y="80" width="170" height="290" rx="20" fill="#a78bfa" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;0.2;0.2;0;0" keyTimes="0;0.203;0.233;0.305;0.335;1"/></rect>
+    <text x="775" y="112" text-anchor="middle" font-size="15.5" font-weight="700" fill="#f0f6fc">3 · Rol coze_reader</text>
+    <rect x="704" y="130" width="142" height="6" rx="3" fill="#a78bfa" fill-opacity="0.5"/>
+    <text x="775" y="318" text-anchor="middle" font-size="12" fill="#9aa4b2">solo SELECT y</text><text x="775" y="336" text-anchor="middle" font-size="12" fill="#9aa4b2">máximo 5 s por consulta</text>
+    <path d="M720 220 H 830" stroke="#a78bfa" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 6"/>
+    <g filter="url(#sh)"><rect x="900" y="80" width="170" height="290" rx="20" fill="url(#glass)" stroke="#4ade80" stroke-opacity="0.55"/></g>
+    <rect x="900" y="80" width="170" height="290" rx="20" fill="#4ade80" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;0.2;0.2;0;0" keyTimes="0;0.292;0.322;0.394;0.424;1"/></rect>
+    <text x="985" y="112" text-anchor="middle" font-size="15.5" font-weight="700" fill="#f0f6fc">4 · Neon</text>
+    <rect x="914" y="130" width="142" height="6" rx="3" fill="#4ade80" fill-opacity="0.5"/>
+    <text x="985" y="318" text-anchor="middle" font-size="12" fill="#9aa4b2">solo resúmenes,</text><text x="985" y="336" text-anchor="middle" font-size="12" fill="#9aa4b2">sin datos sensibles</text>
+    <path d="M930 220 H 1040" stroke="#4ade80" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="3 6"/>
+    <circle cx="1170" cy="220" r="44" fill="url(#hub)" filter="url(#glow)"/>
+    <g fill="none" stroke="#052e16" stroke-width="3.2" stroke-linecap="round"><ellipse cx="1170" cy="206" rx="19" ry="7"/><path d="M1151 206 V234 C1151 238 1159 241 1170 241 C1181 241 1189 238 1189 234 V206"/><path d="M1151 220 C1151 224 1159 227 1170 227 C1181 227 1189 224 1189 220"/></g>
+    <text x="1170" y="290" text-anchor="middle" font-size="13" font-weight="700" fill="#bbf7d0">tus datos</text>
+    <path d="M190 220 H 1124" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2"/>
+    <!-- paquete bueno -->
+    <g class="anim"><g opacity="0">
+      <animateMotion dur="9s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.02;0.42;1" path="M190 220 H 1124"/>
+      <animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.02;0.05;0.4;0.44;1"/>
+      <circle r="8" fill="#4ade80" filter="url(#dot)"/><rect x="-62" y="-44" width="124" height="22" rx="11" fill="#052e16" stroke="#4ade80" stroke-opacity="0.7"/><text y="-29" text-anchor="middle" font-size="11" font-weight="700" fill="#86efac" font-family="Consolas,'Courier New',monospace">GET /api/proyectos</text>
+    </g></g>
+    <g class="anim"><text x="640" y="410" text-anchor="middle" font-size="13" fill="#86efac" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.4;0.44;0.5;0.52;1"/>✓ 200 · responde con el resumen</text></g>
+    <!-- paquete malo: se detiene en la lista cerrada -->
+    <g class="anim"><g opacity="0">
+      <animateMotion dur="9s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.55;0.66;1" path="M190 250 H 466"/>
+      <animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.55;0.58;0.8;0.84;1"/>
+      <circle r="8" fill="#f2706b" filter="url(#dot)"/><rect x="-66" y="22" width="132" height="22" rx="11" fill="#450a0a" stroke="#f2706b" stroke-opacity="0.7"/><text y="37" text-anchor="middle" font-size="11" font-weight="700" fill="#fca5a5" font-family="Consolas,'Courier New',monospace">'; DROP TABLE …</text>
+    </g></g>
+    <g class="anim" opacity="0"><animate attributeName="opacity" dur="9s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.66;0.69;0.86;0.9;1"/>
+      <circle cx="480" cy="250" r="20" fill="#f2706b" fill-opacity="0.25" stroke="#f2706b" stroke-width="2"/><path d="M472 242 L488 258 M488 242 L472 258" stroke="#f2706b" stroke-width="3" stroke-linecap="round"/>
+      <text x="640" y="410" text-anchor="middle" font-size="13" fill="#fca5a5">✕ 400 · no está en la lista de consultas permitidas</text></g>
+  </g>
+</svg>

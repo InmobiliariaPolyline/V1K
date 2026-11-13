@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="480" viewBox="0 0 1280 480" role="img" aria-labelledby="t d">
+  <title id="t">Conversación con el agente de Coze</title>
+  <desc id="d">El usuario pregunta qué proyectos van atrasados; el agente llama a la herramienta resumen_general y responde con proyectos atrasados, materiales bajo su mínimo y pedidos abiertos. Datos de ejemplo.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <radialGradient id="gV" cx="0.9" cy="0.05" r="0.55"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gC" cx="0.05" cy="1" r="0.55"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.09"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.03"/></linearGradient>
+    <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#16a34a"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.035"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+    <filter id="dot" x="-200%" y="-200%" width="500%" height="500%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.9"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#4ade80" flood-opacity="0.5"/></filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
+    <style>
+    @keyframes v-pregunta { 0%, 4% { opacity: 0; transform: translateY(10px); } 7%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-pregunta { animation: v-pregunta 12s ease-out infinite; }
+    @keyframes v-piensa { 0%, 16% { opacity: 0; transform: translateY(6px); } 19%, 31% { opacity: 1; transform: none; } 34%, 100% { opacity: 0; transform: none; } }
+    .v-piensa { animation: v-piensa 12s ease-out infinite; }
+    @keyframes v-herr { 0%, 30% { opacity: 0; transform: translateY(8px); } 33%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-herr { animation: v-herr 12s ease-out infinite; }
+    @keyframes v-resp { 0%, 40% { opacity: 0; transform: translateY(10px); } 43%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-resp { animation: v-resp 12s ease-out infinite; }
+    @keyframes v-s1 { 0%, 50% { opacity: 0; transform: translateY(12px); } 53%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-s1 { animation: v-s1 12s ease-out infinite; }
+    @keyframes v-s2 { 0%, 56% { opacity: 0; transform: translateY(12px); } 59%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-s2 { animation: v-s2 12s ease-out infinite; }
+    @keyframes v-s3 { 0%, 62% { opacity: 0; transform: translateY(12px); } 65%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-s3 { animation: v-s3 12s ease-out infinite; }
+    @keyframes v-pie { 0%, 70% { opacity: 0; transform: translateY(8px); } 73%, 93% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    .v-pie { animation: v-pie 12s ease-out infinite; }
+    .b1 { animation: bote 0.9s ease-in-out infinite; } .b2 { animation: bote 0.9s ease-in-out 0.15s infinite; } .b3 { animation: bote 0.9s ease-in-out 0.3s infinite; }
+    @keyframes bote { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-6px); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
+  </defs>
+  <rect width="1280" height="480" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="480" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="480" rx="28" fill="url(#gV)"/>
+  <rect width="1280" height="480" rx="28" fill="url(#gC)"/>
+  <rect x="1" y="1" width="1278" height="478" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <g filter="url(#sh)"><rect x="140" y="30" width="1000" height="420" rx="26" fill="url(#glass)" stroke="#6366f1" stroke-opacity="0.5"/></g>
+    <rect x="140" y="30" width="1000" height="56" rx="26" fill="#6366f1" fill-opacity="0.14"/>
+    <circle cx="180" cy="58" r="12" fill="#6366f1" fill-opacity="0.5"/><text x="180" y="63" text-anchor="middle" font-size="12" font-weight="800" fill="#e0e7ff">V</text>
+    <text x="204" y="55" font-size="15" font-weight="700" fill="#e6edf3">Agente V1K</text><text x="204" y="73" font-size="11.5" fill="#a5b4fc">en Coze · solo lee, nunca escribe</text>
+    <circle cx="1100" cy="58" r="5" fill="#4ade80"/>
+
+    <g class="v-pregunta"><rect x="690" y="106" width="414" height="44" rx="18" fill="#6366f1" fill-opacity="0.4" stroke="#6366f1" stroke-opacity="0.6"/>
+    <text x="897" y="134" text-anchor="middle" font-size="15.5" fill="#f5f3ff">¿Qué proyectos van atrasados y qué falta en stock?</text></g>
+
+    <g class="v-piensa"><rect x="176" y="168" width="84" height="38" rx="16" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.12"/>
+    <circle class="b1" cx="204" cy="187" r="5" fill="#a5b4fc"/><circle class="b2" cx="218" cy="187" r="5" fill="#a5b4fc"/><circle class="b3" cx="232" cy="187" r="5" fill="#a5b4fc"/></g>
+
+    <g class="v-herr"><rect x="176" y="168" width="300" height="38" rx="19" fill="#4ade80" fill-opacity="0.1" stroke="#4ade80" stroke-opacity="0.5"/>
+    <circle cx="200" cy="187" r="9" fill="#4ade80" fill-opacity="0.25"/><path d="M195 187 l4 4 l7 -8" fill="none" stroke="#4ade80" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="218" y="192" font-size="13.5" fill="#86efac" font-family="Consolas,'Courier New',monospace">resumen_general()</text><text x="400" y="192" font-size="11.5" fill="#8b949e">≈ 150 ms</text></g>
+
+    <g class="v-resp"><rect x="176" y="224" width="800" height="206" rx="20" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="200" y="254" font-size="15.5" fill="#e6edf3">Hay <tspan font-weight="800" fill="#f2706b">3 proyectos atrasados</tspan>: Centro Comercial Andino (81 %),</text>
+    <text x="200" y="278" font-size="15.5" fill="#e6edf3">Clínica Santa Rosa (35 %) y Torre Miraflores (62 %). En stock, hay</text>
+    <text x="200" y="302" font-size="15.5" fill="#e6edf3"><tspan font-weight="800" fill="#fbbf24">31 materiales bajo su mínimo</tspan>; el mayor faltante es el ladrillo King Kong.</text></g>
+
+    <g class="v-s1"><rect x="200" y="330" width="228" height="78" rx="14" fill="#f2706b" fill-opacity="0.1" stroke="#f2706b" stroke-opacity="0.45"/><text x="220" y="372" font-size="34" font-weight="800" fill="#f2706b">3</text><text x="256" y="366" font-size="12.5" fill="#c9d1d9">proyectos atrasados</text><text x="256" y="384" font-size="11.5" fill="#8b949e">18 tareas atrasadas</text></g>
+    <g class="v-s2"><rect x="446" y="330" width="228" height="78" rx="14" fill="#fbbf24" fill-opacity="0.1" stroke="#fbbf24" stroke-opacity="0.45"/><text x="466" y="372" font-size="34" font-weight="800" fill="#fbbf24">31</text><text x="516" y="366" font-size="12.5" fill="#c9d1d9">bajo su mínimo</text><text x="516" y="384" font-size="11.5" fill="#8b949e">de 46 materiales</text></g>
+    <g class="v-s3"><rect x="692" y="330" width="260" height="78" rx="14" fill="#22d3ee" fill-opacity="0.1" stroke="#22d3ee" stroke-opacity="0.45"/><text x="712" y="372" font-size="34" font-weight="800" fill="#22d3ee">9</text><text x="744" y="366" font-size="12.5" fill="#c9d1d9">pedidos abiertos</text><text x="744" y="384" font-size="11.5" fill="#8b949e">2 con llegada vencida</text></g>
+    <g class="v-pie"><text x="640" y="470" text-anchor="middle" font-size="12" fill="#6e7681">Datos de ejemplo · el agente responde con lo que lee de la base central</text></g>
+  </g>
+</svg>

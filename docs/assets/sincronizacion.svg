@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
+  <title id="t">Qué pasa cuando una app guarda datos</title>
+  <desc id="d">Cinco pasos: la app guarda datos, espera un instante, sincroniza en segundo plano, escribe en una sola transacción y marca la hora en sync_estado. Si algo falla solo se registra y la app sigue funcionando.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <radialGradient id="gV" cx="0.9" cy="0.05" r="0.55"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gC" cx="0.05" cy="1" r="0.55"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.09"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.03"/></linearGradient>
+    <linearGradient id="hub" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#16a34a"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.035"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+    <filter id="dot" x="-200%" y="-200%" width="500%" height="500%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.9"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#4ade80" flood-opacity="0.5"/></filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
+    <style>
+    .caja { animation: activo 10s ease-in-out infinite; }
+    .nu { animation: nu 10s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .error { animation: error 10s ease-in-out infinite; }
+    @keyframes activo { 0%, 17% { stroke-opacity: 1; fill-opacity: 0.2; } 22%, 100% { stroke-opacity: 0.35; fill-opacity: 0.05; } }
+    @keyframes nu { 0%, 17% { transform: scale(1.18); } 22%, 100% { transform: scale(1); } }
+    @keyframes error { 0%, 56% { opacity: 0.45; } 62%, 78% { opacity: 1; } 84%, 100% { opacity: 0.45; } }
+    .p0 { animation-delay: 0s; }
+    .p1 { animation-delay: 2s; }
+    .p2 { animation-delay: 4s; }
+    .p3 { animation-delay: 6s; }
+    .p4 { animation-delay: 8s; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
+  </defs>
+  <rect width="1280" height="400" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#gV)"/>
+  <rect width="1280" height="400" rx="28" fill="url(#gC)"/>
+  <rect x="1" y="1" width="1278" height="398" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <text x="40" y="56" font-size="13" font-weight="700" letter-spacing="2" fill="#6e7681">CADA VEZ QUE UNA APP GUARDA DATOS</text>
+    <g filter="url(#sh)"><rect class="caja p0" x="40" y="90" width="216" height="168" rx="20" fill="#22d3ee" fill-opacity="0.05" stroke="#22d3ee" stroke-opacity="0.35" stroke-width="1.5"/></g>
+    <circle class="nu p0" cx="76" cy="128" r="16" fill="#22d3ee" fill-opacity="0.25" stroke="#22d3ee"/><text x="76" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#22d3ee">1</text>
+    <text x="60" y="180" font-size="17" font-weight="700" fill="#f0f6fc">Guardas datos</text>
+    <text x="60" y="204" font-size="12.5" fill="#9aa4b2">en la app: Planner,</text><text x="60" y="222" font-size="12.5" fill="#9aa4b2">MRP o Scraper</text>
+    <path d="M256 174 H 288" fill="none" stroke="#9aa4b2" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <g filter="url(#sh)"><rect class="caja p1" x="288" y="90" width="216" height="168" rx="20" fill="#fbbf24" fill-opacity="0.05" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="1.5"/></g>
+    <circle class="nu p1" cx="324" cy="128" r="16" fill="#fbbf24" fill-opacity="0.25" stroke="#fbbf24"/><text x="324" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#fbbf24">2</text>
+    <text x="308" y="180" font-size="17" font-weight="700" fill="#f0f6fc">Espera un instante</text>
+    <text x="308" y="204" font-size="12.5" fill="#9aa4b2">junta varios cambios</text><text x="308" y="222" font-size="12.5" fill="#9aa4b2">seguidos (debounce)</text>
+    <path d="M504 174 H 536" fill="none" stroke="#9aa4b2" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <g filter="url(#sh)"><rect class="caja p2" x="536" y="90" width="216" height="168" rx="20" fill="#a78bfa" fill-opacity="0.05" stroke="#a78bfa" stroke-opacity="0.35" stroke-width="1.5"/></g>
+    <circle class="nu p2" cx="572" cy="128" r="16" fill="#a78bfa" fill-opacity="0.25" stroke="#a78bfa"/><text x="572" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#a78bfa">3</text>
+    <text x="556" y="180" font-size="17" font-weight="700" fill="#f0f6fc">En segundo plano</text>
+    <text x="556" y="204" font-size="12.5" fill="#9aa4b2">lee los datos de su</text><text x="556" y="222" font-size="12.5" fill="#9aa4b2">propio origen</text>
+    <path d="M752 174 H 784" fill="none" stroke="#9aa4b2" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <g filter="url(#sh)"><rect class="caja p3" x="784" y="90" width="216" height="168" rx="20" fill="#4ade80" fill-opacity="0.05" stroke="#4ade80" stroke-opacity="0.35" stroke-width="1.5"/></g>
+    <circle class="nu p3" cx="820" cy="128" r="16" fill="#4ade80" fill-opacity="0.25" stroke="#4ade80"/><text x="820" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#4ade80">4</text>
+    <text x="804" y="180" font-size="17" font-weight="700" fill="#f0f6fc">Una transacción</text>
+    <text x="804" y="204" font-size="12.5" fill="#9aa4b2">UPSERT de lo nuevo y</text><text x="804" y="222" font-size="12.5" fill="#9aa4b2">DELETE de lo que ya no está</text>
+    <path d="M1000 174 H 1032" fill="none" stroke="#9aa4b2" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <g filter="url(#sh)"><rect class="caja p4" x="1032" y="90" width="216" height="168" rx="20" fill="#60a5fa" fill-opacity="0.05" stroke="#60a5fa" stroke-opacity="0.35" stroke-width="1.5"/></g>
+    <circle class="nu p4" cx="1068" cy="128" r="16" fill="#60a5fa" fill-opacity="0.25" stroke="#60a5fa"/><text x="1068" y="134" text-anchor="middle" font-size="16" font-weight="800" fill="#60a5fa">5</text>
+    <text x="1052" y="180" font-size="17" font-weight="700" fill="#f0f6fc">Marca la hora</text>
+    <text x="1052" y="204" font-size="12.5" fill="#9aa4b2">sync_estado guarda cuándo:</text><text x="1052" y="222" font-size="12.5" fill="#9aa4b2">así se mide la frescura</text>
+    <g class="anim"><circle r="5" fill="#22d3ee" filter="url(#dot)" opacity="0"><animateMotion dur="10s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.15;0.23;1" path="M256 174 H 288"/><animate attributeName="opacity" dur="10s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.15;0.17;0.21;0.23;1"/></circle><circle r="5" fill="#fbbf24" filter="url(#dot)" opacity="0"><animateMotion dur="10s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.35;0.43;1" path="M504 174 H 536"/><animate attributeName="opacity" dur="10s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.35;0.37;0.41;0.43;1"/></circle><circle r="5" fill="#a78bfa" filter="url(#dot)" opacity="0"><animateMotion dur="10s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.55;0.63;1" path="M752 174 H 784"/><animate attributeName="opacity" dur="10s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.55;0.57;0.61;0.63;1"/></circle><circle r="5" fill="#4ade80" filter="url(#dot)" opacity="0"><animateMotion dur="10s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.75;0.83;1" path="M1000 174 H 1032"/><animate attributeName="opacity" dur="10s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.75;0.77;0.81;0.83;1"/></circle></g>
+    <!-- si algo falla -->
+    <g class="error"><rect x="40" y="296" width="600" height="68" rx="16" fill="#f2706b" fill-opacity="0.07" stroke="#f2706b" stroke-opacity="0.5" stroke-dasharray="5 5"/>
+    <circle cx="74" cy="330" r="14" fill="#f2706b" fill-opacity="0.2" stroke="#f2706b"/><path d="M68 324 L80 336 M80 324 L68 336" stroke="#f2706b" stroke-width="2.4" stroke-linecap="round"/>
+    <text x="100" y="323" font-size="15" font-weight="700" fill="#fca5a5">Si algo falla, la app sigue como siempre</text>
+    <text x="100" y="344" font-size="12.5" fill="#9aa4b2">solo se registra el error, sin credenciales, y se reintenta en el siguiente guardado</text></g>
+    <rect x="672" y="296" width="568" height="68" rx="16" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="696" y="323" font-size="14" font-weight="700" fill="#e6edf3">Detalles que conviene recordar</text>
+    <text x="696" y="344" font-size="12.5" fill="#9aa4b2">Planner y MRP también sincronizan al arrancar · El Scraper, como máximo una vez por minuto</text>
+  </g>
+</svg>

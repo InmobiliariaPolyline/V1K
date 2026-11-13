@@ -23,9 +23,13 @@ y que responde con un resumen de **tres sistemas a la vez**: el *Project Planner
 
 > *«¿Qué proyectos van atrasados?» · «¿Qué materiales tienen mayor faltante?» · «¿Qué propiedades nuevas hay en venta?»*
 
+<img src="docs/assets/chat-agente.svg" alt="Conversación de ejemplo: el agente llama a resumen_general y responde con proyectos atrasados, materiales bajo su mínimo y pedidos abiertos" width="100%" />
+
 Las apps viven en servicios gratuitos que se **duermen de 20 a 90 segundos**. En vez de que Coze las llame una por una
 y espere, cada app guarda un **resumen** en una base central (Neon) que nunca duerme, y Coze solo **lee** de ella a
 través de una API pequeña y de solo lectura.
+
+<img src="docs/assets/antes-ahora.svg" alt="Antes: cada pregunta esperaba de 20 a 90 segundos a que despertaran las apps. Ahora: una base central que nunca duerme responde en unos 150 ms" width="100%" />
 
 ## Cómo funciona
 
@@ -37,6 +41,10 @@ través de una API pequeña y de solo lectura.
 3. **`coze-api`** (Vercel) expone 8 consultas fijas de solo lectura, con filtros y protegidas con un token, y lee con el rol
    `coze_reader`. Una de ellas, `resumen_general`, devuelve todo el panorama en **una sola llamada**.
 4. **El plugin de Coze** llama a esa API y el **agente** redacta la respuesta. Nunca escribe nada.
+
+### Qué pasa cuando una app guarda datos
+
+<img src="docs/assets/sincronizacion.svg" alt="Cinco pasos: la app guarda datos, espera un instante, sincroniza en segundo plano, escribe en una sola transacción y marca la hora en sync_estado" width="100%" />
 
 ## Panel web
 
@@ -54,6 +62,8 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
 | **Explorador de API** | Formulario generado desde el contrato de cada vista; muestra JSON, tabla, `curl` y contrato |
 | **Agente de Coze** | Preguntas sugeridas con botón de copiar y las herramientas que tiene el agente |
 | **Sistema** | Latencia, frescura, preferencias, atajos de teclado y el diagrama de la arquitectura |
+
+<img src="docs/assets/panel-secciones.svg" alt="Las nueve secciones del panel, resaltadas una a una" width="100%" />
 
 <img src="docs/assets/panel.svg" alt="Inicio del Panel V1K con datos de ejemplo" width="100%" />
 
@@ -103,7 +113,7 @@ V1K/
 │   ├── INSTRUCCIONES_AGENTE.md    prompt del agente de Coze y preguntas de ejemplo
 │   ├── coze/                      GUIA_SKILLS.md (qué configurar en Coze) y glosario.md (conocimiento)
 │   ├── PRUEBAS_REALIZADAS.md      resultados, fallos encontrados y prueba de producción
-│   └── assets/                    ilustraciones de este README (SVG)
+│   └── assets/                    ilustraciones de este README (SVG animados)
 └── apps/                          NO versionado: copias de trabajo de los repos de las apps
 ```
 
@@ -146,18 +156,22 @@ Los pasos completos, con las variables de cada servicio, están en
 
 ## Pruebas
 
+<img src="docs/assets/pruebas-baterias.svg" alt="1162 comprobaciones en cuatro baterías: A 557, B 397, C 155 y D 53, todas correctas" width="100%" />
+
 Seis baterías, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
 que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) y en
 [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md).
 
 | Batería | Qué comprueba | Resultado |
 |---|---|---|
-| **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones | 551 / 551 |
+| **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones | 557 / 557 |
 | **B · Permisos** | Los 4 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 397 / 397 |
 | **C · Sincronización** | El código real del MRP, el Planner y el Scraper con datos extremos | 60 · 46 · 49 |
 | **D · Datos reales** | Integridad de lo que hay en la base y que la API devuelva lo mismo, fila por fila | 53 / 53 |
 
 ## Seguridad
+
+<img src="docs/assets/capas-seguridad.svg" alt="Cuatro capas: token, lista cerrada de consultas, rol de solo lectura y una base con solo resúmenes. Una petición legítima pasa; una con SQL malicioso se detiene" width="100%" />
 
 - **Coze nunca escribe** y nunca ve credenciales de las apps: solo llama a la API con un token.
 - **Mínimo privilegio:** `coze_reader` solo tiene `SELECT`; cada `writer_*` solo toca sus tablas y su fila de `sync_estado`.

@@ -8,7 +8,7 @@ de cada app. Sirven para comprobar, sin leer los registros de Render ni de Netli
 
 | Archivo | Qué prueba | Resultado (13/11/2026) |
 |---|---|---|
-| `a-api-en-vivo.mjs` | **API en vivo**: autenticación (13 variantes × 8 rutas), métodos HTTP, rutas hostiles, parámetro `q`, filtros válidos y no válidos (400), `resumen_general`, panel web y cabeceras de seguridad, forma de cada respuesta contra el OpenAPI, ráfaga de 60 peticiones. Solo lectura | 551 / 551 |
+| `a-api-en-vivo.mjs` | **API en vivo**: autenticación (13 variantes × 8 rutas), métodos HTTP, rutas hostiles, parámetro `q`, filtros válidos y no válidos (400), `resumen_general`, panel web y cabeceras de seguridad, forma de cada respuesta contra el OpenAPI, ráfaga de 60 peticiones. Solo lectura | 557 / 557 |
 | `b-permisos-roles.py` | **Permisos de los 4 roles** en Neon: cada rol × tabla × operación, DDL y escapes (`SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, contraseñas falsas, sin SSL | 397 / 397 |
 | `c-sync-mrp.py` | **Sincronización del MRP** (`utils/vista_central.py`) con datos extremos, como `writer_mrp` | 60 / 60 |
 | `c-sync-planner.mts` | **Sincronización del Planner** (`src/lib/vistaCentral.ts`), como `writer_planner` | 46 / 46 |

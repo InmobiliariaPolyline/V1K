@@ -9,6 +9,17 @@
     <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
     <linearGradient id="hola" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c2230"/><stop offset="1" stop-color="#171c27"/></linearGradient>
     <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/></filter>
+      <style>
+    .a { animation: entra 9s ease-out infinite both; animation-delay: var(--d, 0s); }
+    .arco { stroke-dasharray: 0 100; animation: arco 9s ease-out infinite both; animation-delay: var(--d, 0s); }
+    .anillo { stroke-dasharray: 0 100; animation: anillo 9s ease-out infinite both; animation-delay: var(--d, 0s); }
+    .latido { animation: latido 2.4s ease-in-out infinite; }
+    @keyframes entra { 0% { opacity: 0; transform: translateY(14px); } 7%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: none; } }
+    @keyframes arco { 0%, 4% { stroke-dasharray: 0 100; } 22%, 88% { stroke-dasharray: var(--l) 100; } 96%, 100% { stroke-dasharray: 0 100; } }
+    @keyframes anillo { 0%, 4% { stroke-dasharray: 0 100; } 24%, 88% { stroke-dasharray: var(--l) 100; } 96%, 100% { stroke-dasharray: 0 100; } }
+    @keyframes latido { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }
+    </style>
   </defs>
 
   <rect width="1280" height="780" rx="26" fill="url(#bg)"/>
@@ -53,17 +64,20 @@
     <rect x="950" y="26" width="58" height="22" rx="6" fill="#ffffff" fill-opacity="0.07"/><text x="979" y="42" text-anchor="middle" font-size="11" font-weight="700" fill="#a5afbc">Ctrl K</text>
     <circle cx="784" cy="37" r="5.5" fill="none" stroke="#8b949e" stroke-width="1.6"/>
     <rect x="1040" y="22" width="132" height="30" rx="15" fill="#4ade80" fill-opacity="0.14"/>
-    <circle cx="1060" cy="37" r="3.5" fill="#4ade80"/><text x="1112" y="42" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="0.6" fill="#4ade80">CONECTADO</text>
+    <circle class="latido" cx="1060" cy="37" r="3.5" fill="#4ade80"/><text x="1112" y="42" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="0.6" fill="#4ade80">CONECTADO</text>
 
     <!-- saludo -->
+    <g class="a" style="--d:0s">
     <g filter="url(#sh)"><rect x="264" y="96" width="984" height="104" rx="18" fill="url(#hola)" stroke="#ffffff" stroke-opacity="0.09"/></g>
     <text x="292" y="136" font-size="26" font-weight="800" fill="#f0f6fc">Buenas tardes, equipo V1K</text>
     <text x="292" y="160" font-size="14" fill="#a5afbc">Este es el estado de Planner, MRP y Scraper según la última sincronización.</text>
-    <rect x="292" y="168" width="168" height="26" rx="13" fill="#f2706b" fill-opacity="0.16"/>
+    <rect class="latido" x="292" y="168" width="168" height="26" rx="13" fill="#f2706b" fill-opacity="0.16"/>
     <text x="376" y="186" text-anchor="middle" font-size="13" font-weight="700" fill="#f2706b">▲ Requiere atención</text>
     <text x="474" y="186" font-size="13" fill="#8b949e">3 puntos por revisar</text>
 
+    </g>
     <!-- indicadores -->
+    <g class="a" style="--d:0.35s">
     <g filter="url(#sh)">
       <rect x="264" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
       <rect x="460" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
@@ -75,7 +89,9 @@
     <g font-size="34" font-weight="800"><text x="282" y="286" fill="#e6edf3">10</text><text x="478" y="286" fill="#f2706b">3</text><text x="674" y="286" fill="#fbbf24">31</text><text x="870" y="286" fill="#e6edf3">9</text><text x="1066" y="286" fill="#e6edf3">3.3 K</text></g>
     <g font-size="11.5" fill="#7a8696"><text x="282" y="304">4 en curso · 2 terminados</text><text x="478" y="304">18 tareas atrasadas</text><text x="674" y="304">de 46 materiales</text><text x="870" y="304">Próximo: hace 4 días</text><text x="1066" y="304">96 copiadas al panel</text></g>
 
+    </g>
     <!-- alertas -->
+    <g class="a" style="--d:0.8s">
     <g filter="url(#sh)"><rect x="264" y="332" width="604" height="214" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
     <text x="288" y="364" font-size="16" font-weight="700" fill="#e6edf3">Qué mirar primero</text>
     <g>
@@ -87,14 +103,16 @@
       <text x="336" y="512" font-size="14" font-weight="700" fill="#e6edf3">31 de 46 materiales bajo su mínimo</text><text x="336" y="528" font-size="12" fill="#8b949e">Mayor faltante: Ladrillo King Kong 18 huecos.</text>
     </g>
 
+    </g>
     <!-- dona de proyectos -->
+    <g class="a" style="--d:1.2s">
     <g filter="url(#sh)"><rect x="888" y="332" width="360" height="214" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
     <text x="910" y="364" font-size="16" font-weight="700" fill="#e6edf3">Proyectos por estado</text>
     <g transform="translate(990 454) rotate(-90)" fill="none" stroke-width="22">
-      <circle r="52" stroke="#f2706b" stroke-dasharray="97 230" stroke-dashoffset="0"/>
-      <circle r="52" stroke="#22d3ee" stroke-dasharray="129 198" stroke-dashoffset="-98"/>
-      <circle r="52" stroke="#7a8696" stroke-dasharray="31 296" stroke-dashoffset="-229"/>
-      <circle r="52" stroke="#4ade80" stroke-dasharray="64 263" stroke-dashoffset="-262"/>
+      <circle class="arco" r="52" stroke="#f2706b" pathLength="100" style="--l:29" stroke-dashoffset="0"/>
+      <circle class="arco" r="52" stroke="#22d3ee" pathLength="100" style="--l:39" stroke-dashoffset="-30"/>
+      <circle class="arco" r="52" stroke="#7a8696" pathLength="100" style="--l:9" stroke-dashoffset="-70"/>
+      <circle class="arco" r="52" stroke="#4ade80" pathLength="100" style="--l:19" stroke-dashoffset="-80"/>
     </g>
     <text x="990" y="458" text-anchor="middle" font-size="26" font-weight="800" fill="#e6edf3">10</text><text x="990" y="474" text-anchor="middle" font-size="11" fill="#7a8696">proyectos</text>
     <g font-size="12.5" fill="#c9d1d9">
@@ -104,7 +122,9 @@
       <circle cx="1090" cy="494" r="5" fill="#4ade80"/><text x="1104" y="498">Terminado</text><text x="1228" y="498" text-anchor="end" fill="#8b949e">2 · 20 %</text>
     </g>
 
+    </g>
     <!-- frescura -->
+    <g class="a" style="--d:1.6s">
     <g filter="url(#sh)"><rect x="264" y="564" width="984" height="188" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
     <text x="288" y="596" font-size="16" font-weight="700" fill="#e6edf3">Frescura de los datos</text>
     <g font-size="12">
@@ -113,12 +133,13 @@
       <rect x="916" y="612" width="312" height="120" rx="14" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08"/>
     </g>
     <g fill="none" stroke-width="9" stroke-linecap="round">
-      <circle cx="348" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="348" cy="672" r="31" stroke="#4ade80" stroke-dasharray="190 195" transform="rotate(-90 348 672)"/>
-      <circle cx="664" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="664" cy="672" r="31" stroke="#4ade80" stroke-dasharray="191 195" transform="rotate(-90 664 672)"/>
-      <circle cx="980" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="980" cy="672" r="31" stroke="#4ade80" stroke-dasharray="193 195" transform="rotate(-90 980 672)"/>
+      <circle cx="348" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle class="anillo" cx="348" cy="672" r="31" stroke="#4ade80" pathLength="100" style="--l:97" transform="rotate(-90 348 672)"/>
+      <circle cx="664" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle class="anillo" cx="664" cy="672" r="31" stroke="#4ade80" pathLength="100" style="--l:98" transform="rotate(-90 664 672)"/>
+      <circle cx="980" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle class="anillo" cx="980" cy="672" r="31" stroke="#4ade80" pathLength="100" style="--l:99" transform="rotate(-90 980 672)"/>
     </g>
     <g text-anchor="middle" font-size="13" font-weight="800" fill="#e6edf3"><text x="348" y="677">1.6 h</text><text x="664" y="677">1.3 h</text><text x="980" y="677">30 min</text></g>
     <g font-size="15" font-weight="700"><text x="400" y="666" fill="#22d3ee">Planner</text><text x="716" y="666" fill="#fbbf24">MRP</text><text x="1032" y="666" fill="#a78bfa">Scraper</text></g>
     <g font-size="12.5" fill="#8b949e"><text x="400" y="686">hace 1.6 h</text><text x="716" y="686">hace 1.3 h</text><text x="1032" y="686">hace 30 min</text></g>
   </g>
+    </g>
 </svg>
