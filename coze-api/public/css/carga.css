@@ -1,0 +1,68 @@
+/* Pantalla de carga. Es AUTÓNOMA a propósito: se pinta antes de que lleguen base.css, componentes.css y vistas.css
+   (esos se activan después, desde js/carga.js), así que no puede depender de sus variables. */
+
+#carga {
+  --c-fondo: #0a0d12; --c-txt: #e8edf3; --c-suave: #7a8696; --c-pista: rgba(255, 255, 255, 0.1);
+  --c-a: #86efac; --c-b: #22d3ee; --c-brillo: rgba(255, 255, 255, 0.55);
+  position: fixed; inset: 0; z-index: 1000;
+  display: grid; place-items: center; padding: 24px;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(139, 92, 246, 0.2), transparent 60%),
+    radial-gradient(800px 500px at 10% 110%, rgba(34, 211, 238, 0.16), transparent 60%),
+    var(--c-fondo);
+  color: var(--c-txt);
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, system-ui, sans-serif;
+  opacity: 1; visibility: visible;
+  transition: opacity 0.45s ease, visibility 0s linear 0s;
+}
+html[data-tema="claro"] #carga { --c-fondo: #f3f5f9; --c-txt: #0f172a; --c-suave: #64748b; --c-pista: rgba(15, 23, 42, 0.1); --c-a: #16a34a; --c-b: #0891b2; --c-brillo: rgba(255, 255, 255, 0.7); }
+@media (prefers-color-scheme: light) {
+  html[data-tema="auto"] #carga { --c-fondo: #f3f5f9; --c-txt: #0f172a; --c-suave: #64748b; --c-pista: rgba(15, 23, 42, 0.1); --c-a: #16a34a; --c-b: #0891b2; --c-brillo: rgba(255, 255, 255, 0.7); }
+}
+#carga.carga--fuera { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.45s ease, visibility 0s linear 0.45s; }
+
+.carga__caja { width: min(320px, 100%); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.1rem; }
+
+.carga__logo { position: relative; width: 92px; height: 92px; display: grid; place-items: center; }
+.carga__logo::before, .carga__logo::after {
+  content: ""; position: absolute; inset: 0; border-radius: 28px;
+  background: linear-gradient(135deg, var(--c-a), var(--c-b)); opacity: 0.35;
+  animation: carga-onda 2.4s ease-out infinite;
+}
+.carga__logo::after { animation-delay: 1.2s; }
+.carga__logo svg { position: relative; width: 92px; height: 92px; filter: drop-shadow(0 10px 24px rgba(34, 211, 238, 0.35)); animation: carga-flota 3s ease-in-out infinite; }
+.carga__fondo-logo { fill: url(#carga-grad); }
+.carga__marca { fill: none; stroke: #052e16; stroke-width: 2.1; stroke-linecap: round; }
+
+.carga__nombre { margin: 0; font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; background: linear-gradient(135deg, var(--c-a), var(--c-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.carga__sub { margin: -0.5rem 0 0; font-size: 0.86rem; color: var(--c-suave); }
+
+.carga__barra { width: 100%; height: 12px; border-radius: 999px; background: var(--c-pista); overflow: hidden; position: relative; }
+.carga__relleno {
+  display: block; height: 100%; width: 3%; min-width: 12px; border-radius: 999px; position: relative; overflow: hidden;
+  background: linear-gradient(90deg, var(--c-a), var(--c-b));
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.45);
+  transition: width 0.18s linear;
+}
+.carga__relleno::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, var(--c-brillo) 50%, transparent 80%); transform: translateX(-100%); animation: carga-brillo 1.4s ease-in-out infinite; }
+
+.carga__estado { width: 100%; display: flex; justify-content: space-between; gap: 1rem; font-size: 0.84rem; color: var(--c-suave); font-variant-numeric: tabular-nums; }
+.carga__pct { font-weight: 700; color: var(--c-txt); min-width: 3ch; text-align: right; }
+
+.carga__aviso { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; font-size: 0.86rem; color: var(--c-suave); }
+.carga__aviso[hidden] { display: none; }
+.carga__boton { font: inherit; font-weight: 600; padding: 0.5rem 1.1rem; border-radius: 10px; border: 1px solid var(--c-pista); background: transparent; color: var(--c-txt); cursor: pointer; }
+.carga__boton:hover { border-color: var(--c-b); }
+.carga__boton:focus-visible { outline: 2px solid var(--c-b); outline-offset: 2px; }
+.carga__sin-js { margin: 0; color: var(--c-suave); font-size: 0.9rem; }
+
+@keyframes carga-onda { 0% { transform: scale(1); opacity: 0.35; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes carga-flota { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes carga-brillo { to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .carga__logo::before, .carga__logo::after, .carga__logo svg, .carga__relleno::after { animation: none; }
+  .carga__logo::before, .carga__logo::after { display: none; }
+  .carga__relleno { transition: none; }
+  #carga, #carga.carga--fuera { transition: none; }
+}

@@ -180,6 +180,7 @@ async function montar(ruta, params) {
   const miActual = actual;
   try {
     const modulo = await seccion.cargar();
+    globalThis.v1kCarga?.etapa('datos');   // el módulo de la sección ya llegó: falta que lleguen sus datos
     if (actual !== miActual) return;
     const ctx = {
       contenedor, params, seccion, hoy: hoyIso(), demo: esDemo(),
@@ -201,6 +202,7 @@ async function montar(ruta, params) {
     if (actual === miActual) errorEnVista(e, contenedor);
   } finally {
     contenedor.removeAttribute('aria-busy');
+    cerrarCarga();
   }
   // El foco pasa al contenido sin desplazar la pantalla: lectores de pantalla anuncian el cambio de sección.
   contenedor.focus({ preventScroll: true });
@@ -315,7 +317,19 @@ function entrarAlPanel() {
   cargarInsignias();
 }
 
+/** Cierra la pantalla de carga (una sola vez): al mostrarse la primera sección o el formulario de entrada. */
+let cargaCerrada = false;
+function cerrarCarga() {
+  if (cargaCerrada) return;
+  cargaCerrada = true;
+  const c = globalThis.v1kCarga;
+  if (c) c.terminar(); else document.getElementById('carga')?.remove();
+}
+
 function iniciar() {
+  // Los estilos llegan con media="print" para no bloquear la pantalla de carga; js/carga.js los activa y esto es el respaldo.
+  document.querySelectorAll('link[rel="stylesheet"][media="print"]').forEach((l) => { l.media = 'all'; });
+  globalThis.v1kCarga?.etapa('arranque');
   leerPrefs();
   aplicarAspecto();
   configurarEntrada();
@@ -325,7 +339,7 @@ function iniciar() {
   globalThis.matchMedia?.('(prefers-color-scheme: light)').addEventListener?.('change', () => aplicarAspecto());
   window.addEventListener('offline', () => estadoConexion('error', 'Sin red'));
   window.addEventListener('online', () => { estadoConexion('cargando'); refrescar(true); });
-  if (haySesion()) entrarAlPanel(); else mostrarEntrada();
+  if (haySesion()) entrarAlPanel(); else { mostrarEntrada(); cerrarCarga(); }
 }
 
 iniciar();

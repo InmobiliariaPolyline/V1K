@@ -57,6 +57,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
 
 <img src="docs/assets/panel.svg" alt="Inicio del Panel V1K con datos de ejemplo" width="100%" />
 
+- **Pantalla de carga** con el logo de V1K y una barra de progreso real: avanza con los archivos que el navegador va descargando (estilos y módulos), luego con el arranque del panel y la llegada de los datos de la primera sección. Si tarda más de 12 segundos o falla, ofrece recargar.
 - **Modo demostración:** el botón «Explorar con datos de ejemplo» abre todo el panel con datos ficticios, sin token y sin llamar a la API.
 - Tema claro, oscuro o automático; densidad cómoda o compacta; paleta de comandos (`Ctrl`/`⌘` + `K`) y atajos (`G` + letra, `R`, `T`, `?`).
 - Los filtros quedan en el enlace (`#/propiedades?operacion=VENTA&distrito=Miraflores`) y se pueden compartir; exporta a CSV o JSON.

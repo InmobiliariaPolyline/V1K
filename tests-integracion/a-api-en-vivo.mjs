@@ -302,7 +302,7 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   const PUB = path.join(RAIZ, 'coze-api', 'public');
   const TIPOS = { '.js': /javascript/, '.css': /text\/css/, '.svg': /image\/svg\+xml/, '.json': /application\/json/ };
   const archivos = fs.readdirSync(PUB, { recursive: true }).map((f) => f.replaceAll('\\', '/')).filter((f) => TIPOS[path.extname(f)]);
-  chequea('[panel] public/ tiene módulos, estilos e imágenes', archivos.filter((f) => f.endsWith('.js')).length >= 18 && archivos.filter((f) => f.endsWith('.css')).length === 3, `${archivos.length} archivos`);
+  chequea('[panel] public/ tiene módulos, estilos e imágenes', archivos.filter((f) => f.endsWith('.js')).length >= 18 && archivos.filter((f) => f.endsWith('.css')).length === 4, `${archivos.length} archivos`);
   const cuerpos = [];
   for (const f of archivos) {
     const a = await llama(`/${f}`, { raw: true });

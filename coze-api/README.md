@@ -44,7 +44,8 @@ No usa librerías ni recursos externos, y el token se queda en el navegador (`se
 ```
 public/
 ├── index.html            cascarón: menú, barra, sprite de iconos y formulario de entrada
-├── css/                  base.css (tokens y estructura), componentes.css, vistas.css
+├── css/                  carga.css (pantalla de carga, autónoma), base.css (tokens y estructura), componentes.css, vistas.css
+├── js/carga.js           pantalla de carga: barra de progreso real (archivos descargados + etapas del panel)
 ├── js/app.js             enrutador por hash, menú, paleta de comandos y atajos
 ├── js/nucleo/            dom, formato, rutas, estado, api, demo, gráficos, componentes e insights (alertas)
 ├── js/vistas/            un módulo por sección: export default { montar(ctx) }
@@ -55,7 +56,7 @@ public/
   en `lib/vistas.js`, no entran en `openapi.yaml` y el agente de Coze no las ve (así sigue con 8 herramientas).
 - El Explorador de API y el modo demostración leen `vistas.json`, así que un filtro nuevo en `lib/vistas.js` aparece solo.
 - Para verlo en local con las mismas cabeceras de seguridad que Vercel: `npm run panel` y abre http://localhost:4173
-  (en local no hay `/api`: usa el modo demostración).
+  (en local no hay `/api`: usa el modo demostración). Con `RETARDO=450 npm run panel` cada archivo tarda 450 ms más y se ve la pantalla de carga como con una conexión lenta.
 
 `vercel.json` sirve `public/` y añade las cabeceras de seguridad (CSP estricta, `X-Frame-Options`, `nosniff`,
 `Referrer-Policy`, `Permissions-Policy`).

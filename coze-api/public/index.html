@@ -11,11 +11,39 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <!-- Aplica el tema guardado ANTES de pintar (evita el parpadeo). Es un archivo propio porque la CSP no permite scripts en línea. -->
   <script src="js/tema.js"></script>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/componentes.css">
-  <link rel="stylesheet" href="css/vistas.css">
+  <!-- La pantalla de carga (autónoma) se pinta primero; el resto de estilos llegan sin bloquear (media="print") y js/carga.js
+       (o, si faltara, js/app.js) los activa. Así la barra de progreso se ve mientras se descargan de verdad. -->
+  <link rel="stylesheet" href="css/carga.css">
+  <link rel="stylesheet" href="css/base.css" media="print">
+  <link rel="stylesheet" href="css/componentes.css" media="print">
+  <link rel="stylesheet" href="css/vistas.css" media="print">
 </head>
 <body>
+  <!-- ───────────── Pantalla de carga ───────────── -->
+  <div id="carga" role="status" aria-live="polite" aria-label="Cargando el panel V1K">
+    <div class="carga__caja">
+      <div class="carga__logo">
+        <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <defs><linearGradient id="carga-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+          <rect class="carga__fondo-logo" width="32" height="32" rx="9"/>
+          <ellipse class="carga__marca" cx="16" cy="10.5" rx="7" ry="3"/>
+          <path class="carga__marca" d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/>
+          <path class="carga__marca" d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/>
+        </svg>
+      </div>
+      <h1 class="carga__nombre">V1K</h1>
+      <p class="carga__sub">Vista central · solo lectura</p>
+      <div class="carga__barra" id="carga-barra" role="progressbar" aria-label="Progreso de la carga" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span class="carga__relleno" id="carga-relleno"></span>
+      </div>
+      <div class="carga__estado"><span id="carga-texto">Descargando módulos…</span><span class="carga__pct" id="carga-pct">0 %</span></div>
+      <div class="carga__aviso" id="carga-aviso" hidden>
+        <span id="carga-aviso-texto">Está tardando más de lo normal…</span>
+        <button type="button" class="carga__boton" id="carga-recargar">Recargar</button>
+      </div>
+      <noscript><p class="carga__sin-js">Este panel necesita JavaScript para funcionar.</p></noscript>
+    </div>
+  </div>
   <!-- ───────────── Iconos (sprite) ───────────── -->
   <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="sprite">
     <defs>
@@ -109,6 +137,7 @@
   </div>
 
   <div id="toasts" class="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+  <script type="module" src="js/carga.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

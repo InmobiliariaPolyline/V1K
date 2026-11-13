@@ -257,7 +257,7 @@ await assert.rejects(() => demo('no-existe'), (e) => e instanceof ErrorApi && e.
 // ══════════════ Comprobaciones estáticas de la página ══════════════
 const leer = (...p) => fs.readFileSync(path.join(pub, ...p), 'utf8');
 const listar = (dir, ext) => fs.readdirSync(path.join(pub, dir), { recursive: true }).filter((f) => f.endsWith(ext)).map((f) => path.join(dir, f).replaceAll('\\', '/'));
-const archivosJs = ['js/app.js', 'js/tema.js', ...listar('js/nucleo', '.js'), ...listar('js/vistas', '.js')];
+const archivosJs = ['js/app.js', 'js/tema.js', 'js/carga.js', ...listar('js/nucleo', '.js'), ...listar('js/vistas', '.js')];
 const archivosCss = listar('css', '.css');
 const html = leer('index.html');
 const sinComentarios = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
@@ -338,5 +338,61 @@ for (const f of ['favicon.svg', 'hero.svg', 'arquitectura.svg', 'vistas.json']) 
 // Accesibilidad básica de la página de entrada
 ok(/class="saltar"/.test(html) && /id="entrada"/.test(html) && /<label[^>]*for="token"/.test(html), 'enlace «saltar», entrada y etiqueta del campo del token');
 ok(/<input[^>]*id="token"[^>]*type="password"|<input[^>]*type="password"[^>]*id="token"/.test(html) && /autocomplete="off"/.test(html), 'el token se escribe como contraseña y sin autocompletar');
+
+// ══════════════ Pantalla de carga (js/carga.js, css/carga.css) ══════════════
+{
+  const C = await import('../public/js/carga.js');
+  // La lista de archivos esperados es exactamente lo que descarga el arranque: hojas de estilo + módulos que app.js importa de forma estática
+  const grafo = new Set(['js/app.js']);
+  const pendientes = ['js/app.js'];
+  while (pendientes.length) {
+    const f = pendientes.pop();
+    for (const m of sinComentarios(leer(f)).matchAll(/^\s*import\s[^;]*?from\s*'(\.[^']+)'|^\s*import\s*'(\.[^']+)'/gm)) {
+      const destino = path.posix.normalize(path.posix.join(path.posix.dirname(f), m[1] ?? m[2]));
+      if (!grafo.has(destino)) { grafo.add(destino); pendientes.push(destino); }
+    }
+  }
+  const estilos = [...html.matchAll(/<link rel="stylesheet" href="(css\/[\w-]+\.css)"/g)].map((m) => m[1]).filter((c) => c !== 'css/carga.css');
+  igual([...C.ESPERADOS].sort(), [...grafo, ...estilos].sort(), 'ESPERADOS = estilos diferidos + módulos estáticos del arranque (actualiza js/carga.js si cambian)');
+  for (const e of C.ESPERADOS) ok(fs.existsSync(path.join(pub, e)), `ESPERADOS: existe ${e}`);
+
+  // Matemática del progreso
+  igual(C.contarCargados([]), 0);
+  igual(C.contarCargados(['https://x.app/css/base.css?v=1', 'https://x.app/css/base.css', 'https://x.app/js/app.js', 'https://x.app/otro.js', 'https://x.app/xjs/app.js.map']), 2, 'cuenta archivos esperados sin repetir ni confundir nombres parecidos');
+  igual(C.contarCargados(C.ESPERADOS.map((e) => `https://x.app/${e}`)), C.ESPERADOS.length);
+  const n = C.ESPERADOS.length;
+  igual(C.objetivo({ cargados: 0, total: n }), 3, 'al empezar ya se ve algo de barra');
+  ok(cerca(C.objetivo({ cargados: n / 2, total: n }), C.PESO_RECURSOS / 2), 'la mitad de los archivos = la mitad del tramo de recursos');
+  ok(cerca(C.objetivo({ cargados: n, total: n }), C.PESO_RECURSOS), 'todos los archivos = 70 %');
+  ok(C.objetivo({ cargados: 999, total: n }) <= C.PESO_RECURSOS && C.objetivo({ cargados: -5, total: n }) >= 3, 'acotado');
+  ok(C.objetivo({ cargados: 1, total: 0 }) <= C.PESO_RECURSOS, 'total cero no divide por cero');
+  ok(cerca(C.objetivo({ etapa: 'arranque', ms: 0 }), 80), 'arranque parte de 80 %');
+  ok(C.objetivo({ etapa: 'arranque', ms: 1500 }) > 80 && C.objetivo({ etapa: 'arranque', ms: 1e9 }) < 90.0001, 'mientras llegan los datos avanza despacio sin pasar de 90 %');
+  igual(C.objetivo({ etapa: 'datos' }), 92); igual(C.objetivo({ etapa: 'fin' }), 100);
+  ok(C.objetivo({ etapa: 'arranque', ms: -50 }) === 80, 'tiempo negativo no retrocede');
+  // La animación nunca retrocede, nunca pasa la meta y termina
+  igual(C.siguiente(50, 40), 50); igual(C.siguiente(99.9, 100), 100); ok(C.siguiente(10, 70) > 10 && C.siguiente(10, 70) <= 70);
+  let v = 0; for (let i = 0; i < 4000 && v < 100; i++) { const w = C.siguiente(v, 100); ok(w >= v, 'monótona'); v = w; } igual(v, 100, 'llega a 100');
+  igual(C.textoEtapa('fin', 100), 'Listo'); igual(C.textoEtapa('fin', 40), 'Terminando…', 'no dice «Listo» hasta que la barra llega al final'); ok(C.textoEtapa('recursos').length > 3 && C.textoEtapa('inventada') === '');
+  // Orden de las etapas
+  igual(C.ETAPAS, ['recursos', 'arranque', 'datos', 'fin']);
+
+  // HTML y CSS de la pantalla
+  const cargaJs = sinComentarios(leer('js/carga.js'));
+  for (const id of new Set([...cargaJs.matchAll(/\$\('([\w-]+)'\)/g)].map((m) => m[1]))) ok(html.includes(`id="${id}"`), `carga.js usa #${id}, que no está en index.html`);
+  ok(/<div id="carga"[^>]*role="status"/.test(html) && /role="progressbar"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"/.test(html), 'barra accesible');
+  ok(html.indexOf('id="carga"') < html.indexOf('id="app"'), 'la pantalla de carga va antes que la app');
+  ok(html.indexOf('href="css/carga.css"') < html.indexOf('href="css/base.css"') && /href="css\/carga\.css">/.test(html), 'carga.css bloquea el pintado (va primero y sin media)');
+  for (const c of ['base', 'componentes', 'vistas']) ok(new RegExp(`href="css/${c}\\.css" media="print"`).test(html), `${c}.css llega sin bloquear y se activa por JS`);
+  ok(html.indexOf('src="js/carga.js"') < html.indexOf('src="js/app.js"'), 'carga.js corre antes que app.js');
+  ok(/media\s*=\s*'all'/.test(cargaJs) && /media\s*=\s*'all'/.test(sinComentarios(leer('js/app.js'))), 'tanto carga.js como app.js activan los estilos');
+  ok(/carga-recargar/.test(cargaJs) && /AVISO_MS/.test(cargaJs), 'hay salida si la carga tarda o falla');
+  const cssCarga = leer('css/carga.css');
+  ok(!/var\(--(?!c-)/.test(cssCarga), 'carga.css es autónoma: solo usa sus propias variables (--c-…)');
+  ok(/prefers-reduced-motion/.test(cssCarga) && /prefers-color-scheme: light/.test(cssCarga) && /data-tema="claro"/.test(cssCarga), 'respeta movimiento reducido y tema claro');
+  for (const clase of new Set([...html.matchAll(/class="(carga[\w-]*)"/g)].map((m) => m[1]))) ok(cssCarga.includes(`.${clase}`), `carga.css define .${clase}`);
+  ok(/\.carga--fuera/.test(cssCarga) && /carga--fuera/.test(cargaJs), 'la pantalla se desvanece al terminar');
+  ok(/cerrarCarga\(\)/.test(sinComentarios(leer('js/app.js'))) && /v1kCarga\?\./.test(sinComentarios(leer('js/app.js'))), 'app.js avisa a la pantalla de carga con ?. (funciona aunque falte carga.js)');
+}
 
 console.log(`OK: panel web — ${comprobaciones} comprobaciones (formato, rutas, gráficos, alertas, demostración, CSP/XSS, importaciones, iconos y CSS)`);
