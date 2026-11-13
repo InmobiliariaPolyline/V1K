@@ -1,0 +1,21 @@
+{
+  "name": "v1k-tests-integracion",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Baterías de pruebas de la vista central contra el sistema real (API, Neon y código de sincronización de las apps)",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "a": "node a-api-en-vivo.mjs",
+    "c:planner": "tsx c-sync-planner.mts",
+    "c:scraper": "tsx c-sync-scraper.mts",
+    "d": "node d-datos-reales.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.10",
+    "@neondatabase/serverless": "1.2.0",
+    "pg": "^8.13.0",
+    "tsx": "^4.20.0",
+    "yaml": "2.8.1"
+  }
+}

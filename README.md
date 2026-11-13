@@ -25,6 +25,7 @@ API pequeña y de solo lectura.
 | [`db/02_roles.sql`](db/02_roles.sql) | Roles de Neon: `coze_reader` (solo lectura) y un `writer_*` por app, cada uno limitado a sus tablas |
 | [`coze-api/`](coze-api) | API de solo lectura para Coze (función serverless de Vercel) con pruebas |
 | [`docs/GUIA_PUESTA_EN_MARCHA.md`](docs/GUIA_PUESTA_EN_MARCHA.md) | Orden de despliegue, variables por app, qué se copia, cómo revertir y limitaciones |
+| [`tests-integracion/`](tests-integracion) | Baterías de pruebas contra el sistema real (API, permisos de los roles, sincronización de cada app, integridad de los datos) |
 | [`patches/`](patches) | Los cambios de sincronización de las 3 apps como parches de Git (ver abajo) |
 | `apps/` | *No está en este repositorio.* Copias de trabajo de los repos de las apps (ver abajo) |
 
