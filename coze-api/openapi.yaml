@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
   title: Vista Central (solo lectura)
-  description: Resúmenes de proyectos, materiales y propiedades. Solo consulta.
-  version: 1.0.0
+  description: Resúmenes de proyectos, materiales, órdenes de compra y propiedades. Solo consulta.
+  version: 1.1.0
 servers:
   - url: https://v1k-coze-api.vercel.app
 paths:
@@ -10,8 +10,34 @@ paths:
     get:
       operationId: proyectos
       summary: Proyectos del Planner con estado, avance, tareas atrasadas y próximo hito (los atrasados primero)
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Solo los proyectos en ese estado
+          schema:
+            type: string
+            enum:
+              - por iniciar
+              - en curso
+              - atrasado
+              - terminado
+        - name: q
+          in: query
+          required: false
+          description: Texto a buscar en el nombre o el responsable
+          schema:
+            type: string
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 200; por defecto 200)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -22,6 +48,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -53,12 +80,43 @@ paths:
                           type: string
                         actualizado_en:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/hitos:
     get:
       operationId: hitos_proyectos
       summary: Próximas fechas clave (hitos) de los proyectos, con el nombre del proyecto
+      parameters:
+        - name: proyecto
+          in: query
+          required: false
+          description: Texto a buscar en el nombre del proyecto
+          schema:
+            type: string
+        - name: desde
+          in: query
+          required: false
+          description: Solo hitos desde esta fecha (AAAA-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          description: Solo hitos hasta esta fecha (AAAA-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 200; por defecto 200)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -69,6 +127,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -82,12 +141,35 @@ paths:
                           type: string
                         proyecto:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/stock-bajo:
     get:
       operationId: stock_bajo
-      summary: Los 25 materiales del MRP con mayor faltante respecto a su stock mínimo (cantidad, mínimo y cuánto falta)
+      summary: Materiales del MRP con stock igual o menor al mínimo, ordenados por cuánto falta (por defecto los 25 con mayor faltante)
+      parameters:
+        - name: categoria
+          in: query
+          required: false
+          description: Texto a buscar en la categoría (por ejemplo «Acero»)
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: false
+          description: Texto a buscar en el nombre del material
+          schema:
+            type: string
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 100; por defecto 25)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -98,6 +180,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -117,12 +200,39 @@ paths:
                           type: string
                         faltante:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/pedidos:
     get:
       operationId: pedidos_pendientes
       summary: Órdenes de compra abiertas del MRP (pendiente, enviada o parcial) con fecha estimada de llegada
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Solo las órdenes en ese estado
+          schema:
+            type: string
+            enum:
+              - pendiente
+              - enviada
+              - parcial
+        - name: q
+          in: query
+          required: false
+          description: Texto a buscar en el proveedor, la obra o el código de la orden
+          schema:
+            type: string
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 200; por defecto 200)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -133,6 +243,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -158,19 +269,78 @@ paths:
                           type: string
                         creado_en:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/propiedades:
     get:
       operationId: propiedades
-      summary: Las 50 propiedades más recientes del scraper, con búsqueda opcional
+      summary: Propiedades recientes del scraper (por defecto las 50 más nuevas), con filtros por operación, distrito, tipo, portal y precio
       parameters:
         - name: q
           in: query
           required: false
-          description: Texto a buscar en título, distrito o tipo de inmueble
+          description: Texto a buscar en el título, el distrito o el tipo de inmueble
           schema:
             type: string
+        - name: operacion
+          in: query
+          required: false
+          description: VENTA o ALQUILER
+          schema:
+            type: string
+            enum: &a2
+              - VENTA
+              - ALQUILER
+        - name: inmueble
+          in: query
+          required: false
+          description: Tipo de inmueble (por ejemplo «Casa» o «Departamento»)
+          schema:
+            type: string
+        - name: distrito
+          in: query
+          required: false
+          description: Texto a buscar en el distrito
+          schema:
+            type: string
+        - name: portal
+          in: query
+          required: false
+          description: Portal de origen
+          schema:
+            type: string
+            enum: &a1
+              - infocasas
+              - urbania
+              - adondevivir
+              - properati
+              - babilonia
+        - name: precio_min_usd
+          in: query
+          required: false
+          description: Precio mínimo en dólares
+          schema:
+            type: number
+            minimum: 0
+            maximum: 1000000000
+        - name: precio_max_usd
+          in: query
+          required: false
+          description: Precio máximo en dólares (excluye avisos sin precio)
+          schema:
+            type: number
+            minimum: 0
+            maximum: 1000000000
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 100; por defecto 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -181,6 +351,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -216,12 +387,37 @@ paths:
                           type: string
                         encontrada_en:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/propiedades-resumen:
     get:
       operationId: propiedades_resumen
       summary: Total de propiedades del catálogo por portal y operación (venta o alquiler)
+      parameters:
+        - name: portal
+          in: query
+          required: false
+          description: Solo ese portal
+          schema:
+            type: string
+            enum: *a1
+        - name: operacion
+          in: query
+          required: false
+          description: VENTA o ALQUILER
+          schema:
+            type: string
+            enum: *a2
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 50; por defecto 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -232,6 +428,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -247,12 +444,23 @@ paths:
                           type: integer
                         ultima_vista:
                           type: string
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
   /api/frescura:
     get:
       operationId: frescura_datos
-      summary: Cuándo se sincronizó por última vez cada app (planner, mrp, scraper)
+      summary: Cuándo se sincronizó por última vez cada app (planner, mrp, scraper) y hace cuántas horas
+      parameters:
+        - name: limite
+          in: query
+          required: false
+          description: Máximo de filas a devolver (1 a 10; por defecto 10)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -263,6 +471,7 @@ paths:
                     type: string
                   generado_en:
                     type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
                   total:
                     type: integer
                   datos:
@@ -274,3 +483,159 @@ paths:
                           type: string
                         ultima_sync:
                           type: string
+                        hace_horas:
+                          type: number
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta
+  /api/resumen-general:
+    get:
+      operationId: resumen_general
+      summary: "Panorama completo en una sola llamada: proyectos, hitos, stock, pedidos, propiedades y frescura de los datos"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                    description: "Hora de la consulta. NO indica qué tan actuales son los datos: para eso está frescura."
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        proyectos:
+                          type: object
+                          description: Conteo de proyectos por estado y total de tareas atrasadas
+                          properties:
+                            total:
+                              type: integer
+                            atrasados:
+                              type: integer
+                            en_curso:
+                              type: integer
+                            por_iniciar:
+                              type: integer
+                            terminados:
+                              type: integer
+                            tareas_atrasadas:
+                              type: integer
+                        proyectos_atrasados:
+                          type: array
+                          description: Hasta 5 proyectos atrasados (los de fecha de fin más antigua primero)
+                          items:
+                            type: object
+                            properties:
+                              nombre:
+                                type: string
+                              responsable:
+                                type: string
+                              avance_pct:
+                                type: number
+                              fin:
+                                type: string
+                              tareas_atrasadas:
+                                type: integer
+                        proximos_hitos:
+                          type: array
+                          description: Hasta 5 próximas fechas clave
+                          items:
+                            type: object
+                            properties:
+                              fecha:
+                                type: string
+                              descripcion:
+                                type: string
+                              proyecto:
+                                type: string
+                        stock:
+                          type: object
+                          description: Materiales del MRP con stock mínimo definido
+                          properties:
+                            materiales_con_minimo:
+                              type: integer
+                            en_stock_bajo:
+                              type: integer
+                            sin_existencias:
+                              type: integer
+                        mayor_faltante:
+                          type: array
+                          description: Los 5 materiales con mayor faltante respecto a su mínimo
+                          items:
+                            type: object
+                            properties:
+                              material:
+                                type: string
+                              categoria:
+                                type: string
+                              unidad:
+                                type: string
+                              cantidad:
+                                type: number
+                              minimo:
+                                type: number
+                              faltante:
+                                type: number
+                        pedidos:
+                          type: object
+                          description: Órdenes de compra abiertas
+                          properties:
+                            abiertos:
+                              type: integer
+                        proximos_pedidos:
+                          type: array
+                          description: Hasta 5 órdenes abiertas, las de llegada más cercana primero
+                          items:
+                            type: object
+                            properties:
+                              pedido_id:
+                                type: string
+                              proveedor:
+                                type: string
+                              obra:
+                                type: string
+                              estado:
+                                type: string
+                              llegada_estimada:
+                                type: string
+                        propiedades:
+                          type: object
+                          description: Propiedades del catálogo del scraper
+                          properties:
+                            total_catalogo:
+                              type: integer
+                            copiadas:
+                              type: integer
+                        propiedades_por_portal:
+                          type: array
+                          description: Total de propiedades por portal y operación
+                          items:
+                            type: object
+                            properties:
+                              portal:
+                                type: string
+                              operacion:
+                                type: string
+                              total:
+                                type: integer
+                        frescura:
+                          type: array
+                          description: Última sincronización de cada app y hace cuántas horas
+                          items:
+                            type: object
+                            properties:
+                              app:
+                                type: string
+                              ultima_sync:
+                                type: string
+                              hace_horas:
+                                type: number
+        "400":
+          description: Un parámetro no es válido; el mensaje explica qué se acepta

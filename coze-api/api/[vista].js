@@ -1,6 +1,8 @@
-// API de SOLO LECTURA para el agente de Coze.
-//   GET /api/<vista>            Authorization: Bearer <API_TOKEN>
-//   GET /api/propiedades?q=norte  (búsqueda opcional por título o zona)
+// API de SOLO LECTURA para el agente de Coze y el panel web.
+//   GET /api/<vista>                        Authorization: Bearer <API_TOKEN>
+//   GET /api/propiedades?operacion=VENTA&distrito=Miraflores&precio_max_usd=200000&limite=20
+//
+// Las vistas y los filtros que acepta cada una están en lib/vistas.js (y en openapi.yaml, generado desde allí).
 //
 // Variables de entorno (en Vercel, nunca en el código):
 //   DATABASE_URL_READER  cadena de conexión de Neon del rol coze_reader
@@ -8,7 +10,7 @@
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
-import { buscarVista, patronBusqueda, VISTAS } from '../lib/vistas.js';
+import { buscarVista, construirConsulta, ErrorFiltro, VISTAS } from '../lib/vistas.js';
 
 function hash(valor) {
   return createHash('sha256').update(valor).digest();
@@ -40,13 +42,17 @@ export default async function handler(req, res) {
       .json({ error: 'Vista desconocida', disponibles: Object.keys(VISTAS) });
   }
 
+  let consulta;
+  try {
+    consulta = construirConsulta(vista, req.query);
+  } catch (err) {
+    if (err instanceof ErrorFiltro) return res.status(400).json({ error: err.message });
+    throw err;
+  }
+
   try {
     const sql = neon(process.env.DATABASE_URL_READER);
-    const patron = patronBusqueda(req.query.q);
-    const filas =
-      patron && vista.sqlBusqueda
-        ? await sql.query(vista.sqlBusqueda, [patron])
-        : await sql.query(vista.sql);
+    const filas = await sql.query(consulta.text, consulta.params);
 
     return res.status(200).json({
       vista: req.query.vista,

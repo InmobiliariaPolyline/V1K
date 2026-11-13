@@ -8,12 +8,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node test/smoke.mjs && node test/sql.test.mjs"
+    "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs",
+    "openapi": "node scripts/generar-openapi.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.2.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.10"
+    "@electric-sql/pglite": "0.5.10",
+    "yaml": "2.8.1"
   }
 }
