@@ -19,3 +19,7 @@ secrets.toml
 Thumbs.db
 .idea/
 .vscode/
+
+# Contraseñas generadas en local: nunca al repositorio
+*.local.sql
+*.local.txt

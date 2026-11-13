@@ -4,32 +4,160 @@ info:
   description: Resúmenes de proyectos, materiales y propiedades. Solo consulta.
   version: 1.0.0
 servers:
-  - url: https://REEMPLAZA-CON-TU-DOMINIO.vercel.app
+  - url: https://v1k-coze-api.vercel.app
 paths:
   /api/proyectos:
     get:
       operationId: proyectos
       summary: Proyectos del Planner con estado, avance, tareas atrasadas y próximo hito (los atrasados primero)
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        proyecto_id:
+                          type: string
+                        nombre:
+                          type: string
+                        responsable:
+                          type: string
+                        estado:
+                          type: string
+                        avance_pct:
+                          type: string
+                        inicio:
+                          type: string
+                        fin:
+                          type: string
+                        tareas_total:
+                          type: integer
+                        tareas_atrasadas:
+                          type: integer
+                        proximo_hito:
+                          type: string
+                        proximo_hito_fecha:
+                          type: string
+                        actualizado_en:
+                          type: string
   /api/hitos:
     get:
       operationId: hitos_proyectos
       summary: Próximas fechas clave (hitos) de los proyectos, con el nombre del proyecto
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fecha:
+                          type: string
+                        descripcion:
+                          type: string
+                        proyecto:
+                          type: string
   /api/stock-bajo:
     get:
       operationId: stock_bajo
-      summary: Materiales del MRP con stock igual o menor al mínimo y cuánto falta para llegar al mínimo
+      summary: Los 25 materiales del MRP con mayor faltante respecto a su stock mínimo (cantidad, mínimo y cuánto falta)
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        material:
+                          type: string
+                        categoria:
+                          type: string
+                        cantidad:
+                          type: string
+                        unidad:
+                          type: string
+                        minimo:
+                          type: string
+                        faltante:
+                          type: string
   /api/pedidos:
     get:
       operationId: pedidos_pendientes
       summary: Órdenes de compra abiertas del MRP (pendiente, enviada o parcial) con fecha estimada de llegada
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        pedido_id:
+                          type: string
+                        proveedor:
+                          type: string
+                        obra:
+                          type: string
+                        estado:
+                          type: string
+                        llegada_estimada:
+                          type: string
+                        lineas:
+                          type: integer
+                        cantidad_pedida:
+                          type: string
+                        cantidad_recibida:
+                          type: string
+                        creado_en:
+                          type: string
   /api/propiedades:
     get:
       operationId: propiedades
@@ -39,18 +167,110 @@ paths:
           in: query
           required: false
           description: Texto a buscar en título, distrito o tipo de inmueble
-          schema: { type: string }
+          schema:
+            type: string
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        propiedad_id:
+                          type: string
+                        portal:
+                          type: string
+                        operacion:
+                          type: string
+                        inmueble:
+                          type: string
+                        titulo:
+                          type: string
+                        precio:
+                          type: string
+                        moneda:
+                          type: string
+                        precio_usd:
+                          type: string
+                        distrito:
+                          type: string
+                        dormitorios:
+                          type: string
+                        banios:
+                          type: string
+                        area:
+                          type: string
+                        url:
+                          type: string
+                        encontrada_en:
+                          type: string
   /api/propiedades-resumen:
     get:
       operationId: propiedades_resumen
       summary: Total de propiedades del catálogo por portal y operación (venta o alquiler)
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        portal:
+                          type: string
+                        operacion:
+                          type: string
+                        total:
+                          type: integer
+                        ultima_vista:
+                          type: string
   /api/frescura:
     get:
       operationId: frescura_datos
-      summary: Cuándo se sincronizó por última vez cada app
+      summary: Cuándo se sincronizó por última vez cada app (planner, mrp, scraper)
       responses:
-        '200': { description: OK }
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vista:
+                    type: string
+                  generado_en:
+                    type: string
+                  total:
+                    type: integer
+                  datos:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        app:
+                          type: string
+                        ultima_sync:
+                          type: string
