@@ -2,6 +2,21 @@
 // Nada de SQL que venga del cliente: solo el parámetro `q` (texto de búsqueda) y siempre parametrizado.
 // `sqlBusqueda` usa $1 = '%texto%'.
 
+/** Solo vistas propias: `constructor`, `__proto__`, `toString`... no son vistas (antes daban 502 en vez de 404). */
+export function buscarVista(nombre) {
+  return typeof nombre === 'string' && Object.hasOwn(VISTAS, nombre) ? VISTAS[nombre] : undefined;
+}
+
+// Caracteres de control salvo tabulador, salto de línea y retorno. Postgres rechaza el byte nulo en texto.
+const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+/** Texto de búsqueda seguro: sin caracteres de control, recortado, y con %, _ y \ tratados como texto literal. */
+export function patronBusqueda(q) {
+  if (typeof q !== 'string') return '';
+  const limpio = q.replace(CONTROL, '').trim().slice(0, 60);
+  return limpio ? `%${limpio.replace(/[\\%_]/g, '\\$&')}%` : '';
+}
+
 export const VISTAS = {
   proyectos: {
     sql: `SELECT proyecto_id, nombre, responsable, estado, avance_pct, inicio, fin, tareas_total, tareas_atrasadas,

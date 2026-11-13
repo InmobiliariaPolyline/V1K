@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PGlite } from '@electric-sql/pglite';
-import { VISTAS } from '../lib/vistas.js';
+import { patronBusqueda, VISTAS } from '../lib/vistas.js';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const pg = new PGlite();
@@ -62,5 +62,24 @@ assert.equal(bajos.length, 25, 'stock-bajo se limita a 25 filas');
 assert.equal(bajos[0].material, 'Material 40', 'el de mayor faltante va primero');
 const faltantes = bajos.map((r) => Number(r.faltante));
 assert.deepEqual(faltantes, [...faltantes].sort((a, b) => b - a), 'orden descendente por faltante');
+
+// Búsqueda: %, _ y \ son texto literal; el byte nulo y otros caracteres de control se eliminan
+await pg.exec(`
+  INSERT INTO central.scraper_propiedades (propiedad_id, portal, titulo, distrito, inmueble, encontrada_en)
+  VALUES ('b1', 'urbania', 'Oferta 100% garantizada', 'Surco', 'Casa', now()),
+         ('b2', 'urbania', 'Local en zona_comercial', 'Surco', 'Local', now()),
+         ('b3', 'urbania', 'Departamento normal', 'Surco', 'Departamento', now());
+`);
+const busca = async (q) => (await pg.query(VISTAS.propiedades.sqlBusqueda, [patronBusqueda(q)])).rows.map((r) => r.propiedad_id).sort();
+assert.deepEqual(await busca('%'), ['b1'], '% solo encuentra el que tiene % literal');
+assert.deepEqual(await busca('_'), ['b2'], '_ solo encuentra el que tiene _ literal');
+assert.deepEqual(await busca('100%'), ['b1']);
+assert.deepEqual(await busca('norma\u0000l'), ['b3'], 'el byte nulo se elimina y la búsqueda funciona');
+assert.deepEqual(await busca('\\'), [], 'la barra invertida no rompe la consulta');
+assert.deepEqual(await busca("' OR 1=1 --"), [], 'una inyección es solo texto');
+assert.equal(patronBusqueda('   '), '', 'texto vacío => sin búsqueda');
+assert.equal(patronBusqueda(['a', 'b']), '', 'un arreglo no es texto');
+assert.equal(patronBusqueda('x'.repeat(500)).length, 62, 'se recorta a 60 caracteres');
+await pg.exec(`DELETE FROM central.scraper_propiedades WHERE propiedad_id IN ('b1','b2','b3')`);
 
 console.log(`OK: ${Object.keys(VISTAS).length} consultas verificadas contra el esquema real`);

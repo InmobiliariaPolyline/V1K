@@ -8,7 +8,7 @@
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { neon } from '@neondatabase/serverless';
-import { VISTAS } from '../lib/vistas.js';
+import { buscarVista, patronBusqueda, VISTAS } from '../lib/vistas.js';
 
 function hash(valor) {
   return createHash('sha256').update(valor).digest();
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'No autorizado' });
   }
 
-  const vista = VISTAS[req.query.vista];
+  const vista = buscarVista(req.query.vista);
   if (!vista) {
     return res
       .status(404)
@@ -42,10 +42,10 @@ export default async function handler(req, res) {
 
   try {
     const sql = neon(process.env.DATABASE_URL_READER);
-    const q = typeof req.query.q === 'string' ? req.query.q.trim().slice(0, 60) : '';
+    const patron = patronBusqueda(req.query.q);
     const filas =
-      q && vista.sqlBusqueda
-        ? await sql.query(vista.sqlBusqueda, [`%${q}%`])
+      patron && vista.sqlBusqueda
+        ? await sql.query(vista.sqlBusqueda, [patron])
         : await sql.query(vista.sql);
 
     return res.status(200).json({

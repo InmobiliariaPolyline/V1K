@@ -40,8 +40,14 @@ r = await ejecutar({ authorization: buen });
 assert.equal(r.code, 502);
 assert.ok(!JSON.stringify(r.body).includes('neon'), 'no filtra detalles internos');
 
+// Nombres heredados de JavaScript no son vistas: 404 (antes daban 502)
+for (const nombre of ['constructor', '__proto__', 'toString', 'valueOf', 'hasOwnProperty', 'isPrototypeOf']) {
+  r = await ejecutar({ authorization: buen, vista: nombre });
+  assert.equal(r.code, 404, `${nombre} => 404`);
+}
+
 process.env.API_TOKEN = 'corto';
 r = await ejecutar({ authorization: 'Bearer corto' });
 assert.equal(r.code, 401, 'token débil configurado => siempre 401');
 
-console.log('OK: 7 comprobaciones pasaron');
+console.log('OK: pruebas de humo (autenticación, métodos, rutas y nombres heredados) pasaron');
