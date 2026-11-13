@@ -18,7 +18,8 @@ export const VISTAS = {
            LIMIT 200`,
   },
   'stock-bajo': {
-    sql: 'SELECT * FROM central.v_stock_bajo LIMIT 200',
+    // Los 25 con mayor faltante (la vista ya viene ordenada): casi todo el catálogo está bajo su mínimo y 200 filas no ayudan al agente.
+    sql: 'SELECT * FROM central.v_stock_bajo LIMIT 25',
   },
   pedidos: {
     sql: `SELECT pedido_id, proveedor, obra, estado, llegada_estimada, lineas, cantidad_pedida, cantidad_recibida, creado_en

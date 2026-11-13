@@ -52,4 +52,15 @@ for (const v of Object.values(VISTAS)) {
   for (const sql of [v.sql, v.sqlBusqueda].filter(Boolean)) assert.match(sql.trim(), /^SELECT\b/i);
 }
 
+// stock-bajo devuelve como máximo 25, los de mayor faltante primero
+await pg.exec(`
+  INSERT INTO central.mrp_stock (material_id, material, cantidad, minimo)
+  SELECT 'x' || g, 'Material ' || g, 0, g FROM generate_series(1, 40) g;
+`);
+const bajos = (await pg.query(VISTAS['stock-bajo'].sql)).rows;
+assert.equal(bajos.length, 25, 'stock-bajo se limita a 25 filas');
+assert.equal(bajos[0].material, 'Material 40', 'el de mayor faltante va primero');
+const faltantes = bajos.map((r) => Number(r.faltante));
+assert.deepEqual(faltantes, [...faltantes].sort((a, b) => b - a), 'orden descendente por faltante');
+
 console.log(`OK: ${Object.keys(VISTAS).length} consultas verificadas contra el esquema real`);
