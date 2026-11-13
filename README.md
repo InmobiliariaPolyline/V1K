@@ -40,17 +40,31 @@ través de una API pequeña y de solo lectura.
 
 ## Panel web
 
-La raíz del proyecto de Vercel ya no es un 404: es un **panel de solo lectura** que se abre con el token de la API y
-muestra lo mismo que consulta el agente, **sin gastar créditos de Coze**: la frescura de cada app, los indicadores,
-los proyectos atrasados con su avance, los próximos hitos y pedidos, el mayor faltante de stock y las propiedades con
-filtros por operación, distrito y precio máximo.
+La raíz del proyecto de Vercel es un **panel de solo lectura** que se abre con el token de la API y muestra lo mismo
+que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
 
-<img src="docs/assets/panel.svg" alt="Panel V1K con datos de ejemplo" width="100%" />
+| Sección | Qué muestra |
+|---|---|
+| **Inicio** | Saludo con el estado general, alertas automáticas («qué mirar primero»), indicadores, frescura de cada app, proyectos por estado, faltante de stock por categoría, propiedades por portal, próximos hitos y llegadas |
+| **Proyectos** | Tarjetas, **línea de tiempo (Gantt)** o tabla; búsqueda, filtro por estado, orden y panel de detalle con los hitos |
+| **Calendario** | Hitos en una cuadrícula mensual y una agenda; filtro por proyecto |
+| **Materiales** | Stock bajo el mínimo con gráfico por categoría, búsqueda, tabla ordenable y exportación |
+| **Pedidos** | Órdenes de compra abiertas con avance de recepción, llegadas vencidas y gráfico por proveedor |
+| **Propiedades** | Filtros avanzados (operación, tipo, distrito, portal, precio), tarjetas o lista, estadísticas y distritos |
+| **Explorador de API** | Formulario generado desde el contrato de cada vista; muestra JSON, tabla, `curl` y contrato |
+| **Agente de Coze** | Preguntas sugeridas con botón de copiar y las herramientas que tiene el agente |
+| **Sistema** | Latencia, frescura, preferencias, atajos de teclado y el diagrama de la arquitectura |
 
-- HTML, CSS y JS puros, sin librerías ni recursos externos; funciona en el móvil.
+<img src="docs/assets/panel.svg" alt="Inicio del Panel V1K con datos de ejemplo" width="100%" />
+
+- **Modo demostración:** el botón «Explorar con datos de ejemplo» abre todo el panel con datos ficticios, sin token y sin llamar a la API.
+- Tema claro, oscuro o automático; densidad cómoda o compacta; paleta de comandos (`Ctrl`/`⌘` + `K`) y atajos (`G` + letra, `R`, `T`, `?`).
+- Los filtros quedan en el enlace (`#/propiedades?operacion=VENTA&distrito=Miraflores`) y se pueden compartir; exporta a CSV o JSON.
+- HTML, CSS y JS puros (módulos ES), sin librerías ni recursos externos; funciona en el móvil y se puede imprimir.
 - El token se guarda solo en el navegador (`sessionStorage`; `localStorage` si marcas «Recordar») y «Salir» lo borra.
-- Seguridad: política CSP estricta, sin scripts ni estilos en línea, los datos se insertan siempre como texto y los
-  enlaces solo admiten `http(s)`.
+- Seguridad: política CSP estricta, sin scripts ni estilos en línea, los datos se insertan siempre como texto, los enlaces solo
+  admiten `http(s)` y el CSV se protege contra inyección de fórmulas.
+- Para verlo en local con las mismas cabeceras que Vercel: `cd coze-api && npm run panel` y abre http://localhost:4173.
 
 <div align="center">
 <table>
@@ -79,7 +93,7 @@ V1K/
 │   ├── lib/vistas.js              consultas cerradas y filtros validados (fuente del contrato)
 │   ├── openapi.yaml               contrato para Coze, GENERADO desde lib/vistas.js
 │   ├── scripts/                   generar-openapi.mjs
-│   ├── public/                    Panel V1K: index.html, panel.css, panel.js, formato.js
+│   ├── public/                    Panel V1K: index.html, css/, js/ (núcleo y una vista por sección)
 │   ├── vercel.json                sirve public/ y añade las cabeceras de seguridad
 │   └── test/                      humo, consultas y filtros, contrato OpenAPI y panel
 ├── tests-integracion/             6 baterías de pruebas contra el sistema real

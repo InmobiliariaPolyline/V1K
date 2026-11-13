@@ -298,17 +298,41 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   chequea('[panel] X-Content-Type-Options nosniff', raiz.headers.get('x-content-type-options') === 'nosniff');
   chequea('[panel] Referrer-Policy no-referrer', raiz.headers.get('referrer-policy') === 'no-referrer');
   chequea('[panel] Permissions-Policy restringe cámara, micrófono y ubicación', /camera=\(\)/.test(raiz.headers.get('permissions-policy') || ''));
-  for (const [ruta, tipo] of [['/panel.js', /javascript/], ['/formato.js', /javascript/], ['/panel.css', /text\/css/], ['/hero.svg', /image\/svg\+xml/], ['/favicon.svg', /image\/svg\+xml/]]) {
+  // Todos los archivos de public/ (módulos JS, hojas de estilo, imágenes y vistas.json) se sirven con el tipo correcto
+  const PUB = path.join(RAIZ, 'coze-api', 'public');
+  const TIPOS = { '.js': /javascript/, '.css': /text\/css/, '.svg': /image\/svg\+xml/, '.json': /application\/json/ };
+  const archivos = fs.readdirSync(PUB, { recursive: true }).map((f) => f.replaceAll('\\', '/')).filter((f) => TIPOS[path.extname(f)]);
+  chequea('[panel] public/ tiene módulos, estilos e imágenes', archivos.filter((f) => f.endsWith('.js')).length >= 18 && archivos.filter((f) => f.endsWith('.css')).length === 3, `${archivos.length} archivos`);
+  const cuerpos = [];
+  for (const f of archivos) {
+    const a = await llama(`/${f}`, { raw: true });
+    chequea(`[panel] /${f} => 200 y tipo correcto`, a.status === 200 && TIPOS[path.extname(f)].test(a.headers.get('content-type') || ''), `-> ${a.status} ${a.headers.get('content-type')}`);
+    chequea(`[panel] /${f} idéntico al del repositorio`, a.cuerpo.replace(/\r\n/g, '\n') === fs.readFileSync(path.join(PUB, f), 'utf8').replace(/\r\n/g, '\n'), 'despliegue desactualizado');
+    chequea(`[panel] /${f} sin nosniff ni CSP ausentes`, a.headers.get('x-content-type-options') === 'nosniff' && /default-src 'none'/.test(a.headers.get('content-security-policy') || ''));
+    if (f.endsWith('.js')) cuerpos.push(a.cuerpo);
+  }
+  for (const ruta of ['/panel.js', '/panel.css', '/formato.js']) {
     const a = await llama(ruta, { raw: true });
-    chequea(`[panel] ${ruta} => 200 y tipo correcto`, a.status === 200 && tipo.test(a.headers.get('content-type') || ''), `-> ${a.status} ${a.headers.get('content-type')}`);
+    chequea(`[panel] ${ruta} (panel antiguo) ya no se publica`, a.status === 404, `-> ${a.status}`);
   }
   for (const ruta of ['/.env', '/package.json', '/lib/vistas.js', '/api/../lib/vistas.js', '/test/smoke.mjs', '/vercel.json', '/openapi.yaml', '/node_modules/yaml/package.json']) {
     const a = await llama(ruta, { raw: true });
     chequea(`[panel] ${ruta} NO se publica`, a.status === 404 || a.status === 401 || a.status === 400, `-> ${a.status}`);
   }
-  const js = await llama('/panel.js', { raw: true });
-  chequea('[panel] panel.js no usa APIs que interpreten HTML', !/innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(/.test(js.cuerpo.replace(/^\s*\/\/.*$/gm, '')));
-  chequea('[panel] ningún recurso externo (CDN, fuentes)', !/(https?:)?\/\/(cdn|unpkg|fonts|cdnjs)\./i.test(raiz.cuerpo + js.cuerpo));
+  const js = cuerpos.join('\n');
+  chequea('[panel] el JS publicado no usa APIs que interpreten HTML', !/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\beval\(|new Function/.test(js.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')));
+  chequea('[panel] ningún recurso externo (CDN, fuentes)', !/(https?:)?\/\/(cdn|unpkg|fonts|cdnjs)\./i.test(raiz.cuerpo + js));
+  chequea('[panel] el JS publicado no contiene el token', !js.includes(TOKEN) && !raiz.cuerpo.includes(TOKEN));
+  const vj = json((await llama('/vistas.json', { raw: true })).cuerpo);
+  chequea('[panel] vistas.json describe 10 vistas (2 solo del panel) y no contiene secretos', vj?.vistas?.length === 10 && vj.vistas.filter((v) => v.soloPanel).length === 2 && !JSON.stringify(vj).includes(TOKEN));
+  // Las vistas solo del panel exigen token y no están en el contrato de Coze
+  for (const v of ['stock-categorias', 'propiedades-distritos']) {
+    const sin = await llama(v), con = await llama(v, { headers: A() });
+    chequea(`[panel] /api/${v} sin token => 401`, sin.status === 401, `-> ${sin.status}`);
+    const c = json(con.cuerpo);
+    chequea(`[panel] /api/${v} con token => 200 y filas`, con.status === 200 && Array.isArray(c?.datos), `-> ${con.status}`);
+    chequea(`[panel] /api/${v} no está en openapi.yaml (el agente no la ve)`, !spec.paths[`/api/${v}`]);
+  }
 }
 
 // ── 7) La base sigue intacta tras todos los intentos hostiles ───────────────────────

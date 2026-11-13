@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="t d">
+  <title id="t">Arquitectura de V1K</title>
+  <desc id="d">Planner, MRP y Scraper escriben un resumen en la base central de Neon con un rol propio cada uno. La API de solo lectura en Vercel lee con el rol coze_reader y el plugin de Coze la consulta con un token.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.08"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.025"/></linearGradient>
+    <radialGradient id="gGreen" cx="0.37" cy="0.5" r="0.3"><stop offset="0" stop-color="#4ade80" stop-opacity="0.16"/><stop offset="1" stop-color="#4ade80" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.03"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
+  </defs>
+
+  <rect width="1280" height="560" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="560" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="560" rx="28" fill="url(#gGreen)"/>
+  <rect x="1" y="1" width="1278" height="558" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <!-- encabezados de columna -->
+    <g font-size="13" font-weight="700" letter-spacing="2" fill="#6e7681">
+      <text x="40" y="46">1 · SISTEMAS</text>
+      <text x="392" y="46">2 · BASE CENTRAL</text>
+      <text x="800" y="46">3 · API</text>
+      <text x="1068" y="46">4 · AGENTE</text>
+    </g>
+
+    <!-- 1 · Sistemas -->
+    <g filter="url(#sh)">
+      <rect x="40" y="76" width="290" height="128" rx="20" fill="url(#glass)" stroke="#22d3ee" stroke-opacity="0.55"/>
+      <rect x="40" y="216" width="290" height="128" rx="20" fill="url(#glass)" stroke="#fbbf24" stroke-opacity="0.55"/>
+      <rect x="40" y="356" width="290" height="128" rx="20" fill="url(#glass)" stroke="#a78bfa" stroke-opacity="0.55"/>
+    </g>
+    <circle cx="68" cy="108" r="8" fill="#22d3ee"/><text x="88" y="115" font-size="21" font-weight="700" fill="#f0f6fc">Planner</text>
+    <text x="60" y="140" font-size="13" fill="#8b949e">Express + Prisma · Render</text>
+    <text x="60" y="162" font-size="13" fill="#c9d1d9">estado, avance, tareas atrasadas, hitos</text>
+    <rect x="60" y="174" width="150" height="22" rx="11" fill="#22d3ee" fill-opacity="0.16"/><text x="135" y="189" text-anchor="middle" font-size="12" font-weight="600" fill="#67e8f9">writer_planner</text>
+
+    <circle cx="68" cy="248" r="8" fill="#fbbf24"/><text x="88" y="255" font-size="21" font-weight="700" fill="#f0f6fc">MRP</text>
+    <text x="60" y="280" font-size="13" fill="#8b949e">Streamlit + Supabase</text>
+    <text x="60" y="302" font-size="13" fill="#c9d1d9">stock bajo y órdenes de compra abiertas</text>
+    <rect x="60" y="314" width="130" height="22" rx="11" fill="#fbbf24" fill-opacity="0.16"/><text x="125" y="329" text-anchor="middle" font-size="12" font-weight="600" fill="#fcd34d">writer_mrp</text>
+
+    <circle cx="68" cy="388" r="8" fill="#a78bfa"/><text x="88" y="395" font-size="21" font-weight="700" fill="#f0f6fc">Scraper</text>
+    <text x="60" y="420" font-size="13" fill="#8b949e">TypeScript · Netlify + Neon</text>
+    <text x="60" y="442" font-size="13" fill="#c9d1d9">propiedades recientes y totales por portal</text>
+    <rect x="60" y="454" width="150" height="22" rx="11" fill="#a78bfa" fill-opacity="0.18"/><text x="135" y="469" text-anchor="middle" font-size="12" font-weight="600" fill="#c4b5fd">writer_scraper</text>
+
+    <!-- flechas sistemas → central -->
+    <path d="M330 140 C 360 140, 365 250, 392 250" fill="none" stroke="#22d3ee" stroke-opacity="0.75" stroke-width="2" marker-end="url(#arr)"/>
+    <path d="M330 280 H 392" fill="none" stroke="#fbbf24" stroke-opacity="0.75" stroke-width="2" marker-end="url(#arr)"/>
+    <path d="M330 420 C 360 420, 365 310, 392 310" fill="none" stroke="#a78bfa" stroke-opacity="0.75" stroke-width="2" marker-end="url(#arr)"/>
+    <text x="361" y="508" text-anchor="middle" font-size="11" fill="#8b949e">↑ resumen al guardar</text>
+
+    <!-- 2 · Base central -->
+    <g filter="url(#sh)">
+      <rect x="392" y="76" width="340" height="408" rx="22" fill="url(#glass)" stroke="#4ade80" stroke-opacity="0.6"/>
+    </g>
+    <g fill="none" stroke="#4ade80" stroke-width="2.6" stroke-linecap="round">
+      <ellipse cx="428" cy="112" rx="15" ry="6"/>
+      <path d="M413 112 V128 C413 132 420 135 428 135 C436 135 443 132 443 128 V112"/>
+      <path d="M413 120 C413 124 420 127 428 127 C436 127 443 124 443 120"/>
+    </g>
+    <text x="456" y="115" font-size="21" font-weight="700" fill="#f0f6fc">Neon · central</text>
+    <text x="456" y="136" font-size="13" fill="#8b949e">PostgreSQL · solo resúmenes</text>
+    <g font-size="13" fill="#c9d1d9">
+      <rect x="412" y="160" width="300" height="30" rx="10" fill="#22d3ee" fill-opacity="0.10"/><text x="426" y="180">planner_proyectos</text><text x="700" y="180" text-anchor="end" fill="#6e7681">estado, avance</text>
+      <rect x="412" y="196" width="300" height="30" rx="10" fill="#22d3ee" fill-opacity="0.10"/><text x="426" y="216">planner_hitos</text><text x="700" y="216" text-anchor="end" fill="#6e7681">fechas clave</text>
+      <rect x="412" y="232" width="300" height="30" rx="10" fill="#fbbf24" fill-opacity="0.10"/><text x="426" y="252">mrp_stock</text><text x="700" y="252" text-anchor="end" fill="#6e7681">mínimo y faltante</text>
+      <rect x="412" y="268" width="300" height="30" rx="10" fill="#fbbf24" fill-opacity="0.10"/><text x="426" y="288">mrp_pedidos</text><text x="700" y="288" text-anchor="end" fill="#6e7681">órdenes abiertas</text>
+      <rect x="412" y="304" width="300" height="30" rx="10" fill="#a78bfa" fill-opacity="0.12"/><text x="426" y="324">scraper_propiedades</text><text x="700" y="324" text-anchor="end" fill="#6e7681">200 más recientes</text>
+      <rect x="412" y="340" width="300" height="30" rx="10" fill="#a78bfa" fill-opacity="0.12"/><text x="426" y="360">scraper_resumen</text><text x="700" y="360" text-anchor="end" fill="#6e7681">totales por portal</text>
+      <rect x="412" y="376" width="300" height="30" rx="10" fill="#4ade80" fill-opacity="0.12"/><text x="426" y="396">sync_estado</text><text x="700" y="396" text-anchor="end" fill="#6e7681">frescura de cada app</text>
+    </g>
+    <rect x="412" y="424" width="300" height="44" rx="12" fill="#4ade80" fill-opacity="0.08" stroke="#4ade80" stroke-opacity="0.35" stroke-dasharray="4 4"/>
+    <text x="562" y="443" text-anchor="middle" font-size="12" fill="#bbf7d0" font-weight="600">4 roles · mínimo privilegio · RLS en sync_estado</text>
+    <text x="562" y="459" text-anchor="middle" font-size="11" fill="#8b949e">cada app solo toca sus propias tablas</text>
+
+    <!-- central → API -->
+    <path d="M732 280 H 800" fill="none" stroke="#4ade80" stroke-opacity="0.8" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="734" y="254" width="64" height="20" rx="10" fill="#0d1015" stroke="#4ade80" stroke-opacity="0.5"/>
+    <text x="766" y="268" text-anchor="middle" font-size="9.5" font-weight="700" fill="#86efac">coze_reader</text>
+
+    <!-- 3 · API -->
+    <g filter="url(#sh)">
+      <rect x="800" y="76" width="230" height="408" rx="22" fill="url(#glass)" stroke="#e5e7eb" stroke-opacity="0.45"/>
+    </g>
+    <text x="822" y="112" font-size="21" font-weight="700" fill="#f0f6fc">coze-api</text>
+    <text x="822" y="134" font-size="13" fill="#8b949e">Vercel · solo GET</text>
+    <g font-size="12.5" fill="#c9d1d9" font-family="Consolas,'Courier New',monospace">
+      <text x="822" y="170">/api/proyectos</text>
+      <text x="822" y="196">/api/hitos</text>
+      <text x="822" y="222">/api/stock-bajo</text>
+      <text x="822" y="248">/api/pedidos</text>
+      <text x="822" y="274">/api/propiedades</text>
+      <text x="822" y="300">/api/propiedades-resumen</text>
+      <text x="822" y="326">/api/frescura</text>
+    </g>
+    <rect x="822" y="352" width="186" height="46" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="915" y="372" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">Authorization: Bearer …</text>
+    <text x="915" y="388" text-anchor="middle" font-size="11" fill="#8b949e">consultas fijas · sin SQL del cliente</text>
+    <text x="915" y="430" text-anchor="middle" font-size="12" fill="#9aa4b2">respuesta ≈ 150 ms</text>
+    <text x="915" y="452" text-anchor="middle" font-size="12" fill="#9aa4b2">nunca duerme</text>
+
+    <!-- API → Coze -->
+    <path d="M1030 280 H 1068" fill="none" stroke="#e5e7eb" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+
+    <!-- 4 · Coze -->
+    <g filter="url(#sh)">
+      <rect x="1068" y="76" width="180" height="408" rx="22" fill="url(#glass)" stroke="#6366f1" stroke-opacity="0.7"/>
+    </g>
+    <text x="1090" y="112" font-size="21" font-weight="700" fill="#f0f6fc">Coze</text>
+    <text x="1090" y="134" font-size="13" fill="#8b949e">plugin + agente</text>
+    <rect x="1088" y="156" width="140" height="64" rx="14" fill="#6366f1" fill-opacity="0.18" stroke="#6366f1" stroke-opacity="0.45"/>
+    <text x="1158" y="184" text-anchor="middle" font-size="13" font-weight="700" fill="#c7d2fe">Plugin</text>
+    <text x="1158" y="203" text-anchor="middle" font-size="11" fill="#a5b4fc">Vista Central · 7 herramientas</text>
+    <path d="M1158 220 V 240" stroke="#6366f1" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="1088" y="244" width="140" height="64" rx="14" fill="#6366f1" fill-opacity="0.18" stroke="#6366f1" stroke-opacity="0.45"/>
+    <text x="1158" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#c7d2fe">Agente</text>
+    <text x="1158" y="291" text-anchor="middle" font-size="11" fill="#a5b4fc">solo lee y resume</text>
+    <path d="M1158 308 V 332" stroke="#6366f1" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
+    <rect x="1088" y="336" width="140" height="112" rx="14" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.12"/>
+    <rect x="1100" y="348" width="116" height="26" rx="10" fill="#6366f1" fill-opacity="0.35"/>
+    <text x="1158" y="366" text-anchor="middle" font-size="11" font-weight="600" fill="#e0e7ff">¿Qué proyectos van atrasados?</text>
+    <rect x="1100" y="384" width="96" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.22"/>
+    <rect x="1100" y="399" width="116" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.14"/>
+    <rect x="1100" y="414" width="70" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.14"/>
+    <text x="1158" y="466" text-anchor="middle" font-size="12" fill="#9aa4b2">tú preguntas en español</text>
+  </g>
+</svg>

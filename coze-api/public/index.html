@@ -1,107 +1,114 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-tema="auto" data-densidad="comoda">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b0e13">
   <title>V1K · Panel</title>
   <meta name="description" content="Panel de solo lectura de la vista central: Planner, MRP y Scraper.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="panel.css">
+  <!-- Aplica el tema guardado ANTES de pintar (evita el parpadeo). Es un archivo propio porque la CSP no permite scripts en línea. -->
+  <script src="js/tema.js"></script>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/componentes.css">
+  <link rel="stylesheet" href="css/vistas.css">
 </head>
 <body>
+  <!-- ───────────── Iconos (sprite) ───────────── -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" focusable="false" class="sprite">
+    <defs>
+      <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+      <symbol id="i-proyectos" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/><path d="M3 17l9 5 9-5"/></symbol>
+      <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+      <symbol id="i-materiales" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5L12 12l8-4.5M12 12v9"/></symbol>
+      <symbol id="i-pedidos" viewBox="0 0 24 24"><rect x="2" y="6" width="12" height="10" rx="1"/><path d="M14 9h4l4 4v3h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+      <symbol id="i-propiedades" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M11 21v-3h2v3"/></symbol>
+      <symbol id="i-explorador" viewBox="0 0 24 24"><path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/></symbol>
+      <symbol id="i-asistente" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/><path d="M8 10h8M8 13h5"/></symbol>
+      <symbol id="i-sistema" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+      <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></symbol>
+      <symbol id="i-refrescar" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7"/><path d="M20 4v7h-7"/></symbol>
+      <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+      <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+      <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 010 18z" fill="currentColor"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+      <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+      <symbol id="i-arriba" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5"/></symbol>
+      <symbol id="i-abajo" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
+      <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></symbol>
+      <symbol id="i-descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+      <symbol id="i-imprimir" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><rect x="7" y="14" width="10" height="7" rx="1"/></symbol>
+      <symbol id="i-filtro" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4-2v-4L3 5z"/></symbol>
+      <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/></symbol>
+      <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+      <symbol id="i-enlace" viewBox="0 0 24 24"><path d="M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1"/></symbol>
+      <symbol id="i-salir" viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></symbol>
+      <symbol id="i-ayuda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 115 0c0 1.5-2.5 2-2.5 4M12 17h.01"/></symbol>
+      <symbol id="i-cuadricula" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+      <symbol id="i-lista" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+      <symbol id="i-linea" viewBox="0 0 24 24"><path d="M4 6h8M8 12h10M6 18h9"/></symbol>
+      <symbol id="i-tabla" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></symbol>
+      <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+      <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 118 0v3"/></symbol>
+      <symbol id="i-teclado" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/></symbol>
+      <symbol id="i-chispa" viewBox="0 0 24 24"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5z"/></symbol>
+      <symbol id="i-base" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></symbol>
+      <symbol id="i-persona" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></symbol>
+      <symbol id="i-bandera" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
   <!-- ───────────── Entrada con token ───────────── -->
-  <main id="vista-entrada" class="entrada" hidden>
-    <img class="entrada__hero" src="hero.svg" alt="V1K: agente de Coze sobre una vista central" width="1280" height="420">
-    <form id="form-entrada" class="tarjeta entrada__form" autocomplete="off">
-      <h1>Panel V1K</h1>
-      <p class="suave">Vista de solo lectura de lo que sincronizan el Planner, el MRP y el Scraper. Pega el token de la API para entrar.</p>
-      <label for="token">Token de la API</label>
-      <input id="token" name="token" type="password" required minlength="24" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token">
-      <label class="casilla"><input id="recordar" type="checkbox"> Recordar en este navegador</label>
-      <button type="submit" class="boton boton--primario">Entrar</button>
-      <p id="error-entrada" class="error" role="alert" aria-live="assertive"></p>
-      <p class="nota">El token se queda solo en tu navegador y se envía únicamente a esta misma dirección. La página no guarda nada en servidores.</p>
-    </form>
+  <main id="entrada" class="entrada" hidden>
+    <div class="entrada__fondo" aria-hidden="true"></div>
+    <div class="entrada__cuerpo">
+      <img class="entrada__hero" src="hero.svg" alt="V1K: agente de Coze sobre una vista central" width="1280" height="420">
+      <div class="entrada__tarjetas">
+        <form id="form-entrada" class="tarjeta entrada__form" autocomplete="off">
+          <h1>Panel V1K</h1>
+          <p class="suave">Vista de solo lectura de lo que sincronizan el Planner, el MRP y el Scraper. Pega el token de la API para entrar.</p>
+          <label class="campo" for="token"><span class="campo__etiqueta">Token de la API</span>
+            <input id="token" name="token" type="password" required minlength="24" autocomplete="off" spellcheck="false" placeholder="Pega aquí el token">
+          </label>
+          <label class="casilla"><input id="recordar" type="checkbox"> <span>Recordar en este navegador</span></label>
+          <button type="submit" class="boton boton--primario boton--grande" id="btn-entrar">Entrar</button>
+          <p id="error-entrada" class="error" role="alert" aria-live="assertive"></p>
+          <p class="nota">El token se queda solo en tu navegador y se envía únicamente a esta misma dirección. Esta página no guarda nada en servidores.</p>
+        </form>
+        <aside class="tarjeta entrada__demo">
+          <h2>¿Sin token?</h2>
+          <p class="suave">Explora el panel completo con <strong>datos de ejemplo</strong>: proyectos, materiales, pedidos y propiedades ficticios. No se conecta a la API ni muestra información de la empresa.</p>
+          <button type="button" class="boton boton--grande" id="btn-demo"><svg class="icono" aria-hidden="true"><use href="#i-chispa"/></svg> Explorar con datos de ejemplo</button>
+          <ul class="entrada__puntos">
+            <li><svg class="icono" aria-hidden="true"><use href="#i-candado"/></svg> Solo lectura: nada se puede modificar</li>
+            <li><svg class="icono" aria-hidden="true"><use href="#i-base"/></svg> 3 sistemas en una sola vista</li>
+            <li><svg class="icono" aria-hidden="true"><use href="#i-teclado"/></svg> Atajos de teclado y paleta de comandos</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
   </main>
 
-  <!-- ───────────── Panel ───────────── -->
-  <div id="vista-panel" hidden>
-    <header class="cabecera">
-      <div class="cabecera__marca">
-        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg)"/><g fill="none" stroke="#052e16" stroke-width="2.2" stroke-linecap="round"><ellipse cx="16" cy="10.5" rx="7" ry="3"/><path d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/><path d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/></g></svg>
-        <div>
-          <h1>Panel V1K</h1>
-          <p class="suave" id="subtitulo">Vista central · solo lectura</p>
-        </div>
-      </div>
-      <div class="cabecera__acciones">
-        <span id="estado-conexion" class="pastilla" role="status">Cargando…</span>
-        <label class="casilla casilla--chica"><input id="auto" type="checkbox"> Actualizar cada minuto</label>
-        <button id="btn-actualizar" class="boton" type="button">Actualizar</button>
-        <button id="btn-salir" class="boton boton--fantasma" type="button">Salir</button>
-      </div>
-    </header>
-
-    <p id="aviso" class="aviso" role="alert" hidden></p>
-
-    <main class="contenido">
-      <section aria-labelledby="t-frescura">
-        <h2 id="t-frescura">Frescura de los datos</h2>
-        <div id="frescura" class="rejilla rejilla--3"></div>
-      </section>
-
-      <section aria-labelledby="t-kpi">
-        <h2 id="t-kpi">En números</h2>
-        <div id="kpis" class="rejilla rejilla--5"></div>
-      </section>
-
-      <div class="dos-columnas">
-        <section aria-labelledby="t-atrasados" class="tarjeta">
-          <h2 id="t-atrasados">Proyectos atrasados</h2>
-          <ul id="lista-atrasados" class="lista"></ul>
-        </section>
-        <section aria-labelledby="t-hitos" class="tarjeta">
-          <h2 id="t-hitos">Próximos hitos</h2>
-          <ul id="lista-hitos" class="lista"></ul>
-          <h2 id="t-pedidos" class="subtitulo">Pedidos abiertos</h2>
-          <ul id="lista-pedidos" class="lista"></ul>
-        </section>
-      </div>
-
-      <section aria-labelledby="t-stock" class="tarjeta">
-        <h2 id="t-stock">Mayor faltante de stock</h2>
-        <p class="suave" id="nota-stock"></p>
-        <div class="tabla-envoltorio"><table id="tabla-stock"><thead><tr><th>Material</th><th>Categoría</th><th class="num">Cantidad</th><th class="num">Mínimo</th><th class="num">Falta</th></tr></thead><tbody></tbody></table></div>
-      </section>
-
-      <section aria-labelledby="t-props" class="tarjeta">
-        <h2 id="t-props">Propiedades</h2>
-        <div id="portales" class="barras"></div>
-        <form id="form-props" class="filtros" autocomplete="off">
-          <label>Operación
-            <select id="f-operacion"><option value="">Todas</option><option value="VENTA">Venta</option><option value="ALQUILER">Alquiler</option></select>
-          </label>
-          <label>Distrito
-            <input id="f-distrito" type="text" maxlength="40" placeholder="Ej. Miraflores">
-          </label>
-          <label>Precio máx. (US$)
-            <input id="f-precio" type="number" min="0" step="1000" placeholder="Ej. 200000">
-          </label>
-          <button type="submit" class="boton">Filtrar</button>
-        </form>
-        <p class="suave" id="nota-props"></p>
-        <div class="tabla-envoltorio"><table id="tabla-props"><thead><tr><th>Propiedad</th><th>Operación</th><th>Distrito</th><th class="num">Precio</th><th>Portal</th></tr></thead><tbody></tbody></table></div>
-      </section>
-    </main>
-
-    <footer class="pie">
-      <span id="generado">—</span>
-      <span>V1K · solo lectura · los datos son resúmenes sincronizados desde cada app</span>
-    </footer>
+  <!-- ───────────── Aplicación ───────────── -->
+  <div id="app" class="app" hidden>
+    <aside id="lateral" class="lateral" aria-label="Navegación principal"></aside>
+    <div id="velo" class="velo" hidden></div>
+    <div class="principal">
+      <header id="barra" class="barra"></header>
+      <div id="avisos" class="avisos" aria-live="polite"></div>
+      <main id="contenido" class="contenido" tabindex="-1"></main>
+      <footer id="pie" class="pie"></footer>
+    </div>
   </div>
 
-  <script type="module" src="panel.js"></script>
+  <div id="toasts" class="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

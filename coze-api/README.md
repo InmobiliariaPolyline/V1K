@@ -35,10 +35,27 @@ actuales son los datos: para eso está `frescura`.
 
 ## Panel web
 
-La raíz (`/`) sirve el **Panel V1K** desde `public/`: pide el token, lo valida con una consulta barata y muestra la frescura
-de las tres apps, los indicadores, los proyectos atrasados, los hitos y pedidos, el mayor faltante de stock y las propiedades
-con filtros. No usa librerías ni recursos externos, y el token se queda en el navegador (`sessionStorage`; `localStorage` solo
-si se marca «Recordar»).
+La raíz (`/`) sirve el **Panel V1K** desde `public/`. Pide el token, lo valida con una consulta barata y abre nueve
+secciones: Inicio, Proyectos (tarjetas, línea de tiempo o tabla), Calendario, Materiales, Pedidos, Propiedades, Explorador de
+API, Agente de Coze y Sistema. Sin token se puede explorar con **datos de ejemplo** (modo demostración, sin llamar a la API).
+No usa librerías ni recursos externos, y el token se queda en el navegador (`sessionStorage`; `localStorage` solo si se marca
+«Recordar»).
+
+```
+public/
+├── index.html            cascarón: menú, barra, sprite de iconos y formulario de entrada
+├── css/                  base.css (tokens y estructura), componentes.css, vistas.css
+├── js/app.js             enrutador por hash, menú, paleta de comandos y atajos
+├── js/nucleo/            dom, formato, rutas, estado, api, demo, gráficos, componentes e insights (alertas)
+├── js/vistas/            un módulo por sección: export default { montar(ctx) }
+└── vistas.json           descripción de las vistas (se genera con `npm run openapi`)
+```
+
+- Las vistas `stock-categorias` y `propiedades-distritos` existen **solo para los gráficos del panel**: llevan `panel: true`
+  en `lib/vistas.js`, no entran en `openapi.yaml` y el agente de Coze no las ve (así sigue con 8 herramientas).
+- El Explorador de API y el modo demostración leen `vistas.json`, así que un filtro nuevo en `lib/vistas.js` aparece solo.
+- Para verlo en local con las mismas cabeceras de seguridad que Vercel: `npm run panel` y abre http://localhost:4173
+  (en local no hay `/api`: usa el modo demostración).
 
 `vercel.json` sirve `public/` y añade las cabeceras de seguridad (CSP estricta, `X-Frame-Options`, `nosniff`,
 `Referrer-Policy`, `Permissions-Policy`).
@@ -88,8 +105,9 @@ npm test
 ```
 
 Cinco suites, sin red: humo (autenticación, métodos, nombres heredados), cada consulta y cada filtro contra
-`db/01_schema.sql` en un Postgres de prueba (PGlite), el manejo de filtros no válidos, que `openapi.yaml` esté al día y el formato
-y la seguridad estática del panel. Las baterías contra el sistema real están en [`../tests-integracion/`](../tests-integracion).
+`db/01_schema.sql` en un Postgres de prueba (PGlite), el manejo de filtros no válidos, que `openapi.yaml` esté al día y el panel
+(funciones puras, modo demostración con las mismas reglas que la API, y comprobaciones estáticas de CSP, XSS, importaciones,
+iconos y estilos). Las baterías contra el sistema real están en [`../tests-integracion/`](../tests-integracion).
 
 ## Seguridad
 

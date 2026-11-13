@@ -1,102 +1,124 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="780" viewBox="0 0 1280 780" role="img" aria-labelledby="t d">
   <title id="t">Panel V1K</title>
-  <desc id="d">Interfaz web de solo lectura: frescura de las tres apps, indicadores, proyectos atrasados con su avance, próximos hitos, mayor faltante de stock y propiedades por portal. Datos de ejemplo.</desc>
+  <desc id="d">Interfaz web de solo lectura con menú lateral (Inicio, Proyectos, Calendario, Materiales, Pedidos, Propiedades, Explorador de API, Agente de Coze y Sistema), saludo con el estado general, indicadores, alertas automáticas, proyectos por estado en una dona y frescura de las tres apps. Datos de ejemplo.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
-    <radialGradient id="gV" cx="0.95" cy="0" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
-    <radialGradient id="gC" cx="0" cy="1" r="0.5"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.16"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gV" cx="0.95" cy="0" r="0.5"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.2"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gC" cx="0.2" cy="1" r="0.5"><stop offset="0" stop-color="#22d3ee" stop-opacity="0.14"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></radialGradient>
     <linearGradient id="card" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2029"/><stop offset="1" stop-color="#151a22"/></linearGradient>
-    <linearGradient id="barra" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#4ade80"/></linearGradient>
-    <linearGradient id="barraV" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
     <linearGradient id="logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
-    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.5"/></filter>
+    <linearGradient id="hola" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c2230"/><stop offset="1" stop-color="#171c27"/></linearGradient>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity="0.45"/></filter>
   </defs>
 
-  <rect width="1280" height="760" rx="26" fill="url(#bg)"/>
-  <rect width="1280" height="760" rx="26" fill="url(#gV)"/>
-  <rect width="1280" height="760" rx="26" fill="url(#gC)"/>
-  <rect x="1" y="1" width="1278" height="758" rx="25" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <rect width="1280" height="780" rx="26" fill="url(#bg)"/>
+  <rect width="1280" height="780" rx="26" fill="url(#gV)"/>
+  <rect width="1280" height="780" rx="26" fill="url(#gC)"/>
+  <rect x="1" y="1" width="1278" height="778" rx="25" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
 
   <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
-    <!-- cabecera -->
-    <rect x="0" y="0" width="1280" height="76" rx="26" fill="#0b0e13" fill-opacity="0.85"/>
-    <rect x="0" y="60" width="1280" height="16" fill="#0b0e13" fill-opacity="0.85"/>
-    <line x1="0" y1="76" x2="1280" y2="76" stroke="#ffffff" stroke-opacity="0.08"/>
-    <rect x="32" y="19" width="38" height="38" rx="11" fill="url(#logo)"/>
-    <g fill="none" stroke="#052e16" stroke-width="2.2" stroke-linecap="round" transform="translate(32 19) scale(1.1875)"><ellipse cx="16" cy="10.5" rx="7" ry="3"/><path d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/><path d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/></g>
-    <text x="82" y="38" font-size="21" font-weight="700" fill="#e6edf3">Panel V1K</text>
-    <text x="82" y="58" font-size="13" fill="#8b949e">Vista central · solo lectura</text>
-    <rect x="800" y="24" width="118" height="28" rx="14" fill="#4ade80" fill-opacity="0.15"/>
-    <text x="859" y="43" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="0.6" fill="#4ade80">CONECTADO</text>
-    <rect x="938" y="27" width="16" height="16" rx="4" fill="none" stroke="#6e7681"/>
-    <text x="962" y="40" font-size="13" fill="#8b949e">Actualizar cada minuto</text>
-    <rect x="1118" y="22" width="98" height="34" rx="10" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.1"/>
-    <text x="1167" y="44" text-anchor="middle" font-size="14" font-weight="600" fill="#e6edf3">Actualizar</text>
-    <rect x="1226" y="22" width="0" height="34"/>
+    <!-- menú lateral -->
+    <rect x="0" y="0" width="236" height="780" rx="26" fill="#0b0e13" fill-opacity="0.9"/>
+    <rect x="200" y="0" width="36" height="780" fill="#0b0e13" fill-opacity="0.9"/>
+    <line x1="236" y1="0" x2="236" y2="780" stroke="#ffffff" stroke-opacity="0.08"/>
+    <rect x="22" y="22" width="40" height="40" rx="12" fill="url(#logo)"/>
+    <g fill="none" stroke="#052e16" stroke-width="2.2" stroke-linecap="round" transform="translate(22 22) scale(1.25)"><ellipse cx="16" cy="10.5" rx="7" ry="3"/><path d="M9 10.5V21.5C9 23.2 12.1 24.5 16 24.5C19.9 24.5 23 23.2 23 21.5V10.5"/><path d="M9 16C9 17.7 12.1 19 16 19C19.9 19 23 17.7 23 16"/></g>
+    <text x="74" y="40" font-size="19" font-weight="700" fill="#e6edf3">V1K</text>
+    <text x="74" y="58" font-size="12" fill="#8b949e">Vista central · solo lectura</text>
+
+    <g font-size="11" font-weight="700" letter-spacing="1" fill="#6e7681">
+      <text x="24" y="100">PANEL</text><text x="24" y="170">OPERACIÓN</text><text x="24" y="368">MERCADO</text><text x="24" y="440">HERRAMIENTAS</text><text x="24" y="544">SISTEMA</text>
+    </g>
+    <rect x="12" y="110" width="212" height="40" rx="11" fill="#4ade80" fill-opacity="0.13" stroke="#4ade80" stroke-opacity="0.25"/>
+    <g font-size="14.5" fill="#a5afbc">
+      <text x="48" y="136" fill="#4ade80" font-weight="700">Inicio</text>
+      <text x="48" y="204">Proyectos</text><text x="48" y="244">Calendario</text><text x="48" y="284">Materiales</text><text x="48" y="324">Pedidos</text>
+      <text x="48" y="402">Propiedades</text>
+      <text x="48" y="474">Explorador de API</text><text x="48" y="514">Agente de Coze</text>
+      <text x="48" y="578">Estado del sistema</text>
+    </g>
+    <g fill="none" stroke="#7a8696" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 134l7-6 7 6v8h-14z" stroke="#4ade80"/><rect x="24" y="196" width="14" height="10" rx="2"/><rect x="24" y="237" width="14" height="12" rx="2"/><rect x="24" y="277" width="14" height="12" rx="2"/><rect x="24" y="318" width="14" height="10" rx="2"/><rect x="26" y="394" width="10" height="14" rx="1.5"/><path d="M26 470l-4 4 4 4M36 470l4 4-4 4"/><rect x="24" y="507" width="14" height="10" rx="3"/><rect x="24" y="571" width="14" height="10" rx="2"/>
+    </g>
+    <rect x="186" y="189" width="26" height="20" rx="10" fill="#f2706b" fill-opacity="0.18"/><text x="199" y="204" text-anchor="middle" font-size="12" font-weight="700" fill="#f2706b">3</text>
+    <rect x="182" y="269" width="30" height="20" rx="10" fill="#f2706b" fill-opacity="0.18"/><text x="197" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#f2706b">31</text>
+    <rect x="186" y="309" width="26" height="20" rx="10" fill="#ffffff" fill-opacity="0.08"/><text x="199" y="324" text-anchor="middle" font-size="12" font-weight="700" fill="#a5afbc">9</text>
+
+    <!-- barra superior -->
+    <line x1="236" y1="72" x2="1280" y2="72" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="268" y="34" font-size="12" fill="#7a8696">Panel V1K / Panel</text>
+    <text x="268" y="58" font-size="20" font-weight="700" fill="#e6edf3">Inicio</text>
+    <rect x="770" y="18" width="250" height="38" rx="11" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="802" y="42" font-size="14" fill="#8b949e">Buscar o ir a…</text>
+    <rect x="950" y="26" width="58" height="22" rx="6" fill="#ffffff" fill-opacity="0.07"/><text x="979" y="42" text-anchor="middle" font-size="11" font-weight="700" fill="#a5afbc">Ctrl K</text>
+    <circle cx="784" cy="37" r="5.5" fill="none" stroke="#8b949e" stroke-width="1.6"/>
+    <rect x="1040" y="22" width="132" height="30" rx="15" fill="#4ade80" fill-opacity="0.14"/>
+    <circle cx="1060" cy="37" r="3.5" fill="#4ade80"/><text x="1112" y="42" text-anchor="middle" font-size="12" font-weight="700" letter-spacing="0.6" fill="#4ade80">CONECTADO</text>
+
+    <!-- saludo -->
+    <g filter="url(#sh)"><rect x="264" y="96" width="984" height="104" rx="18" fill="url(#hola)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="292" y="136" font-size="26" font-weight="800" fill="#f0f6fc">Buenas tardes, equipo V1K</text>
+    <text x="292" y="160" font-size="14" fill="#a5afbc">Este es el estado de Planner, MRP y Scraper según la última sincronización.</text>
+    <rect x="292" y="168" width="168" height="26" rx="13" fill="#f2706b" fill-opacity="0.16"/>
+    <text x="376" y="186" text-anchor="middle" font-size="13" font-weight="700" fill="#f2706b">▲ Requiere atención</text>
+    <text x="474" y="186" font-size="13" fill="#8b949e">3 puntos por revisar</text>
+
+    <!-- indicadores -->
+    <g filter="url(#sh)">
+      <rect x="264" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="460" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="656" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="852" y="218" width="184" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+      <rect x="1048" y="218" width="200" height="96" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+    </g>
+    <g font-size="13" fill="#a5afbc"><text x="282" y="244">Proyectos</text><text x="478" y="244">Atrasados</text><text x="674" y="244">Stock bajo mínimo</text><text x="870" y="244">Pedidos abiertos</text><text x="1066" y="244">Propiedades</text></g>
+    <g font-size="34" font-weight="800"><text x="282" y="286" fill="#e6edf3">10</text><text x="478" y="286" fill="#f2706b">3</text><text x="674" y="286" fill="#fbbf24">31</text><text x="870" y="286" fill="#e6edf3">9</text><text x="1066" y="286" fill="#e6edf3">3.3 K</text></g>
+    <g font-size="11.5" fill="#7a8696"><text x="282" y="304">4 en curso · 2 terminados</text><text x="478" y="304">18 tareas atrasadas</text><text x="674" y="304">de 46 materiales</text><text x="870" y="304">Próximo: hace 4 días</text><text x="1066" y="304">96 copiadas al panel</text></g>
+
+    <!-- alertas -->
+    <g filter="url(#sh)"><rect x="264" y="332" width="604" height="214" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="288" y="364" font-size="16" font-weight="700" fill="#e6edf3">Qué mirar primero</text>
+    <g>
+      <rect x="284" y="380" width="564" height="48" rx="12" fill="#f2706b" fill-opacity="0.08"/><rect x="292" y="388" width="32" height="32" rx="10" fill="#f2706b" fill-opacity="0.2"/><text x="304" y="410" text-anchor="middle" font-size="15" font-weight="800" fill="#f2706b">!</text>
+      <text x="336" y="400" font-size="14" font-weight="700" fill="#e6edf3">3 proyectos atrasados</text><text x="336" y="418" font-size="12" fill="#8b949e">18 tareas atrasadas en total. El más antiguo: Centro Comercial Andino.</text>
+      <rect x="284" y="436" width="564" height="48" rx="12" fill="#f2706b" fill-opacity="0.08"/><rect x="292" y="444" width="32" height="32" rx="10" fill="#f2706b" fill-opacity="0.2"/><text x="304" y="466" text-anchor="middle" font-size="15" font-weight="800" fill="#f2706b">!</text>
+      <text x="336" y="456" font-size="14" font-weight="700" fill="#e6edf3">2 pedidos con llegada vencida</text><text x="336" y="474" font-size="12" fill="#8b949e">OC-1040, OC-1041 debían llegar antes de hoy.</text>
+      <rect x="284" y="492" width="564" height="44" rx="12" fill="#fbbf24" fill-opacity="0.08"/><rect x="292" y="498" width="32" height="32" rx="10" fill="#fbbf24" fill-opacity="0.2"/><text x="304" y="520" text-anchor="middle" font-size="15" font-weight="800" fill="#fbbf24">▣</text>
+      <text x="336" y="512" font-size="14" font-weight="700" fill="#e6edf3">31 de 46 materiales bajo su mínimo</text><text x="336" y="528" font-size="12" fill="#8b949e">Mayor faltante: Ladrillo King Kong 18 huecos.</text>
+    </g>
+
+    <!-- dona de proyectos -->
+    <g filter="url(#sh)"><rect x="888" y="332" width="360" height="214" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="910" y="364" font-size="16" font-weight="700" fill="#e6edf3">Proyectos por estado</text>
+    <g transform="translate(990 454) rotate(-90)" fill="none" stroke-width="22">
+      <circle r="52" stroke="#f2706b" stroke-dasharray="97 230" stroke-dashoffset="0"/>
+      <circle r="52" stroke="#22d3ee" stroke-dasharray="129 198" stroke-dashoffset="-98"/>
+      <circle r="52" stroke="#7a8696" stroke-dasharray="31 296" stroke-dashoffset="-229"/>
+      <circle r="52" stroke="#4ade80" stroke-dasharray="64 263" stroke-dashoffset="-262"/>
+    </g>
+    <text x="990" y="458" text-anchor="middle" font-size="26" font-weight="800" fill="#e6edf3">10</text><text x="990" y="474" text-anchor="middle" font-size="11" fill="#7a8696">proyectos</text>
+    <g font-size="12.5" fill="#c9d1d9">
+      <circle cx="1090" cy="416" r="5" fill="#f2706b"/><text x="1104" y="420">Atrasado</text><text x="1228" y="420" text-anchor="end" fill="#8b949e">3 · 30 %</text>
+      <circle cx="1090" cy="442" r="5" fill="#22d3ee"/><text x="1104" y="446">En curso</text><text x="1228" y="446" text-anchor="end" fill="#8b949e">4 · 40 %</text>
+      <circle cx="1090" cy="468" r="5" fill="#7a8696"/><text x="1104" y="472">Por iniciar</text><text x="1228" y="472" text-anchor="end" fill="#8b949e">1 · 10 %</text>
+      <circle cx="1090" cy="494" r="5" fill="#4ade80"/><text x="1104" y="498">Terminado</text><text x="1228" y="498" text-anchor="end" fill="#8b949e">2 · 20 %</text>
+    </g>
 
     <!-- frescura -->
-    <text x="32" y="112" font-size="16" font-weight="700" fill="#e6edf3">Frescura de los datos</text>
-    <g filter="url(#sh)">
-      <rect x="32" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="448" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="864" y="126" width="384" height="104" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+    <g filter="url(#sh)"><rect x="264" y="564" width="984" height="188" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
+    <text x="288" y="596" font-size="16" font-weight="700" fill="#e6edf3">Frescura de los datos</text>
+    <g font-size="12">
+      <rect x="284" y="612" width="300" height="120" rx="14" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08"/>
+      <rect x="600" y="612" width="300" height="120" rx="14" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08"/>
+      <rect x="916" y="612" width="312" height="120" rx="14" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08"/>
     </g>
-    <rect x="32" y="146" width="4" height="64" rx="2" fill="#22d3ee"/><rect x="448" y="146" width="4" height="64" rx="2" fill="#fbbf24"/><rect x="864" y="146" width="4" height="64" rx="2" fill="#a78bfa"/>
-    <text x="56" y="158" font-size="16" font-weight="700" fill="#e6edf3">Planner</text><circle cx="392" cy="153" r="5" fill="#4ade80"/>
-    <text x="56" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 1.6 h</text>
-    <text x="56" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 12:44</text>
-    <text x="472" y="158" font-size="16" font-weight="700" fill="#e6edf3">MRP</text><circle cx="808" cy="153" r="5" fill="#4ade80"/>
-    <text x="472" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 1.3 h</text>
-    <text x="472" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 13:02</text>
-    <text x="888" y="158" font-size="16" font-weight="700" fill="#e6edf3">Scraper</text><circle cx="1224" cy="153" r="5" fill="#4ade80"/>
-    <text x="888" y="192" font-size="27" font-weight="800" fill="#f0f6fc">hace 30 min</text>
-    <text x="888" y="214" font-size="13" fill="#8b949e">Última sincronización: 13/11/2026 13:49</text>
-
-    <!-- KPIs -->
-    <text x="32" y="266" font-size="16" font-weight="700" fill="#e6edf3">En números</text>
-    <g filter="url(#sh)">
-      <rect x="32" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="276" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="520" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="764" y="280" width="228" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
-      <rect x="1008" y="280" width="240" height="92" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/>
+    <g fill="none" stroke-width="9" stroke-linecap="round">
+      <circle cx="348" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="348" cy="672" r="31" stroke="#4ade80" stroke-dasharray="190 195" transform="rotate(-90 348 672)"/>
+      <circle cx="664" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="664" cy="672" r="31" stroke="#4ade80" stroke-dasharray="191 195" transform="rotate(-90 664 672)"/>
+      <circle cx="980" cy="672" r="31" stroke="#ffffff" stroke-opacity="0.08"/><circle cx="980" cy="672" r="31" stroke="#4ade80" stroke-dasharray="193 195" transform="rotate(-90 980 672)"/>
     </g>
-    <text x="52" y="326" font-size="34" font-weight="800" fill="#e6edf3">8</text><text x="52" y="351" font-size="13" fill="#8b949e">Proyectos</text>
-    <text x="296" y="326" font-size="34" font-weight="800" fill="#f2706b">2</text><text x="296" y="351" font-size="13" fill="#8b949e">Proyectos atrasados</text>
-    <text x="540" y="326" font-size="34" font-weight="800" fill="#f2706b">5</text><text x="540" y="351" font-size="13" fill="#8b949e">Tareas atrasadas</text>
-    <text x="784" y="326" font-size="34" font-weight="800" fill="#f2706b">42</text><text x="784" y="351" font-size="13" fill="#8b949e">Materiales bajo mínimo (de 120)</text>
-    <text x="1028" y="326" font-size="34" font-weight="800" fill="#e6edf3">4,753</text><text x="1028" y="351" font-size="13" fill="#8b949e">Propiedades en el catálogo</text>
-
-    <!-- proyectos atrasados -->
-    <g filter="url(#sh)"><rect x="32" y="396" width="610" height="206" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
-    <text x="54" y="428" font-size="16" font-weight="700" fill="#e6edf3">Proyectos atrasados</text>
-    <rect x="54" y="442" width="566" height="64" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
-    <text x="70" y="465" font-size="15" font-weight="650" fill="#e6edf3">Torre Norte</text><text x="604" y="465" text-anchor="end" font-size="13" fill="#8b949e">40 % de avance</text>
-    <text x="70" y="483" font-size="12" fill="#8b949e">Ana · debía terminar el 31/10/2026 · 3 tareas atrasadas</text>
-    <rect x="70" y="492" width="534" height="6" rx="3" fill="#ffffff" fill-opacity="0.08"/><rect x="70" y="492" width="214" height="6" rx="3" fill="url(#barra)"/>
-    <rect x="54" y="516" width="566" height="64" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
-    <text x="70" y="539" font-size="15" font-weight="650" fill="#e6edf3">Casa Sur</text><text x="604" y="539" text-anchor="end" font-size="13" fill="#8b949e">75 % de avance</text>
-    <text x="70" y="557" font-size="12" fill="#8b949e">Luis · debía terminar el 05/11/2026 · 2 tareas atrasadas</text>
-    <rect x="70" y="566" width="534" height="6" rx="3" fill="#ffffff" fill-opacity="0.08"/><rect x="70" y="566" width="400" height="6" rx="3" fill="url(#barra)"/>
-
-    <!-- hitos y pedidos -->
-    <g filter="url(#sh)"><rect x="662" y="396" width="586" height="206" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
-    <text x="684" y="428" font-size="16" font-weight="700" fill="#e6edf3">Próximos hitos</text>
-    <rect x="684" y="442" width="542" height="50" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
-    <text x="700" y="464" font-size="14" font-weight="650" fill="#e6edf3">Vaciado de losa</text><text x="1210" y="464" text-anchor="end" font-size="12" fill="#8b949e">20/11/2026</text>
-    <text x="700" y="482" font-size="12" fill="#8b949e">Torre Norte</text>
-    <text x="684" y="522" font-size="16" font-weight="700" fill="#e6edf3">Pedidos abiertos</text>
-    <rect x="684" y="536" width="542" height="50" rx="12" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.09"/>
-    <text x="700" y="558" font-size="14" font-weight="650" fill="#e6edf3">OC-0042 · Aceros del Sur</text><text x="1210" y="558" text-anchor="end" font-size="12" fill="#8b949e">llega 18/11/2026</text>
-    <text x="700" y="576" font-size="12" fill="#8b949e">enviada · Torre Norte</text>
-
-    <!-- propiedades -->
-    <g filter="url(#sh)"><rect x="32" y="626" width="1216" height="106" rx="18" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.09"/></g>
-    <text x="54" y="656" font-size="16" font-weight="700" fill="#e6edf3">Propiedades por portal</text>
-    <g font-size="12" fill="#c9d1d9">
-      <text x="54" y="682">infocasas · venta</text><rect x="180" y="674" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="674" width="860" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="682" text-anchor="end" fill="#8b949e">2,717</text>
-      <text x="54" y="702">infocasas · alquiler</text><rect x="180" y="694" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="694" width="520" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="702" text-anchor="end" fill="#8b949e">1,650</text>
-      <text x="54" y="722">adondevivir · venta</text><rect x="180" y="714" width="860" height="8" rx="4" fill="#ffffff" fill-opacity="0.07"/><rect x="180" y="714" width="60" height="8" rx="4" fill="url(#barraV)"/><text x="1230" y="722" text-anchor="end" fill="#8b949e">184</text>
-    </g>
+    <g text-anchor="middle" font-size="13" font-weight="800" fill="#e6edf3"><text x="348" y="677">1.6 h</text><text x="664" y="677">1.3 h</text><text x="980" y="677">30 min</text></g>
+    <g font-size="15" font-weight="700"><text x="400" y="666" fill="#22d3ee">Planner</text><text x="716" y="666" fill="#fbbf24">MRP</text><text x="1032" y="666" fill="#a78bfa">Scraper</text></g>
+    <g font-size="12.5" fill="#8b949e"><text x="400" y="686">hace 1.6 h</text><text x="716" y="686">hace 1.3 h</text><text x="1032" y="686">hace 30 min</text></g>
   </g>
 </svg>

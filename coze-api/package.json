@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs && node test/panel.test.mjs",
-    "openapi": "node scripts/generar-openapi.mjs"
+    "openapi": "node scripts/generar-openapi.mjs",
+    "panel": "node scripts/servir-panel.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "1.2.0"
