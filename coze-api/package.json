@@ -13,10 +13,10 @@
     "panel": "node scripts/servir-panel.mjs"
   },
   "dependencies": {
-    "@neondatabase/serverless": "1.2.0"
+    "@neondatabase/serverless": "1.2.1"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.10",
-    "yaml": "2.8.1"
+    "@electric-sql/pglite": "0.5.16",
+    "yaml": "2.9.1"
   }
 }
