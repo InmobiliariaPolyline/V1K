@@ -25,6 +25,11 @@ CREATE TABLE IF NOT EXISTS central.telegram_accesos (
 CREATE OR REPLACE VIEW central.v_telegram_chats_activos AS
   SELECT chat_id::text AS chat_id FROM central.telegram_accesos WHERE activo;
 
+-- Los números de chat REVOCADOS (siguen en la tabla pero sin acceso): el bot los usa para decirle a la persona que su acceso fue revocado,
+-- en vez del «bot privado» que ve quien nunca tuvo acceso. Tampoco lleva nombres ni teléfonos.
+CREATE OR REPLACE VIEW central.v_telegram_chats_revocados AS
+  SELECT chat_id::text AS chat_id FROM central.telegram_accesos WHERE NOT activo;
+
 -- ---------- Rol de escritura acotada ----------
 DO $$
 BEGIN
@@ -48,11 +53,12 @@ BEGIN
   END IF;
 END $$;
 
--- El bot (coze_reader) y el resumen diario (writer_historial) leen SOLO la vista de números de chat
+-- El bot (coze_reader) lee las vistas de números de chat activos y revocados; el resumen diario (writer_historial), solo la de activos
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'coze_reader') THEN
     GRANT SELECT ON central.v_telegram_chats_activos TO coze_reader;
+    GRANT SELECT ON central.v_telegram_chats_revocados TO coze_reader;
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'writer_historial') THEN
     GRANT SELECT ON central.v_telegram_chats_activos TO writer_historial;

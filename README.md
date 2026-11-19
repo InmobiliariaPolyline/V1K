@@ -80,7 +80,7 @@ recuadro que se copia al tocarlo** junto con los pasos para pedirlo. Los mensaje
 
 **Dar acceso desde el panel.** El administrador no tiene que tocar Vercel ni GitHub: en el panel, sección **Accesos de Telegram**, entra con su
 token de administrador (distinto del de solo lectura), escribe el nombre, el teléfono y el número de chat de la persona y pulsa **Dar acceso**. El bot le
-avisa y desde ese momento puede usarlo y recibir el resumen de la mañana. También puede **revocar** o **quitar** a alguien. El número de chat es lo que
+avisa y desde ese momento puede usarlo y recibir el resumen de la mañana. También puede **revocar** o **quitar** a alguien; a quien se revoca, el bot le avisa con un mensaje claro de **acceso revocado** cuando intenta usarlo. El número de chat es lo que
 autoriza; el teléfono es solo el registro del administrador. Los nombres y teléfonos viven en una tabla que solo toca un 6.º rol, `writer_accesos`.
 
 <img src="docs/assets/telegram-accesos.svg" alt="Cuatro pasos para dar acceso: la persona pulsa Iniciar y recibe su número de chat, el administrador lo escribe en el módulo Accesos del panel con nombre y teléfono, queda guardado en la base y el bot le avisa que ya tiene acceso" width="100%" />

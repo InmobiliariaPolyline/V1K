@@ -264,6 +264,9 @@ try:
             check("[coze_reader] la vista solo expone el número de chat", st is None and len(s.conn.execute(f"SELECT * FROM central.{VISTA_CHATS} LIMIT 0").description) == 1)
             st, _f, _n = s.intenta("SELECT nombre, telefono FROM central.telegram_accesos")
             check("[coze_reader] NO ve nombres ni teléfonos de los accesos", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT chat_id FROM central.v_telegram_chats_revocados LIMIT 1")
+            check("[coze_reader] lee la vista de chats revocados (para el aviso de revocación)", st is None, f"-> {st}")
+            check("[coze_reader] la vista de revocados solo expone el número de chat", st is None and len(s.conn.execute("SELECT * FROM central.v_telegram_chats_revocados LIMIT 0").description) == 1)
         elif rol == "writer_accesos":
             st, filas, _n = s.intenta("SELECT rolconnlimit FROM pg_roles WHERE rolname = current_user")
             check("[writer_accesos] máximo 3 conexiones", filas and filas[0][0] == 3, f"-> {filas}")
@@ -304,6 +307,8 @@ try:
             check(f"[{rol}] NO puede ejecutar tomar_foto_diaria()", st == "42501", f"-> {st}")
             st, _f, _n = s.intenta(f"SELECT 1 FROM central.{VISTA_CHATS} LIMIT 1")
             check(f"[{rol}] NO lee la vista de números de chat", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT 1 FROM central.v_telegram_chats_revocados LIMIT 1")
+            check(f"[{rol}] NO lee la vista de chats revocados", st == "42501", f"-> {st}")
             st, filas, _n = s.intenta("SELECT app FROM central.sync_estado")
             apps = [f[0] for f in (filas or [])]
             check(f"[rls] {rol} solo ve su fila de sync_estado", set(apps) <= {propia}, f"-> {apps}")

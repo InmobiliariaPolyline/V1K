@@ -52,6 +52,12 @@ const puede = async (rol, objeto, privilegio) => (await pg.query('SELECT has_tab
   }
   const cols = (await filasDe("SELECT column_name FROM information_schema.columns WHERE table_schema = 'central' AND table_name = 'v_telegram_chats_activos'")).map((c) => c.column_name);
   igual(cols, ['chat_id'], 'la vista expone únicamente el número de chat');
+  const colsRev = (await filasDe("SELECT column_name FROM information_schema.columns WHERE table_schema = 'central' AND table_name = 'v_telegram_chats_revocados'")).map((c) => c.column_name);
+  igual(colsRev, ['chat_id'], 'la vista de revocados también expone únicamente el número de chat');
+  ok(await puede('coze_reader', 'central.v_telegram_chats_revocados', 'SELECT'), 'coze_reader (el bot) lee la vista de revocados');
+  for (const r of ['writer_historial', 'writer_scraper', 'writer_planner', 'writer_mrp']) {
+    if ((await filasDe('SELECT 1 FROM pg_roles WHERE rolname = $1', [r])).length) ok(!(await puede(r, 'central.v_telegram_chats_revocados', 'SELECT')), `${r} no lee la vista de revocados`);
+  }
 }
 
 // ── Restricciones de la tabla ────────────────────────────────────────────────────────────
@@ -152,7 +158,9 @@ const PERSONA = { chat_id: '123456789', nombre: 'Ana Prueba', telefono: '+51 999
   igual([r.codigo, r.cuerpo.persona.activo, r.cuerpo.notificado], [200, false, false], 'revocar: no se le avisa');
   igual((await filasDe('SELECT chat_id FROM central.v_telegram_chats_activos ORDER BY 1')).map((f) => f.chat_id), ['987654321'], 'revocada: sale de la vista que lee el bot');
   igual(aviso, [], 'revocar no envía mensajes');
+  igual((await filasDe('SELECT chat_id FROM central.v_telegram_chats_revocados')).map((f) => f.chat_id), ['123456789'], 'revocada: aparece en la vista de revocados (y ya no en la de activos)');
   r = await llamar('PATCH', { chat_id: '123456789', activo: true });
+  igual((await filasDe('SELECT chat_id FROM central.v_telegram_chats_revocados')).length, 0, 'reactivada: sale de la vista de revocados');
   igual([r.cuerpo.persona.activo, r.cuerpo.notificado, aviso], [true, true, ['123456789']], 'reactivar: vuelve y se le avisa');
   r = await llamar('PATCH', { chat_id: '123456789' }); igual(r.codigo, 400, 'PATCH sin «activo» → 400');
   r = await llamar('PATCH', { chat_id: '123456789', activo: 'si' }); igual(r.codigo, 400, '«activo» no booleano → 400');

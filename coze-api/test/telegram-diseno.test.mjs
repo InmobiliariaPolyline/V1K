@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { crearLectorDeChats } from '../lib/chats-activos.js';
-import { chatsPermitidos, crearLimitador, crearManejador, procesarUpdate, procesarUpdateResumen, textoBienvenida, textoBienvenidaResumen, textoPrivado } from '../lib/telegram.js';
+import { crearLectorDeChats, crearLectorDeRevocados } from '../lib/chats-activos.js';
+import { chatsPermitidos, crearLimitador, crearManejador, procesarUpdate, procesarUpdateResumen, textoBienvenida, textoBienvenidaResumen, textoPrivado, textoRevocado } from '../lib/telegram.js';
 import { barra, codigo, esc, horaEnLima, nombreCorto, pasosDeAcceso, saludoDe, tarjeta, titulo } from '../lib/telegram-diseno.js';
 import { componerResumenHtml, enviarAVarios, enviarTelegram } from '../scripts/resumen-diario.mjs';
 import { PERIODO, FPS, VARIANTES, tiempos } from '../scripts/generar-banners.mjs';
@@ -220,7 +220,7 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
 
 // ── Los videos de bienvenida ─────────────────────────────────────────────────────────────
 {
-  igual(VARIANTES, ['bienvenida', 'privado', 'resumen'], 'tres variantes');
+  igual(VARIANTES, ['bienvenida', 'privado', 'resumen', 'revocado'], 'cuatro variantes');
   igual(tiempos().length, Math.round(PERIODO * FPS), 'un ciclo completo de fotogramas');
   ok(tiempos().every((t, i) => t === i / FPS), 'tiempos uniformes');
   for (const v of VARIANTES) {
@@ -257,12 +257,85 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   Object.assign(process.env, guardado);
 }
 
+// ── Acceso REVOCADO: se le dice claro (no el «bot privado» de quien nunca tuvo acceso) ─────
+{
+  const REVOCADOS = new Set(['777888999']);
+  const rev = (update, extra = {}) => procesarUpdate(update, { consultar: sin, permitidos: PERMITIDOS, revocados: REVOCADOS, hoy: HOY, panel: 'https://ejemplo.test', hora: 9, ...extra });
+  const t = textoRevocado('777888999');
+  ok(t.startsWith('🚫 <b>Tu acceso fue revocado</b>') && t.includes('<code>777888999</code>') && t.includes('administrador') && t.includes('error'), 'el texto dice que fue revocado, da su número y qué hacer');
+  ok(t.length <= 1000, `cabe como pie de la animación: ${t.length}`);
+  ok(!/privado/i.test(t), 'no se confunde con el «bot privado» de quien nunca tuvo acceso');
+
+  // Comandos
+  const a = await rev(msg('/proyectos', 777888999));
+  igual([a.length, a[0].metodo], [1, 'sendMessage'], 'un comando de un revocado: un solo mensaje');
+  ok(a[0].cuerpo.text === t && a[0].cuerpo.parse_mode === 'HTML' && !a[0].cuerpo.reply_markup, 'con el aviso de revocación y sin menú de botones');
+  ok(!a.some((x) => x.metodo === 'sendChatAction'), 'sin «escribiendo…» ni consultas a la base');
+  let consultas = 0;
+  await rev(msg('/resumen', 777888999), { consultar: async () => { consultas++; return []; } });
+  igual(consultas, 0, 'un revocado nunca provoca una consulta a la base');
+  const b = await rev(msg('/start', 777888999));
+  igual([b[0].metodo, b[0].cuerpo.animation], ['sendAnimation', 'https://ejemplo.test/bot/revocado.mp4'], '«Iniciar» de un revocado: animación de acceso revocado');
+  ok(b[0].cuerpo.caption === t && b[0].alternativa.metodo === 'sendMessage', 'con el mismo texto y, si el video falla, como mensaje');
+  const c = await rev(msg('hola', 777888999));
+  ok(c[0].cuerpo.text === t, 'cualquier mensaje de un revocado recibe el aviso');
+
+  // Botones del menú: aviso emergente, el menú desaparece y queda el mensaje
+  const boton = (mensaje) => ({ callback_query: { id: 'cb9', data: 'c:proyectos', message: { chat: { id: 777888999 }, message_id: 31, ...mensaje } } });
+  const d = await rev(boton({ text: 'menú' }));
+  igual(d[0].metodo, 'answerCallbackQuery', 'el botón se contesta primero');
+  ok(d[0].cuerpo.show_alert === true && d[0].cuerpo.text.includes('revocado'), 'con un aviso emergente («Tu acceso fue revocado»)');
+  const e = d.find((x) => x.metodo === 'editMessageText');
+  ok(e && e.cuerpo.message_id === 31 && e.cuerpo.text === t && e.cuerpo.reply_markup.inline_keyboard.length === 0, 'el mensaje del menú se reemplaza por el aviso y se quitan los botones');
+  ok(e.alternativa.metodo === 'sendMessage', 'si no se puede editar, se envía el aviso');
+  const f = await rev(boton({ animation: {}, caption: 'bienvenida' }));
+  ok(f.some((x) => x.metodo === 'editMessageReplyMarkup' && x.cuerpo.reply_markup.inline_keyboard.length === 0) && f.some((x) => x.metodo === 'sendMessage' && x.cuerpo.text === t), 'en la animación de bienvenida se quitan los botones y se envía el aviso');
+  const g = await procesarUpdate(boton({ text: 'menú' }), { consultar: sin, permitidos: PERMITIDOS, revocados: new Set(), hoy: HOY });
+  ok(g.length === 1 && g[0].cuerpo.show_alert === undefined && /privado/.test(g[0].cuerpo.text), 'quien nunca tuvo acceso sigue viendo «Este bot es privado», sin aviso de revocación');
+  const h = await ejecutar(msg('/proyectos', 555000111));
+  ok(/privado/.test(h[0].cuerpo.text) && !h[0].cuerpo.text.includes('revocado'), 'un extraño (nunca tuvo acceso) no ve el mensaje de revocación');
+
+  // Un administrador fijo nunca se trata como revocado, aunque su perfil del módulo esté revocado
+  const adm = await procesarUpdate(msg('/ayuda'), { consultar: sin, permitidos: PERMITIDOS, revocados: new Set(['424242424']), hoy: HOY });
+  ok(adm.some((x) => x.metodo === 'sendMessage' && /Asistente V1K/.test(x.cuerpo.text)), 'un administrador fijo sigue atendido aunque su perfil del módulo esté revocado');
+
+  // Bot del resumen
+  const r1 = procesarUpdateResumen(msg('/start', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS, panel: 'https://ejemplo.test' });
+  igual([r1[0].cuerpo.animation, r1[0].cuerpo.caption === t], ['https://ejemplo.test/bot/revocado.mp4', true], 'bot del resumen: «Iniciar» de un revocado → animación y aviso');
+  const r2 = procesarUpdateResumen(msg('buenas', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS });
+  ok(r2[0].metodo === 'sendMessage' && r2[0].cuerpo.text === t, 'bot del resumen: otros mensajes de un revocado reciben el aviso');
+  const r3 = procesarUpdateResumen(msg('/start', 555000111), { permitidos: PERMITIDOS, revocados: REVOCADOS });
+  ok(r3[0].cuerpo.animation.endsWith('/privado.mp4'), 'bot del resumen: quien nunca tuvo acceso sigue viendo «acceso privado»');
+
+  // El manejador lee la lista de revocados
+  const SECRETO = 's'.repeat(40);
+  const envC = { TELEGRAM_BOT_COMANDOS_TOKEN: '1234567890:AAExampleTokenQueNoEsReal_abcdefghijk', TELEGRAM_WEBHOOK_SECRET: SECRETO, TELEGRAM_CHATS_PERMITIDOS: '424242424' };
+  const enviados = [];
+  const fetchFalso = async (url, init) => { if (!url.endsWith('/sendChatAction')) enviados.push(JSON.parse(init.body)); return { ok: true, status: 200, json: async () => ({ ok: true }) }; };
+  const res = () => ({ codigo: 0, setHeader() {}, status(c) { this.codigo = c; return this; }, json() { return this; } });
+  const llamar = async (extra, update) => { const r = res(); enviados.length = 0; await crearManejador({ env: envC, consultar: sin, fetchFn: fetchFalso, ...extra })({ method: 'POST', headers: { 'x-telegram-bot-api-secret-token': SECRETO }, body: update }, r); return r; };
+  let r = await llamar({ chatsRevocados: async () => ['777888999'] }, msg('/proyectos', 777888999));
+  ok(r.codigo === 200 && enviados[0].text === t, 'el manejador: un chat de la lista de revocados recibe el aviso');
+  r = await llamar({ chatsRevocados: async () => { throw new Error('base caída'); } }, msg('/proyectos', 777888999));
+  ok(r.codigo === 200 && /privado/.test(enviados[0].text), 'si la lista de revocados falla, se trata como «bot privado» (nunca da acceso)');
+  r = await llamar({ chatsExtra: async () => ['777888999'], chatsRevocados: async () => ['777888999'] }, msg('/ayuda', 777888999));
+  ok(/Asistente V1K/.test(enviados[0].text), 'si alguien aparece como activo, manda el acceso (no el aviso de revocación)');
+
+  // Lector de revocados
+  const lector = crearLectorDeRevocados(async (texto) => { ok(/v_telegram_chats_revocados/.test(texto) && !/nombre|telefono/.test(texto), 'solo la vista de números de chat revocados'); return [{ chat_id: 777888999 }]; });
+  igual(await lector(), ['777888999'], 'el lector de revocados devuelve números de chat como texto');
+  igual(await crearLectorDeRevocados(async () => { throw new Error('x'); })(), [], 'si la base falla, devuelve vacío');
+  const anim = fs.readFileSync(path.join(aqui, '..', 'public', 'bot', 'revocado.mp4'));
+  ok(anim.subarray(4, 8).toString() === 'ftyp' && anim.length > 20_000 && anim.length < 2_000_000 && anim.includes(Buffer.from('avc1')), 'existe revocado.mp4 (H.264, tamaño razonable)');
+}
+
 // ── Documentación del diseño ─────────────────────────────────────────────────────────────
 {
   const raiz = path.join(aqui, '..', '..');
   const leer = (...p) => fs.readFileSync(path.join(raiz, ...p), 'utf8');
   const readme = leer('README.md'), guia = leer('docs', 'TELEGRAM_PASO_A_PASO.md'), admin = leer('docs', 'BOT_TELEGRAM.md');
   for (const v of ['bienvenida', 'privado', 'resumen']) ok(readme.includes(`docs/assets/bot-${v}.jpg`) && fs.existsSync(path.join(raiz, 'docs', 'assets', `bot-${v}.jpg`)), `el README muestra bot-${v}.jpg y existe`);
+  ok(/Tu acceso fue revocado/.test(guia) && /v_telegram_chats_revocados/.test(admin) && /acceso fue revocado/.test(admin), 'las guías explican el aviso de acceso revocado');
   ok(/recuadro/.test(guia) && /Toca el número/.test(guia) && /Hazlo en los dos bots/.test(guia), 'la guía explica la bienvenida y que el número se copia al tocarlo');
   ok(guia.includes('assets/bot-privado.jpg') && fs.existsSync(path.join(raiz, 'docs', 'assets', 'bot-privado.jpg')), 'la guía muestra la animación de acceso privado');
   for (const dato of ['TELEGRAM_BOT_RESUMEN_TOKEN', 'TELEGRAM_RESUMEN_WEBHOOK_SECRET', '--bot resumen', 'generar-banners.mjs', '/setdescriptionpic']) ok(admin.includes(dato), `la guía del administrador menciona ${dato}`);

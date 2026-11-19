@@ -8,9 +8,11 @@
 //   TELEGRAM_RESUMEN_WEBHOOK_SECRET      secreto largo y aleatorio que Telegram devuelve en cada llamada
 //   TELEGRAM_CHATS_PERMITIDOS            números de chat de los administradores, separados por comas (opcional)
 import { neon } from '@neondatabase/serverless';
-import { crearLectorDeChats } from '../lib/chats-activos.js';
+import { crearLectorDeChats, crearLectorDeRevocados } from '../lib/chats-activos.js';
 import { crearManejador } from '../lib/telegram.js';
 
-const chatsExtra = crearLectorDeChats((texto) => neon(process.env.DATABASE_URL_READER).query(texto));
+const leerSql = (texto) => neon(process.env.DATABASE_URL_READER).query(texto);
+const chatsExtra = crearLectorDeChats(leerSql);
+const chatsRevocados = crearLectorDeRevocados(leerSql);
 
-export default crearManejador({ modo: 'resumen', chatsExtra });
+export default crearManejador({ modo: 'resumen', chatsExtra, chatsRevocados });

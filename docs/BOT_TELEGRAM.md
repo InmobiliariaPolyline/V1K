@@ -80,8 +80,13 @@ En la misma pantalla: **Revocar** (sin acceso, pero queda en la lista), **Reacti
 | Teléfono | Solo es un dato de **tu registro**: Telegram no permite comprobarlo desde un bot, así que no autoriza a nadie. |
 | Nombre | Para reconocer a la persona en la lista. |
 
+**Qué ve una persona revocada.** Si alguien a quien pulsaste **Revocar** intenta usar un comando o toca un botón del menú, el bot le dice claro que **su acceso fue revocado**
+(no el «bot privado» de quien nunca tuvo acceso): un aviso emergente, el menú desaparece y queda el mensaje con su número de chat y qué hacer si cree que es un error. Con «Iniciar» recibe
+la animación de acceso revocado. Al **Reactivar**, vuelve a funcionar en menos de 15 segundos. Quien **Quitaste** de la lista (borrada) vuelve a ver «acceso privado». Los
+administradores fijos nunca se tratan como revocados.
+
 **Quién ve qué.** La tabla con nombres y teléfonos (`central.telegram_accesos`) solo la toca el rol `writer_accesos`, y solo desde el módulo. El bot y el resumen
-diario leen únicamente la lista de números de chat activos (vista `v_telegram_chats_activos`); Coze y el panel de datos no la ven.
+diario leen únicamente la lista de números de chat activos (vista `v_telegram_chats_activos`; el bot también la de revocados, `v_telegram_chats_revocados`); Coze y el panel de datos no la ven.
 
 **Administradores fijos.** Los números de `TELEGRAM_CHATS_PERMITIDOS` (Vercel) y `TELEGRAM_CHAT_ID` (GitHub) siguen funcionando sin aparecer en la lista del módulo: son tu
 acceso de respaldo si el módulo o la base fallan. Si la base falla, el bot atiende solo a esos administradores (nadie entra por error).

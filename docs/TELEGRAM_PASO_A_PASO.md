@@ -116,6 +116,7 @@ Llega a las **08:07** desde `@v1k_asistente_bot`. Léelo de arriba abajo:
 | Qué pasa | Qué hacer |
 |---|---|
 | No encuentro el bot al buscar | Usa el enlace directo de la tabla de arriba |
+| «Tu acceso fue revocado» | El administrador te quitó el acceso. Escríbele con tu número de chat (sale en el mismo mensaje) si crees que es un error |
 | «Este bot es privado» | Envía tu número de chat (Paso 5) al administrador y espera su aviso |
 | Pulso un botón y no responde | Espera unos segundos; si sigue igual, escribe `/ayuda` |
 | «No pude leer los datos ahora» | Es un fallo momentáneo de la base: intenta de nuevo en un minuto |

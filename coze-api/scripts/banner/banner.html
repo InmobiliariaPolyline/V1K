@@ -32,6 +32,11 @@ const VARIANTES = {
     titulo: 'Acceso privado', sub: 'Solo para personas autorizadas', linea: 'Pide tu acceso con tu número de chat',
     chips: ['Solo lectura', 'Privado', 'Tú decides'], icono: 'lock', acento: ['#fde68a', '#fbbf24'], texto: '#451a03',
   },
+  revocado: {
+    titulo: 'Acceso revocado', sub: 'Ya no tienes acceso a este asistente', linea: 'Si es un error, escribe al administrador',
+    chips: ['Cuenta protegida', 'Sin datos', 'Pide revisión'], icono: 'ban', acento: ['#fecaca', '#f87171'], texto: '#450a0a',
+    pasos: ['Copia tu número de chat', 'Escríbele al administrador', 'Pídele acceso otra vez'],
+  },
   resumen: {
     titulo: 'Resumen diario', sub: 'Cada mañana a las 08:07', linea: 'Lo urgente y los cambios de la semana',
     chips: ['Hora de Lima', 'Solo lectura', 'Te llega solo'], icono: 'sol', acento: ['#a5f3fc', '#a78bfa'], texto: '#1e1b4b',
@@ -62,6 +67,9 @@ function icono(tipo, color) {
     ctx.beginPath(); ctx.moveTo(-34, -26); ctx.lineTo(-34, 26); ctx.moveTo(34, -26); ctx.lineTo(34, 26); ctx.stroke();
     ctx.beginPath(); ctx.ellipse(0, 0, 34, 12, 0, 0, Math.PI); ctx.stroke();
     ctx.beginPath(); ctx.ellipse(0, 26, 34, 12, 0, 0, Math.PI); ctx.stroke();
+  } else if (tipo === 'ban') {
+    ctx.beginPath(); ctx.arc(0, 0, 36, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-25, -25); ctx.lineTo(25, 25); ctx.stroke();
   } else if (tipo === 'lock') {
     rr(-34, -4, 68, 50, 12); ctx.stroke();
     ctx.beginPath(); ctx.arc(0, -8, 22, Math.PI, 0); ctx.moveTo(-22, -8); ctx.lineTo(-22, -4); ctx.moveTo(22, -8); ctx.lineTo(22, -4); ctx.stroke();
@@ -133,18 +141,19 @@ function escenaBienvenida(t, v) {
 }
 
 function escenaPrivado(t, v) {
-  const pasos = [['1', 'Pulsa «Iniciar»'], ['2', 'Copia tu número de chat'], ['3', 'Envíalo al administrador']];
+  const pasos = (v.pasos ?? ['Pulsa «Iniciar»', 'Copia tu número de chat', 'Envíalo al administrador']).map((t, i) => [String(i + 1), t]);
+  const c = v.acento[1];
   pasos.forEach(([n, txt], i) => {
     const y = 150 + i * 130, e = suave(tramo(t, 0.7 + i * 0.35, 0.5));
     conAlfa(e, () => { ctx.save(); ctx.translate((1 - e) * 40, 0);
-      vidrio(660, y, 540, 92, 'rgba(251,191,36,0.6)', 24);
-      ctx.fillStyle = 'rgba(251,191,36,0.25)'; ctx.beginPath(); ctx.arc(714, y + 46, 26, 0, Math.PI * 2); ctx.fill();
-      texto(n, 714, y + 57, { tam: 32, color: '#fde68a', alinea: 'center', peso: 800 });
+      vidrio(660, y, 540, 92, c + '99', 24);
+      ctx.fillStyle = c + '40'; ctx.beginPath(); ctx.arc(714, y + 46, 26, 0, Math.PI * 2); ctx.fill();
+      texto(n, 714, y + 57, { tam: 32, color: v.acento[0], alinea: 'center', peso: 800 });
       texto(txt, 762, y + 58, { tam: 32, color: '#f0f6fc', peso: 600 });
       ctx.restore(); });
     if (i < 2) {
-      conAlfa(e, () => { ctx.strokeStyle = 'rgba(251,191,36,0.4)'; ctx.lineWidth = 3; ctx.setLineDash([4, 8]); ctx.beginPath(); ctx.moveTo(714, y + 92); ctx.lineTo(714, y + 130); ctx.stroke(); ctx.setLineDash([]); });
-      viaje([714, y + 92], [714, y + 130], t, 0.6, i * 0.33, '#fde68a', 1.2 + i * 0.35);
+      conAlfa(e, () => { ctx.strokeStyle = c + '66'; ctx.lineWidth = 3; ctx.setLineDash([4, 8]); ctx.beginPath(); ctx.moveTo(714, y + 92); ctx.lineTo(714, y + 130); ctx.stroke(); ctx.setLineDash([]); });
+      viaje([714, y + 92], [714, y + 130], t, 0.6, i * 0.33, v.acento[0], 1.2 + i * 0.35);
     }
   });
 }
@@ -199,7 +208,7 @@ function dibuja(tt, nombre) {
     x += w + 16;
   });
   // Escena de la derecha
-  if (nombre === 'privado' || nombre === 'resumen') { ctx.save(); ctx.translate(50, 0); (nombre === 'privado' ? escenaPrivado : escenaResumen)(t, v); ctx.restore(); } else escenaBienvenida(t, v);
+  if (nombre === 'privado' || nombre === 'revocado' || nombre === 'resumen') { ctx.save(); ctx.translate(50, 0); (nombre === 'resumen' ? escenaResumen : escenaPrivado)(t, v); ctx.restore(); } else escenaBienvenida(t, v);
   ctx.restore();
 }
 

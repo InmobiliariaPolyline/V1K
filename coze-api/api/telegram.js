@@ -11,7 +11,7 @@
 //   (el resto de personas se autoriza desde el módulo «Accesos» del panel: tabla central.telegram_accesos)
 import { neon } from '@neondatabase/serverless';
 import { buscarVista, construirConsulta } from '../lib/vistas.js';
-import { crearLectorDeChats } from '../lib/chats-activos.js';
+import { crearLectorDeChats, crearLectorDeRevocados } from '../lib/chats-activos.js';
 import { crearManejador } from '../lib/telegram.js';
 
 /** Lee una vista cerrada de lib/vistas.js (los filtros llegan como texto, igual que en la URL de la API). */
@@ -23,6 +23,8 @@ async function consultar(nombre, filtros = {}) {
   return neon(process.env.DATABASE_URL_READER).query(text, params);
 }
 
-const chatsExtra = crearLectorDeChats((texto) => neon(process.env.DATABASE_URL_READER).query(texto));
+const leerSql = (texto) => neon(process.env.DATABASE_URL_READER).query(texto);
+const chatsExtra = crearLectorDeChats(leerSql);
+const chatsRevocados = crearLectorDeRevocados(leerSql);
 
-export default crearManejador({ modo: 'consultas', consultar, chatsExtra });
+export default crearManejador({ modo: 'consultas', consultar, chatsExtra, chatsRevocados });

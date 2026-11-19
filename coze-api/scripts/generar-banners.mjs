@@ -11,7 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-export const VARIANTES = ['bienvenida', 'privado', 'resumen'];
+export const VARIANTES = ['bienvenida', 'privado', 'resumen', 'revocado'];
 export const PERIODO = 4.8;
 export const FPS = 15;
 const aqui = path.dirname(fileURLToPath(import.meta.url));
