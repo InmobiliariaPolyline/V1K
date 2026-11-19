@@ -50,21 +50,28 @@ correcto. Si tienes dudas, pídele el enlace al administrador.
 
 ## Paso 4 · Pulsar «Iniciar»
 
-Dentro del chat del bot toca el botón azul **INICIAR** (*START*) de abajo. Sin este paso el bot no puede escribirte.
+Dentro del chat del bot toca el botón azul **INICIAR** (*START*) de abajo. Sin este paso el bot no puede escribirte. **Hazlo en los dos bots.**
 
-La **primera vez**, el bot de consultas te responderá algo así:
+Al pulsarlo, el bot te recibe con una **animación de bienvenida**. Si todavía no tienes acceso, verás esto: un aviso de acceso privado y **tu número de chat dentro de un recuadro**:
 
-> 🔒 Este bot es privado.
-> Tu número de chat es **123456789**. Pídele al administrador que lo autorice.
+<img src="assets/bot-privado.jpg" alt="Animación de acceso privado: un candado y tres pasos para pedir acceso" width="70%" />
 
-Es lo esperado: el bot solo atiende a las personas que el administrador autorizó.
+> 🔒 **Acceso privado**
+> Este asistente es solo para personas autorizadas.
+> Tu número de chat: `123456789`
+> **Para pedir acceso**
+> 1️⃣ Toca tu número para copiarlo
+> 2️⃣ Envíalo al administrador con tu nombre y tu teléfono
+> 3️⃣ Te aviso aquí apenas tengas acceso
+
+Es lo esperado: el bot solo atiende a las personas que el administrador autorizó. Los dos bots muestran lo mismo (tu número es el mismo en ambos).
 
 ## Paso 5 · Enviar tu número de chat y tu teléfono al administrador
 
-Copia ese número (mantén presionado sobre el mensaje) y envíaselo al administrador junto con **tu nombre y tu teléfono**, por el medio que ya usan (WhatsApp, correo…).
+**Toca el número** (está en un recuadro, y al tocarlo se copia solo) y envíaselo al administrador junto con **tu nombre y tu teléfono**, por el medio que ya usan (WhatsApp, correo…).
 **Es el mismo número para los dos bots**, así que basta con enviarlo una vez.
 
-El administrador te registra en el panel de V1K y el bot te avisa por sí mismo: «Ya tienes acceso». Si no te llega el aviso, vuelve al bot de consultas y pulsa **Iniciar** (o escribe `/ayuda`):
+El administrador te registra en el panel de V1K y el bot te avisa por sí mismo: «Ya tienes acceso». Si no te llega el aviso, vuelve al bot de consultas y pulsa **Iniciar** otra vez: te recibe con su animación de bienvenida, te saluda por tu nombre y
 verás el menú con botones. Desde la mañana siguiente te llegará también el resumen diario.
 
 > Lo que el administrador sabe de ti es solo lo que tú le envías (nombre, teléfono y número de chat). No ve tus contactos ni tus otras conversaciones de Telegram.

@@ -94,7 +94,7 @@
       <rect x="24" y="64" width="312" height="64" rx="16" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
       <text x="40" y="88" font-size="13" fill="#c9d1d9">Este bot es privado.</text>
       <text x="40" y="110" font-size="13" fill="#c9d1d9">Tu número de chat es <tspan font-weight="800" fill="#fde68a" font-family="Consolas,'Courier New',monospace">123456789</tspan></text>
-      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Mantén presionado el mensaje para copiar</text>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Toca el número y se copia solo</text>
       <text x="24" y="178" font-size="13" fill="#8b949e">Es el mismo número para los dos bots</text>
     </g></g>
 

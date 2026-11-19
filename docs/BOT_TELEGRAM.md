@@ -86,6 +86,45 @@ diario leen únicamente la lista de números de chat activos (vista `v_telegram_
 **Administradores fijos.** Los números de `TELEGRAM_CHATS_PERMITIDOS` (Vercel) y `TELEGRAM_CHAT_ID` (GitHub) siguen funcionando sin aparecer en la lista del módulo: son tu
 acceso de respaldo si el módulo o la base fallan. Si la base falla, el bot atiende solo a esos administradores (nadie entra por error).
 
+## Cómo se ve: diseño y bienvenida animada
+
+Telegram no admite SVG, colores ni animaciones dentro del texto, así que el aspecto sale de **tarjetas** (la barra a la izquierda de cada bloque), **barras de progreso**
+(▰▰▰▱▱), iconos y negritas, y de una **bienvenida animada** (un MP4 corto que Telegram muestra como un GIF) cuando alguien pulsa **Iniciar**:
+
+| Quién pulsa «Iniciar» | Qué ve |
+|---|---|
+| Una persona con acceso, en el bot de consultas | Animación de bienvenida, saludo por su nombre, los comandos y el menú de botones |
+| Una persona con acceso, en el bot del resumen | Animación del resumen diario, la hora del envío (08:07) y su número de chat |
+| Alguien sin acceso, en cualquiera de los dos | Animación de «acceso privado», **su número de chat en un recuadro que se copia al tocarlo** y los 3 pasos para pedir acceso |
+
+Al navegar con los botones, el bot **edita el mismo mensaje** en lugar de llenar el chat de respuestas. El resumen de la mañana usa el mismo diseño; si Telegram
+no pudiera interpretarlo, sale igual en texto plano.
+
+<img src="assets/bot-bienvenida.jpg" alt="Fotograma de la animación de bienvenida del bot: el logo de V1K, las tres apps que alimentan la base central y un chat" width="70%" />
+
+**Los videos** están en `coze-api/public/bot/` (`bienvenida.mp4`, `privado.mp4`, `resumen.mp4`) y los sirve Vercel; Telegram los descarga de
+`https://v1k-coze-api.vercel.app/bot/<nombre>.mp4`. Si quisieras cambiarlos, edita `coze-api/scripts/banner/banner.html` y ejecuta
+`node scripts/generar-banners.mjs` (usa Chrome y ffmpeg del equipo; no corre en Vercel ni en el CI). Si Telegram no puede cargar un video, envía el mismo texto sin él.
+
+**Imagen de presentación (opcional).** Antes de pulsar «Iniciar», cada bot muestra su descripción (la pone el script de instalación). Para ponerle además una imagen o un video:
+en @BotFather → `/setdescriptionpic` → elige el bot y envía `coze-api/public/bot/bienvenida.mp4` (o `resumen.mp4` para el bot del resumen). Es manual: la API de Telegram no lo permite.
+
+## Activar la bienvenida del bot del resumen (una sola vez)
+
+Por defecto `@v1k_asistente_bot` solo envía el resumen. Para que también te reciba al pulsar **Iniciar** (con tu número de chat) necesita su propio webhook:
+
+1. **Vercel → Environment Variables** (*Production*, *Secret*): `TELEGRAM_BOT_RESUMEN_TOKEN` (el mismo token que el secreto `TELEGRAM_BOT_TOKEN` de GitHub) y
+   `TELEGRAM_RESUMEN_WEBHOOK_SECRET` (un texto largo y aleatorio, distinto del otro). Luego **Redeploy**.
+2. **Instalar el webhook** (en `coze-api/`):
+
+   ```powershell
+   $env:TELEGRAM_BOT_RESUMEN_TOKEN = "<token>"; $env:TELEGRAM_RESUMEN_WEBHOOK_SECRET = "<secreto>"
+   node scripts/telegram-webhook.mjs --instalar --bot resumen
+   ```
+
+   También publica su descripción y su comando `/start`. El envío del resumen de la mañana **no cambia** (sigue usando el flujo de GitHub).
+3. Probar: pulsa **Iniciar** en `@v1k_asistente_bot`. Ojo: mientras el bot tiene webhook, `resumen-diario.mjs --buscar-chat` no funciona (usa `--borrar` antes si lo necesitas); ya no hace falta, porque el bot te muestra tu número.
+
 ## Activar el módulo «Accesos» (una sola vez)
 
 1. **Crear la tabla y el rol en Neon.** En el SQL Editor, con el rol dueño, ejecuta `db/04_accesos.sql` **con una contraseña real en lugar de

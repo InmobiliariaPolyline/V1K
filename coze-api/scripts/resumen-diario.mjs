@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { fechaCorta, nombreDia, plural, relativoDias } from '../public/js/nucleo/formato.js';
 import { generarAlertas, saludGlobal } from '../public/js/nucleo/insights.js';
 import { compararCon } from '../public/js/nucleo/tendencias.js';
+import { esc, tarjeta, titulo } from '../lib/telegram-diseno.js';
 
 export const BASE_DEFECTO = 'https://v1k-coze-api.vercel.app';
 export const MAX_TELEGRAM = 3900; // el límite de Telegram es 4096 caracteres
@@ -65,14 +66,56 @@ export function componerResumen(resumen, historial, { hoy = hoyEnLima(), panel =
   return texto.length > MAX_TELEGRAM ? `${texto.slice(0, MAX_TELEGRAM - 1)}…` : texto;
 }
 
+/**
+ * El mismo resumen con el diseño de los bots: título, estado, tarjetas (<blockquote>) por sección y enlace al panel. Todo dato se escapa.
+ * Si por algún motivo no cabe en un mensaje de Telegram, devuelve la versión de texto plano (escapada).
+ */
+export function componerResumenHtml(resumen, historial, { hoy = hoyEnLima(), panel = BASE_DEFECTO } = {}) {
+  const alertas = generarAlertas(resumen, hoy);
+  const salud = saludGlobal(alertas);
+  const dia = nombreDia(new Date(`${hoy}T00:00:00`).getDay());
+  const partes = [`${titulo('☀️', `V1K · ${dia} ${fechaCorta(hoy)}`)}\n${ESTADO[salud]}`];
+
+  const importantes = alertas.filter((a) => a.tono !== 'ok').slice(0, 6);
+  if (importantes.length) {
+    partes.push(`<b>Qué mirar primero</b>\n${tarjeta(...importantes.flatMap((a) => [`${MARCA[a.tono] ?? '•'} ${esc(a.titulo)}`, a.tono === 'peligro' ? `<i>${esc(a.texto)}</i>` : null]))}`);
+  }
+
+  const hitos = (resumen.proximos_hitos ?? []).slice(0, 3);
+  const pedidos = (resumen.proximos_pedidos ?? []).filter((p) => p.llegada_estimada).slice(0, 3);
+  if (hitos.length || pedidos.length) {
+    partes.push(`<b>Próximos días</b>\n${tarjeta(
+      ...hitos.map((h) => `📌 ${esc(h.descripcion)} (${esc(h.proyecto ?? 'sin proyecto')}) — ${relativoDias(h.fecha, hoy)}`),
+      ...pedidos.map((p) => `🚚 Llega ${esc(p.pedido_id)} de ${esc(p.proveedor ?? 'proveedor')} — ${relativoDias(p.llegada_estimada, hoy)}`))}`);
+  }
+
+  const cmp = historial ? compararCon(historial, 7) : null;
+  if (cmp) {
+    const cambios = cmp.filas.filter((f) => f.delta !== null && f.delta !== 0);
+    const lineas = cambios.length ? cambios.map((f) => `${f.tono === 'mejor' ? '🟢' : f.tono === 'peor' ? '🔴' : '▫️'} ${esc(f.etiqueta)}: ${esc(f.texto)}`) : ['▫️ Sin cambios en lo que se sigue.'];
+    partes.push(`<b>Cambios en ${plural(cmp.dias, 'día', 'días')}</b> <i>(desde el ${fechaCorta(cmp.desde)})</i>\n${tarjeta(...lineas)}`);
+  } else {
+    partes.push('<i>Historial: se guarda una foto por día; los cambios aparecerán cuando haya al menos dos días.</i>');
+  }
+
+  const frescura = (resumen.frescura ?? []).map((f) => `${esc(f.app)} ${Number.isFinite(f.hace_horas) ? `${Math.round(f.hace_horas)} h` : '—'}`);
+  if (frescura.length) partes.push(`🕒 <b>Datos al día:</b> ${frescura.join(' · ')}`);
+  partes.push(`🔗 <a href="${esc(panel)}">Abrir el panel</a>`);
+
+  const html = partes.join('\n\n');
+  return html.length > MAX_TELEGRAM ? esc(componerResumen(resumen, historial, { hoy, panel })) : html;
+}
+
 /** Envía un texto a un chat de Telegram. Nunca incluye el token ni la respuesta en el error. */
-export async function enviarTelegram({ token, chatId, texto, fetchFn = globalThis.fetch }) {
-  const r = await fetchFn(`https://api.telegram.org/bot${token}/sendMessage`, {
+export async function enviarTelegram({ token, chatId, texto, html = null, fetchFn = globalThis.fetch }) {
+  const enviar = (cuerpo) => fetchFn(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text: texto, disable_web_page_preview: true }),
+    body: JSON.stringify({ chat_id: chatId, disable_web_page_preview: true, ...cuerpo }),
     signal: AbortSignal.timeout(20000),
   });
+  let r = html ? await enviar({ text: html, parse_mode: 'HTML' }) : await enviar({ text: texto });
+  if (!r.ok && html && r.status === 400) r = await enviar({ text: texto }); // si Telegram no pudo interpretar el diseño, sale en texto plano
   if (!r.ok) throw new Error(`Telegram respondió HTTP ${r.status}`);
   return { estado: r.status };
 }
@@ -81,10 +124,10 @@ export async function enviarTelegram({ token, chatId, texto, fetchFn = globalThi
 export const listaDeChats = (texto) => [...new Set(String(texto ?? '').split(/[\s,;]+/).filter((x) => /^-?\d{3,20}$/.test(x)))];
 
 /** Envía el mismo texto a cada chat; si uno falla, los demás lo reciben igual. Devuelve solo cuántos (nunca números de chat). */
-export async function enviarAVarios({ token, chats, texto, fetchFn = globalThis.fetch }) {
+export async function enviarAVarios({ token, chats, texto, html = null, fetchFn = globalThis.fetch }) {
   let enviados = 0, fallidos = 0;
   for (const chatId of chats) {
-    try { await enviarTelegram({ token, chatId, texto, fetchFn }); enviados++; } catch { fallidos++; }
+    try { await enviarTelegram({ token, chatId, texto, html, fetchFn }); enviados++; } catch { fallidos++; }
   }
   return { enviados, fallidos };
 }
@@ -131,7 +174,8 @@ export async function prepararMensaje({ base = BASE_DEFECTO, token, fetchFn, aho
   if (sinDatos(resumen) || !resumen.cuerpo.datos[0]) return { error: `no se pudo leer la API (HTTP ${resumen?.estado || 'sin respuesta'})` };
   // Si el historial aún no existe (la tabla no se creó) o falla, el resumen sale igual, solo sin la sección de cambios
   const filas = sinDatos(historial) ? null : historial.cuerpo.datos;
-  return { texto: componerResumen(resumen.cuerpo.datos[0], filas, { hoy: hoyEnLima(ahora), panel: base }) };
+  const opciones = { hoy: hoyEnLima(ahora), panel: base };
+  return { texto: componerResumen(resumen.cuerpo.datos[0], filas, opciones), html: componerResumenHtml(resumen.cuerpo.datos[0], filas, opciones) };
 }
 
 // ── Ejecución directa ───────────────────────────────────────────────────────────────────
@@ -150,7 +194,7 @@ async function principal() {
   const apiToken = process.env.API_TOKEN ?? '';
   const base = (process.env.API_BASE || BASE_DEFECTO).replace(/\/+$/, '');
   if (apiToken.length < 24) { console.error('Falta el secreto API_TOKEN o es demasiado corto.'); process.exit(2); }
-  const { texto, error } = await prepararMensaje({ base, token: apiToken });
+  const { texto, html, error } = await prepararMensaje({ base, token: apiToken });
 
   if (arg.includes('--mostrar')) { console.log(error ? `ERROR: ${error}` : texto); return; }
 
@@ -168,7 +212,7 @@ async function principal() {
     console.error('El resumen no se pudo armar; se avisó por Telegram.');
     process.exit(1);
   }
-  const { enviados, fallidos } = await enviarAVarios({ token: tokenTg, chats, texto });
+  const { enviados, fallidos } = await enviarAVarios({ token: tokenTg, chats, texto, html });
   console.log(`Resumen enviado (${texto.length} caracteres) a ${enviados} ${enviados === 1 ? 'chat' : 'chats'}.`);
   if (fallidos) { console.error(`${fallidos} ${fallidos === 1 ? 'chat no lo recibió' : 'chats no lo recibieron'}: revisa que cada persona le haya escrito «hola» al bot.`); process.exitCode = 1; }
 }

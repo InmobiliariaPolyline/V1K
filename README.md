@@ -65,6 +65,15 @@ administrador autorice. El de consultas además exige un secreto de webhook, de 
 **¿Nunca usaste Telegram?** La guía [`docs/TELEGRAM_PASO_A_PASO.md`](docs/TELEGRAM_PASO_A_PASO.md) explica, desde cero, cómo instalarlo,
 registrarte con tu número, buscar los bots, pulsar «Iniciar» y pedir tu acceso:
 
+Al pulsar **Iniciar**, cada bot recibe con una **animación de bienvenida** y, si la persona aún no tiene acceso, le muestra **su número de chat en un
+recuadro que se copia al tocarlo** junto con los pasos para pedirlo. Los mensajes usan tarjetas y barras de progreso, y al navegar con los botones el bot edita el mismo mensaje.
+
+<p align="center">
+<img src="docs/assets/bot-bienvenida.jpg" alt="Fotograma de la animación de bienvenida: logo de V1K, las tres apps, la base central y un chat" width="32%" />
+<img src="docs/assets/bot-privado.jpg" alt="Fotograma de la animación de acceso privado: candado y tres pasos para pedir acceso" width="32%" />
+<img src="docs/assets/bot-resumen.jpg" alt="Fotograma de la animación del resumen diario: sol y las alertas de la mañana" width="32%" />
+</p>
+
 <img src="docs/assets/telegram-registro.svg" alt="Seis pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, copiar tu número de chat y enviárselo al administrador" width="100%" />
 
 <img src="docs/assets/telegram-uso.svg" alt="Ejemplo de conversación con el bot de consultas: se pide /resumen y responde con lo urgente y los botones del menú; a la derecha, los ocho comandos" width="100%" />
@@ -199,7 +208,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1538 comprobaciones en cuatro baterías: A 638, B 690, C 155 y D 55, todas correctas" width="100%" />
 
-Las 11 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+Las 12 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
 
 Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción

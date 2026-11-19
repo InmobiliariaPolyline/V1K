@@ -277,7 +277,9 @@ const PERSONA = { chat_id: '123456789', nombre: 'Ana Prueba', telefono: '+51 999
   ok(!/process\.env\.ADMIN_TOKEN[^;]*(json|send|log)/.test(api + lib), 'el token de administrador no se devuelve ni se imprime');
   ok(!/eval\(|new Function|child_process/.test(api + lib), 'sin ejecución dinámica');
   const telegram = sinComentarios(leer('coze-api', 'api', 'telegram.js'));
-  ok(/v_telegram_chats_activos/.test(telegram) && !/telegram_accesos\b/.test(telegram.replace(/v_telegram_chats_activos/g, '')), 'el bot lee solo la vista de números de chat con su rol de solo lectura');
+  const chats = sinComentarios(leer('coze-api', 'lib', 'chats-activos.js'));
+  ok(/v_telegram_chats_activos/.test(chats) && !/telegram_accesos/.test(chats.replace(/v_telegram_chats_activos/g, '')), 'la lectura de accesos del bot usa solo la vista de números de chat');
+  ok(/crearLectorDeChats/.test(telegram) && /DATABASE_URL_READER/.test(telegram) && !/DATABASE_URL_ACCESOS/.test(telegram), 'el bot la lee con su rol de solo lectura');
   const mod = await import('../api/accesos.js');
   ok(typeof mod.default === 'function', 'api/accesos.js exporta el manejador');
   const res = resFalsa(); const guardado = { ...process.env };

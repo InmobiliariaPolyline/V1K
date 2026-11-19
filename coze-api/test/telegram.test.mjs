@@ -168,7 +168,8 @@ for (const c of NOMBRES_COMANDOS) {
   const t = envios(await ejecutar(msg('/materiales')))[0].cuerpo.text;
   ok(t.includes('Acero 1/2"') && t.includes('4.185') || t.includes('4185') || t.includes('4,185'), 'material y faltante');
   ok(t.includes('Inventario casi sin cargar'), 'avisa que el inventario está casi sin cargar (499 de 501)');
-  ok(/hay 15 · mínimo 4[.,]200 · faltan <b>4[.,]185<\/b>\n   unidad: kg/.test(t), 'la línea de material es clara: hay · mínimo · faltan · unidad');
+  ok(/hay 15 · mínimo 4[.,]200 · faltan <b>4[.,]185<\/b>\nunidad: kg/.test(t), 'la línea de material es clara: hay · mínimo · faltan · unidad');
+  ok(/▱|▰/.test(t) && /<blockquote>/.test(t), 'cada material es una tarjeta con barra de progreso');
   const consulta = crearConsulta();
   await ejecutar(msg('/materiales cemento'), consulta);
   igual(consulta.llamadas.find((l) => l.vista === 'stock-bajo').filtros.q, 'cemento', 'búsqueda de material');
@@ -213,7 +214,7 @@ for (const c of NOMBRES_COMANDOS) {
 }
 {
   const a = envios(await ejecutar(msg('/resumen')))[0].cuerpo;
-  ok(!a.parse_mode, 'el resumen va en texto plano (lleva nombres de proyectos)');
+  ok(a.parse_mode === 'HTML' && /<blockquote>/.test(a.text), 'el resumen va con el diseño de tarjetas (HTML) y los datos escapados');
   ok(a.text.includes('Torre Miraflores'), 'el resumen incluye lo urgente');
 }
 
@@ -271,7 +272,7 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
 
 {
   const salidas = [];
-  const fetchFalso = async (url, init) => { salidas.push({ url, cuerpo: JSON.parse(init.body) }); return { ok: true, status: 200 }; };
+  const fetchFalso = async (url, init) => { if (url.endsWith('/sendChatAction')) return { ok: true, status: 200 }; salidas.push({ url, cuerpo: JSON.parse(init.body) }); return { ok: true, status: 200 }; };
   const crear = (env = ENTORNO, extra = {}) => crearManejador({ env, consultar: crearConsulta(), fetchFn: fetchFalso, ...extra });
 
   let r = resFalsa(); await crear()(reqFalsa('GET', SECRETO, msg('/resumen')), r);
@@ -398,7 +399,7 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
     return { ok: true, status: 200, json: async () => ({ ok: true, result: resultado }) };
   };
   ok((await instalar({ token: TOKEN, secreto: SECRETO, fetchFn: fetchFalso })).includes('instalado'), 'instalar responde');
-  igual(llamadas.map((l) => l.metodo), ['setWebhook', 'setMyCommands'], 'instala el webhook y el menú');
+  igual(llamadas.map((l) => l.metodo), ['setWebhook', 'setMyCommands', 'setMyDescription', 'setMyShortDescription'], 'instala el webhook, el menú y los textos de presentación');
   const texto = await info({ token: TOKEN, fetchFn: fetchFalso });
   ok(texto.includes('@v1k_consultas_bot') && texto.includes('pendientes: 2') && texto.includes('Wrong response'), 'info muestra bot, pendientes y último error');
   ok(!texto.includes(TOKEN) && !texto.includes(SECRETO), 'info nunca muestra el token ni el secreto');
@@ -409,7 +410,7 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
   let sinNada = null;
   try { await instalar({ token: undefined, secreto: undefined, fetchFn: fetchFalso }); } catch (e) { sinNada = e.message; }
   ok(sinNada, 'sin variables no se llama a Telegram');
-  igual(llamadas.length, 5, 'solo hubo las 5 llamadas válidas (2 de instalar, 2 de info, 1 de borrar): la configuración inválida no llamó a Telegram');
+  igual(llamadas.length, 7, 'solo hubo las 7 llamadas válidas (4 de instalar, 2 de info, 1 de borrar): la configuración inválida no llamó a Telegram');
 }
 
 // ── Documentación para quien usa los bots ────────────────────────────────────────────────

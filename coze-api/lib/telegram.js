@@ -1,17 +1,21 @@
-// Bot de Telegram de CONSULTA (solo lectura): comandos y botones sobre las mismas consultas fijas que usa el agente y el panel.
-// No usa IA: lee y da formato, así que es instantáneo, no cuesta nada y no puede inventar datos.
+// Bots de Telegram de V1K (solo lectura): el de CONSULTAS (comandos y botones sobre las mismas consultas fijas que usa el agente y el panel)
+// y la bienvenida del bot del RESUMEN DIARIO (@v1k_asistente_bot, que solo envía el resumen de la mañana).
+// No usan IA: leen y dan formato, así que son instantáneos, no cuestan nada y no pueden inventar datos.
 //
 // Esta parte es PURA y se prueba sin red: recibe una actualización de Telegram y devuelve las llamadas que hay que hacer a la
-// API de Telegram. El webhook (api/telegram.js) solo comprueba el secreto, ejecuta esto y envía las respuestas.
+// API de Telegram. El webhook (api/telegram.js y api/telegram-resumen.js) solo comprueba el secreto, ejecuta esto y envía las respuestas.
 //
-// Seguridad: solo responde con datos a los chats de TELEGRAM_CHATS_PERMITIDOS; a cualquier otro le dice que el bot es privado y su
-// número de chat (para que el administrador lo autorice). Todo texto que viene de los datos se escapa antes de enviarlo como HTML.
+// Seguridad: solo responden con datos a los chats autorizados (los administradores de la variable de Vercel y las personas dadas de alta en el
+// módulo «Accesos»); a cualquier otro le dicen que el bot es privado y su número de chat. Todo texto que viene de los datos se escapa antes
+// de enviarlo como HTML. El diseño (tarjetas, barras, bienvenida animada) está en lib/telegram-diseno.js.
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { dinero, estadoFrescura, fechaCorta, haceHoras, diasEntre, normalizar, numero, plural, relativoDias, urlSegura } from '../public/js/nucleo/formato.js';
 import { inventarioSinCargar, precioDudoso } from '../public/js/nucleo/insights.js';
 import { compararCon } from '../public/js/nucleo/tendencias.js';
-import { componerResumen, hoyEnLima } from '../scripts/resumen-diario.mjs';
+import { componerResumenHtml, hoyEnLima } from '../scripts/resumen-diario.mjs';
+import { BASE_PUBLICA, BOT_CONSULTAS, BOT_RESUMEN, barra, codigo, esc, horaEnLima, nombreCorto, pasosDeAcceso, saludoDe, tarjeta, titulo } from './telegram-diseno.js';
 
+export { esc };
 export const MAX_MENSAJE = 3800;      // el límite de Telegram es 4096 caracteres
 export const MAX_ARGUMENTO = 60;
 export const ESTADOS_PROYECTO = ['atrasado', 'en curso', 'por iniciar', 'terminado'];
@@ -27,9 +31,6 @@ export function fechaHoraLima(valor) {
   const p = Object.fromEntries(new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map((x) => [x.type, x.value]));
   return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
 }
-
-/** Escapa texto para el modo HTML de Telegram (nombres, títulos y demás datos nunca se envían sin escapar). */
-export const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 // ── Seguridad ────────────────────────────────────────────────────────────────────────────
 const hash = (v) => createHash('sha256').update(String(v)).digest();
@@ -97,17 +98,17 @@ const boton = ([texto, clave]) => ({ text: texto, callback_data: `c:${clave}` })
 export const tecladoMenu = () => ({ inline_keyboard: MENU.map((fila) => fila.map(boton)) });
 const tecladoProyectos = () => ({ inline_keyboard: [[boton(['🔴 Atrasados', 'proyectos:atrasado']), boton(['🔵 En curso', 'proyectos:en curso'])], [boton(['⚪ Por iniciar', 'proyectos:por iniciar']), boton(['✅ Terminados', 'proyectos:terminado'])], ...MENU.slice(0, 1).map((f) => f.map(boton))] });
 
-/** Une líneas sin pasar del límite de Telegram; si no caben todas, avisa cuántas faltan. */
-function unir(cabecera, bloques, pie = '') {
+/** Une la cabecera y las tarjetas sin pasar del límite de Telegram; si no caben todas, avisa cuántas faltan. */
+function unir(cabecera, bloques, pie = '', maximo = 8) {
   const partes = [cabecera];
-  let largo = cabecera.length + pie.length + 60;
+  let largo = cabecera.length + pie.length + 80;
   let usadas = 0;
-  for (const b of bloques) {
+  for (const b of bloques.slice(0, maximo)) {
     if (largo + b.length + 2 > MAX_MENSAJE) break;
     partes.push(b); largo += b.length + 2; usadas++;
   }
-  if (usadas < bloques.length) partes.push(`… y ${numero(bloques.length - usadas, 0)} más. Afina con un texto para ver menos.`);
-  if (pie) partes.push(pie);
+  if (usadas < bloques.length) partes.push(`<i>… y ${numero(bloques.length - usadas, 0)} más. Afina la búsqueda con un texto para ver menos.</i>`);
+  if (pie) partes.push(`<i>${pie}</i>`);
   return partes.join('\n\n');
 }
 
@@ -119,19 +120,23 @@ export function estadoProyecto(texto) {
   return ESTADOS_PROYECTO.find((e) => t === e || t === `${e}s` || t === e.replace(/ /g, ''));
 }
 
-// ── Respuestas de cada comando (devuelven { texto, html, teclado }) ──────────────────────
+// ── Respuestas de cada comando (devuelven { html, teclado }) ──────────────────────────────
 async function cmdProyectos({ args, consultar, hoy }) {
-  const norm = normalizar(args);
-  const estado = estadoProyecto(norm);
+  const estado = estadoProyecto(normalizar(args));
   const filas = (await consultar('proyectos', { ...(estado ? { estado } : {}), ...(!estado && args ? { q: args } : {}), limite: '200' })).filter(Boolean);
   const bloques = filas.map((p) => {
     const avance = Number(p.avance_pct) || 0;
     const fin = String(p.fin ?? '').slice(0, 10);
-    const extra = [p.tareas_atrasadas > 0 ? `${plural(p.tareas_atrasadas, 'tarea atrasada', 'tareas atrasadas')}` : null, p.responsable ? esc(p.responsable) : null].filter(Boolean).join(' · ');
-    return `${ICONO_ESTADO[p.estado] ?? '•'} <b>${esc(p.nombre)}</b>\n   ${esc(p.estado)} · ${numero(avance, 0)} % · fin ${fechaCorta(fin)} (${relativoDias(fin, hoy)})${extra ? `\n   ${extra}` : ''}`;
+    return tarjeta(
+      `${ICONO_ESTADO[p.estado] ?? '•'} <b>${esc(p.nombre)}</b> · ${esc(p.estado)}`,
+      `${barra(avance)} ${numero(avance, 0)} %`,
+      `📅 fin ${fechaCorta(fin)} · ${relativoDias(fin, hoy)}`,
+      [p.responsable ? `👤 ${esc(p.responsable)}` : null, p.tareas_atrasadas > 0 ? `⚠️ ${plural(p.tareas_atrasadas, 'tarea atrasada', 'tareas atrasadas')}` : null].filter(Boolean).join(' · '),
+    );
   });
-  const titulo = `📁 <b>Proyectos</b>${estado ? ` · ${estado}` : args ? ` · «${esc(args)}»` : ''} (${filas.length})`;
-  return { html: filas.length ? unir(titulo, bloques.slice(0, 12), 'Filtra: /proyectos atrasado · /proyectos nombre') : `${titulo}\n\nNo hay proyectos con ese filtro.`, teclado: tecladoProyectos() };
+  const filtro = estado ? ` · ${estado}` : args ? ` · «${esc(args)}»` : '';
+  const cab = titulo('📁', `Proyectos${filtro}`, plural(filas.length, 'proyecto', 'proyectos'));
+  return { html: filas.length ? unir(cab, bloques, 'Filtra: /proyectos atrasado · /proyectos nombre') : `${cab}\n\nNo hay proyectos con ese filtro.`, teclado: tecladoProyectos() };
 }
 
 async function cmdMateriales({ args, consultar }) {
@@ -140,26 +145,40 @@ async function cmdMateriales({ args, consultar }) {
     consultar('resumen-general').then((r) => r?.[0]).catch(() => null),
   ]);
   const aviso = resumen && inventarioSinCargar(resumen.stock)
-    ? `⚠️ <b>Inventario casi sin cargar:</b> ${numero(resumen.stock.sin_existencias, 0)} de ${numero(resumen.stock.materiales_con_minimo, 0)} materiales sin existencias. Estos faltantes son mínimos de partida, no una falta real.`
+    ? tarjeta(`⚠️ <b>Inventario casi sin cargar</b>`, `${numero(resumen.stock.sin_existencias, 0)} de ${numero(resumen.stock.materiales_con_minimo, 0)} materiales sin existencias.`, 'Estos faltantes son mínimos de partida, no una falta real.')
     : '';
-  const bloques = filas.map((m) => `• <b>${esc(m.material)}</b>${m.categoria ? ` — ${esc(m.categoria)}` : ''}\n   hay ${numero(m.cantidad, 2)} · mínimo ${numero(m.minimo, 2)} · faltan <b>${numero(m.faltante, 2)}</b>${m.unidad ? `\n   unidad: ${esc(m.unidad)}` : ''}`);
-  const titulo = `📦 <b>Materiales bajo su mínimo</b>${args ? ` · «${esc(args)}»` : ''}`;
-  const cuerpo = filas.length ? unir(titulo, bloques, 'Busca: /materiales cemento') : `${titulo}\n\nNingún material coincide.`;
+  const bloques = filas.map((m) => {
+    const minimo = Number(m.minimo) || 0, cantidad = Number(m.cantidad) || 0;
+    return tarjeta(
+      `📦 <b>${esc(m.material)}</b>${m.categoria ? ` · ${esc(m.categoria)}` : ''}`,
+      `${barra(minimo > 0 ? (cantidad / minimo) * 100 : 0)} ${numero(minimo > 0 ? Math.min(100, (cantidad / minimo) * 100) : 0, 0)} % del mínimo`,
+      `hay ${numero(m.cantidad, 2)} · mínimo ${numero(m.minimo, 2)} · faltan <b>${numero(m.faltante, 2)}</b>`,
+      m.unidad ? `unidad: ${esc(m.unidad)}` : '',
+    );
+  });
+  const cab = titulo('📦', `Materiales bajo su mínimo${args ? ` · «${esc(args)}»` : ''}`, 'los de mayor faltante primero');
+  const cuerpo = filas.length ? unir(cab, bloques, 'Busca: /materiales cemento') : `${cab}\n\nNingún material coincide.`;
   return { html: aviso ? `${aviso}\n\n${cuerpo}` : cuerpo, teclado: tecladoMenu() };
 }
 
 async function cmdPedidos({ args, consultar, hoy }) {
-  const norm = normalizar(args);
-  const estado = ESTADOS_PEDIDO.find((e) => e === norm);
+  const estado = ESTADOS_PEDIDO.find((e) => e === normalizar(args));
   const filas = await consultar('pedidos', { ...(estado ? { estado } : {}), ...(!estado && args ? { q: args } : {}), limite: '40' });
   const bloques = filas.map((p) => {
     const llegada = p.llegada_estimada ? String(p.llegada_estimada).slice(0, 10) : null;
     const vencido = llegada && diasEntre(hoy, llegada) < 0;
     const pedida = Number(p.cantidad_pedida) || 0, recibida = Number(p.cantidad_recibida) || 0;
-    return `${vencido ? '⏰' : '•'} <b>${esc(p.pedido_id)}</b> ${esc(p.proveedor ?? '')}${p.obra ? ` — ${esc(p.obra)}` : ''}\n   ${esc(p.estado)} · ${llegada ? `llega ${fechaCorta(llegada)} (${relativoDias(llegada, hoy)})` : 'sin fecha'}${pedida > 0 ? ` · recibido ${numero((recibida / pedida) * 100, 0)} %` : ''}`;
+    const pct = pedida > 0 ? (recibida / pedida) * 100 : null;
+    return tarjeta(
+      `${vencido ? '⏰' : '🚚'} <b>${esc(p.pedido_id)}</b> · ${esc(p.proveedor ?? '')}`,
+      [p.obra ? `🏗 ${esc(p.obra)}` : null, `📌 ${esc(p.estado)}`].filter(Boolean).join(' · '),
+      `📅 ${llegada ? `llega ${fechaCorta(llegada)} · ${relativoDias(llegada, hoy)}` : 'sin fecha'}`,
+      pct !== null ? `${barra(pct)} ${numero(pct, 0)} % recibido` : '',
+    );
   });
-  const titulo = `🚚 <b>Pedidos abiertos</b>${estado ? ` · ${estado}` : args ? ` · «${esc(args)}»` : ''} (${filas.length})`;
-  return { html: filas.length ? unir(titulo, bloques) : `${titulo}\n\nNo hay pedidos abiertos con ese filtro.`, teclado: tecladoMenu() };
+  const filtro = estado ? ` · ${estado}` : args ? ` · «${esc(args)}»` : '';
+  const cab = titulo('🚚', `Pedidos abiertos${filtro}`, `${plural(filas.length, 'orden', 'órdenes')} · las que llegan antes, primero`);
+  return { html: filas.length ? unir(cab, bloques) : `${cab}\n\nNo hay pedidos abiertos con ese filtro.`, teclado: tecladoMenu() };
 }
 
 async function cmdPropiedades({ args, consultar }) {
@@ -169,68 +188,128 @@ async function cmdPropiedades({ args, consultar }) {
     const dudoso = precioDudoso(p);
     const area = parseFloat(p.area);
     const enlace = urlSegura(p.url);
-    const datos = [p.distrito ? esc(p.distrito) : null, dinero(p.precio, p.moneda), area > 0 ? `${numero(area, 0)} m²` : null, p.dormitorios ? `${numero(parseFloat(p.dormitorios), 0)} dorm.` : null].filter(Boolean).join(' · ');
-    return `• <b>${esc(p.titulo ?? 'Sin título')}</b>\n   ${esc(p.operacion ?? '')} · ${datos}${dudoso ? '\n   ⚠️ precio dudoso (parece por m²)' : ''}${enlace ? `\n   <a href="${esc(enlace)}">Ver aviso</a>` : ''}`;
+    const nombre = esc(p.titulo ?? 'Sin título');
+    return tarjeta(
+      `${p.operacion === 'VENTA' ? '🟢' : '🔵'} <b>${esc(p.operacion ?? '')}</b>${p.distrito ? ` · ${esc(p.distrito)}` : ''}`,
+      enlace ? `<a href="${esc(enlace)}">${nombre}</a>` : nombre,
+      [`💵 ${dinero(p.precio, p.moneda)}`, area > 0 ? `📐 ${numero(area, 0)} m²` : null, p.dormitorios ? `🛏 ${numero(parseFloat(p.dormitorios), 0)} dorm.` : null].filter(Boolean).join(' · '),
+      dudoso ? '⚠️ precio dudoso (parece por m²)' : '',
+    );
   });
   const etiqueta = [filtros.operacion?.toLowerCase(), filtros.inmueble?.toLowerCase(), filtros.distrito, filtros.precio_min_usd ? `desde US$ ${numero(Number(filtros.precio_min_usd), 0)}` : null, filtros.precio_max_usd ? `hasta US$ ${numero(Number(filtros.precio_max_usd), 0)}` : null].filter(Boolean).map(esc).join(' · ');
-  const titulo = `🏠 <b>Propiedades</b>${etiqueta ? ` (${etiqueta})` : ' recientes'}`;
+  const cab = titulo('🏠', `Propiedades${etiqueta ? ` (${etiqueta})` : ' recientes'}`, 'las más nuevas del catálogo');
   const pie = 'Ejemplos: /propiedades venta miraflores hasta 300000 · /propiedades alquiler casa';
-  return { html: filas.length ? unir(titulo, bloques, pie) : `${titulo}\n\nNingún aviso coincide.\n${pie}`, teclado: tecladoMenu() };
+  return { html: filas.length ? unir(cab, bloques, pie, 6) : `${cab}\n\nNingún aviso coincide.\n<i>${pie}</i>`, teclado: tecladoMenu() };
 }
 
 async function cmdFrescura({ consultar }) {
   const filas = await consultar('frescura', {});
   const nombre = { planner: 'Planner', mrp: 'MRP', scraper: 'Scraper' };
-  const lineas = filas.map((f) => `${{ ok: '✅', aviso: '🟡', viejo: '🔴', desconocido: '⚪' }[estadoFrescura(Number(f.hace_horas))]} <b>${esc(nombre[f.app] ?? f.app)}</b> — ${haceHoras(Number(f.hace_horas))}\n   ${esc(fechaHoraLima(f.ultima_sync))} (hora de Lima)`);
-  return { html: `🕒 <b>Datos al día</b>\n\n${lineas.join('\n\n') || 'Todavía no hay datos de sincronización.'}`, teclado: tecladoMenu() };
+  const bloques = filas.map((f) => {
+    const h = Number(f.hace_horas);
+    const icono = { ok: '✅', aviso: '🟡', viejo: '🔴', desconocido: '⚪' }[estadoFrescura(h)];
+    return tarjeta(`${icono} <b>${esc(nombre[f.app] ?? f.app)}</b> · ${haceHoras(h)}`, `${barra(Number.isFinite(h) ? 100 - Math.min(100, (h / 72) * 100) : 0)} frescura`, `🗓 ${esc(fechaHoraLima(f.ultima_sync))}`);
+  });
+  const cab = titulo('🕒', 'Datos al día', 'hora de Lima · ✅ menos de 24 h, 🟡 hasta 72 h, 🔴 más');
+  return { html: bloques.length ? `${cab}\n\n${bloques.join('\n\n')}` : `${cab}\n\nTodavía no hay datos de sincronización.`, teclado: tecladoMenu() };
 }
 
 async function cmdTendencias({ consultar }) {
   const historial = await consultar('historial', { limite: '15' }).catch(() => null);
   const cmp = historial ? compararCon(historial, 7) : null;
-  if (!cmp) return { html: '📈 <b>Tendencias</b>\n\nTodavía no hay al menos dos días de historial: se guarda una foto por día.', teclado: tecladoMenu() };
-  const lineas = cmp.filas.map((f) => `${f.tono === 'mejor' ? '🟢' : f.tono === 'peor' ? '🔴' : '•'} ${esc(f.etiqueta)}: ${esc(f.texto)}`);
-  return { html: `📈 <b>Tendencias</b> · ${plural(cmp.dias, 'día', 'días')} (desde el ${fechaCorta(cmp.desde)})\n\n${lineas.join('\n')}`, teclado: tecladoMenu() };
+  if (!cmp) return { html: `${titulo('📈', 'Tendencias')}\n\nTodavía no hay al menos dos días de historial: se guarda una foto por día.`, teclado: tecladoMenu() };
+  const lineas = cmp.filas.map((f) => `${f.tono === 'mejor' ? '🟢' : f.tono === 'peor' ? '🔴' : '▫️'} ${esc(f.etiqueta)}: ${esc(f.texto)}`);
+  return { html: `${titulo('📈', 'Tendencias', `${plural(cmp.dias, 'día', 'días')} · desde el ${fechaCorta(cmp.desde)}`)}\n\n${tarjeta(...lineas)}\n\n<i>🟢 mejoró · 🔴 empeoró · ▫️ sin cambio</i>`, teclado: tecladoMenu() };
 }
 
 async function cmdResumen({ consultar, hoy, panel }) {
   const [resumen, historial] = await Promise.all([consultar('resumen-general'), consultar('historial', { limite: '15' }).catch(() => null)]);
-  if (!resumen?.[0]) return { texto: 'Todavía no hay datos para el resumen.', teclado: tecladoMenu() };
-  return { texto: componerResumen(resumen[0], historial, { hoy, panel }), teclado: tecladoMenu() }; // texto plano: lleva nombres de proyectos
+  if (!resumen?.[0]) return { html: `${titulo('📋', 'Resumen')}\n\nTodavía no hay datos para el resumen.`, teclado: tecladoMenu() };
+  return { html: componerResumenHtml(resumen[0], historial, { hoy, panel }), teclado: tecladoMenu() };
 }
+
+const COMANDOS_AYUDA = [
+  '📋 /resumen — lo urgente y los cambios de la semana',
+  '📁 /proyectos — estado y avance (<i>atrasado</i>, <i>nombre</i>)',
+  '📦 /materiales — stock bajo su mínimo (<i>cemento</i>)',
+  '🚚 /pedidos — órdenes de compra abiertas',
+  '🏠 /propiedades — <i>venta miraflores hasta 300000</i>',
+  '🕒 /frescura — hace cuánto sincronizó cada app',
+  '📈 /tendencias — cambios frente a hace 7 días',
+];
 
 function cmdAyuda() {
   return {
-    html: [
-      '🤖 <b>Asistente V1K</b> — consultas de solo lectura',
-      '',
-      '/resumen — lo urgente del día y los cambios de la semana',
-      '/proyectos [atrasado | nombre] — estado y avance',
-      '/materiales [texto] — stock bajo su mínimo',
-      '/pedidos [estado | texto] — órdenes de compra abiertas',
-      '/propiedades [venta|alquiler] [distrito] [casa|departamento…] [hasta 300000]',
-      '/frescura — hace cuánto sincronizó cada app',
-      '/tendencias — cambios frente a hace 7 días',
-      '',
-      'También puedes usar los botones. No escribo ni modifico nada.',
-    ].join('\n'),
+    html: `${titulo('🤖', 'Asistente V1K', 'consultas de solo lectura')}\n\n${tarjeta(...COMANDOS_AYUDA)}\n\n<i>Toca un botón o escribe un comando. Solo leo: no modifico nada.</i>`,
     teclado: tecladoMenu(),
   };
 }
 
 const COMANDOS = {
-  start: cmdAyuda, ayuda: cmdAyuda, help: cmdAyuda, menu: cmdAyuda,
+  ayuda: cmdAyuda, help: cmdAyuda, menu: cmdAyuda,
   resumen: cmdResumen, hoy: cmdResumen, proyectos: cmdProyectos, materiales: cmdMateriales, stock: cmdMateriales,
   pedidos: cmdPedidos, propiedades: cmdPropiedades, frescura: cmdFrescura, tendencias: cmdTendencias,
 };
 export const NOMBRES_COMANDOS = ['resumen', 'proyectos', 'materiales', 'pedidos', 'propiedades', 'frescura', 'tendencias', 'ayuda'];
 
+// ── Bienvenida (al pulsar «Iniciar») ─────────────────────────────────────────────────────
+/** Texto de bienvenida para una persona autorizada del bot de consultas (cabe en el pie de la animación: ≤ 1024 caracteres). */
+export function textoBienvenida({ nombre = '', hora = 9 } = {}) {
+  const n = nombreCorto(nombre);
+  return [
+    `👋 <b>${saludoDe(hora)}${n ? `, ${esc(n)}` : ''}</b>`,
+    'Soy el asistente de <b>V1K</b>: te cuento cómo van tus obras, materiales, pedidos y propiedades.',
+    '',
+    tarjeta('📋 /resumen · 📁 /proyectos · 📦 /materiales', '🚚 /pedidos · 🏠 /propiedades · 🕒 /frescura', '📈 /tendencias · ❓ /ayuda'),
+    '',
+    '<i>Toca un botón o escribe un comando. Solo leo: no modifico nada.</i>',
+  ].join('\n');
+}
+
+/** Texto para quien todavía no tiene acceso: su número de chat (se copia al tocarlo) y los pasos para pedirlo. */
+export function textoPrivado(chatId, { corto = false } = {}) {
+  return [
+    `🔒 <b>${corto ? 'Este bot es privado' : 'Acceso privado'}</b>`,
+    corto ? '' : 'Este asistente es solo para personas autorizadas.',
+    corto ? '' : '',
+    tarjeta(`Tu número de chat: ${codigo(chatId)}`),
+    '',
+    '<b>Para pedir acceso</b>',
+    pasosDeAcceso(chatId),
+  ].filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n');
+}
+
+/** Texto de bienvenida del bot del resumen diario. */
+export function textoBienvenidaResumen({ autorizado, chatId, nombre = '', hora = 9 }) {
+  const n = nombreCorto(nombre);
+  if (!autorizado) return textoPrivado(chatId);
+  return [
+    `☀️ <b>${saludoDe(hora)}${n ? `, ${esc(n)}` : ''}</b>`,
+    'Soy el <b>resumen diario</b> de V1K. Estás en la lista: te escribo cada mañana a las <b>08:07</b> (hora de Lima) con lo urgente y los cambios de la semana.',
+    '',
+    tarjeta(`Tu número de chat: ${codigo(chatId)}`),
+    '',
+    `<i>Para hacer consultas en cualquier momento usa @${BOT_CONSULTAS}.</i>`,
+  ].join('\n');
+}
+
 // ── Procesar una actualización ───────────────────────────────────────────────────────────
+const tipoDeAnimacion = (panel, variante) => `${String(panel).replace(/\/+$/, '')}/bot/${variante}.mp4`;
+
 /**
- * procesarUpdate(update, { consultar, permitidos, hoy, panel }) → [{ metodo, cuerpo }] (llamadas a la API de Telegram).
- * `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
+ * Una respuesta con animación (la bienvenida). Si Telegram no puede cargar el video, se envía el mismo texto sin él (alternativa).
  */
-export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyEnLima(), panel = 'https://v1k-coze-api.vercel.app' }) {
+function conAnimacion(chat, panel, variante, caption, teclado) {
+  const texto = { chat_id: chat, text: caption, parse_mode: 'HTML', disable_web_page_preview: true, ...(teclado ? { reply_markup: teclado } : {}) };
+  return { metodo: 'sendAnimation', cuerpo: { chat_id: chat, animation: tipoDeAnimacion(panel, variante), caption, parse_mode: 'HTML', ...(teclado ? { reply_markup: teclado } : {}) }, alternativa: { metodo: 'sendMessage', cuerpo: texto } };
+}
+
+/**
+ * procesarUpdate(update, { consultar, permitidos, hoy, panel, hora }) → [{ metodo, cuerpo, alternativa? }] (llamadas a la API de Telegram).
+ * `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
+ * Los botones de un mensaje de texto EDITAN ese mismo mensaje (la conversación no se llena de respuestas); si no se puede editar, se envía uno nuevo.
+ */
+export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima() }) {
   const cb = update?.callback_query;
   const msg = update?.message;
   const chat = cb?.message?.chat?.id ?? msg?.chat?.id;
@@ -240,8 +319,10 @@ export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyE
   const enviar = (cuerpo) => acciones.push({ metodo: 'sendMessage', cuerpo: { chat_id: chat, disable_web_page_preview: true, ...cuerpo } });
 
   if (!permitidos?.has(chatId)) {
-    if (cb?.id) acciones.push({ metodo: 'answerCallbackQuery', cuerpo: { callback_query_id: cb.id, text: 'Este bot es privado.' } });
-    else enviar({ text: `🔒 Este bot es privado.\nTu número de chat es ${chatId}. Envíaselo al administrador, con tu teléfono, para que te dé acceso.` });
+    if (cb?.id) { acciones.push({ metodo: 'answerCallbackQuery', cuerpo: { callback_query_id: cb.id, text: 'Este bot es privado.' } }); return acciones; }
+    const esInicio = parsearComando(msg?.text)?.cmd === 'start';
+    if (esInicio) acciones.push(conAnimacion(chat, panel, 'privado', textoPrivado(chatId)));
+    else enviar({ text: textoPrivado(chatId, { corto: true }), parse_mode: 'HTML' });
     return acciones;
   }
 
@@ -253,34 +334,79 @@ export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyE
     if (m) orden = { cmd: m[1], args: m[2] ?? '' };
   } else if (typeof msg?.text === 'string') {
     orden = parsearComando(msg.text);
-    if (!orden) { enviar({ ...(cmdAyudaCorta()), reply_markup: tecladoMenu() }); return acciones; }
+    if (!orden) { enviar({ text: 'Soy un bot de consultas: usa /ayuda o los botones. No entiendo mensajes libres.', reply_markup: tecladoMenu() }); return acciones; }
   } else {
     enviar({ text: 'Solo entiendo mensajes de texto. Usa /ayuda o los botones.', reply_markup: tecladoMenu() });
     return acciones;
   }
   if (!orden) return acciones;
 
+  if (orden.cmd === 'start') { // «Iniciar»: bienvenida con la animación y el menú
+    acciones.push(conAnimacion(chat, panel, 'bienvenida', textoBienvenida({ nombre: msg?.from?.first_name, hora }), tecladoMenu()));
+    return acciones;
+  }
+
   const fn = COMANDOS[orden.cmd];
   if (!fn) { enviar({ text: `No conozco el comando /${esc(orden.cmd).slice(0, 20)}. Usa /ayuda.`, reply_markup: tecladoMenu() }); return acciones; }
+  if (!cb && orden.cmd !== 'ayuda' && orden.cmd !== 'help' && orden.cmd !== 'menu') acciones.push({ metodo: 'sendChatAction', cuerpo: { chat_id: chat, action: 'typing' } });
   try {
     const r = await fn({ args: orden.args, consultar, hoy, panel });
-    enviar({ ...(r.html ? { text: r.html, parse_mode: 'HTML' } : { text: r.texto }), reply_markup: r.teclado ?? tecladoMenu() });
+    const cuerpo = { text: r.html, parse_mode: 'HTML', reply_markup: r.teclado ?? tecladoMenu(), disable_web_page_preview: true };
+    const editable = typeof cb?.message?.text === 'string' && cb.message.message_id !== undefined;
+    if (editable) acciones.push({ metodo: 'editMessageText', cuerpo: { chat_id: chat, message_id: cb.message.message_id, ...cuerpo }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } });
+    else enviar(cuerpo);
   } catch {
     enviar({ text: '⚠️ No pude leer los datos ahora. Intenta de nuevo en un momento.', reply_markup: tecladoMenu() });
   }
   return acciones;
 }
 
-const cmdAyudaCorta = () => ({ text: 'Soy un bot de consultas: usa /ayuda o los botones. No entiendo mensajes libres.' });
+/** El bot del resumen diario solo da la bienvenida y el número de chat: no consulta nada. */
+export function procesarUpdateResumen(update, { permitidos, panel = BASE_PUBLICA, hora = horaEnLima() }) {
+  const msg = update?.message;
+  const chat = msg?.chat?.id;
+  if (chat === undefined || chat === null) return [];
+  const chatId = String(chat);
+  const autorizado = Boolean(permitidos?.has(chatId));
+  const caption = textoBienvenidaResumen({ autorizado, chatId, nombre: msg?.from?.first_name, hora });
+  if (parsearComando(msg?.text)?.cmd === 'start') return [conAnimacion(chat, panel, autorizado ? 'resumen' : 'privado', caption)];
+  return [{ metodo: 'sendMessage', cuerpo: { chat_id: chat, text: autorizado ? `${caption}` : textoPrivado(chatId, { corto: true }), parse_mode: 'HTML', disable_web_page_preview: true } }];
+}
 
 // ── Manejador del webhook (se le inyectan las dependencias para poder probarlo) ─────────
-export function crearManejador({ env = process.env, consultar, chatsExtra = async () => [], fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date() } = {}) {
+const MODOS = {
+  consultas: { token: 'TELEGRAM_BOT_COMANDOS_TOKEN', secreto: 'TELEGRAM_WEBHOOK_SECRET' },
+  resumen: { token: 'TELEGRAM_BOT_RESUMEN_TOKEN', secreto: 'TELEGRAM_RESUMEN_WEBHOOK_SECRET' },
+};
+
+/** Llama a la API de Telegram; si la acción trae una alternativa y falla (salvo «message is not modified»), prueba con ella. */
+async function ejecutar(fetchFn, token, accion) {
+  const llamar = async (a) => {
+    const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) });
+    if (r.ok) return { ok: true };
+    let descripcion = '';
+    try { descripcion = String((await r.json())?.description ?? ''); } catch { /* sin cuerpo */ }
+    console.error('Telegram respondió', r.status, 'a', a.metodo);
+    return { ok: false, noModificado: /not modified/i.test(descripcion) };
+  };
+  try {
+    const r = await llamar(accion);
+    if (!r.ok && accion.alternativa && !r.noModificado) await llamar(accion.alternativa);
+  } catch {
+    console.error('No se pudo enviar a Telegram:', accion.metodo);
+    if (accion.alternativa) { try { await llamar(accion.alternativa); } catch { console.error('Tampoco la alternativa:', accion.alternativa.metodo); } }
+  }
+}
+
+export function crearManejador({ modo = 'consultas', env = process.env, consultar, chatsExtra = async () => [], fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date() } = {}) {
+  const vars = MODOS[modo] ?? MODOS.consultas;
   return async function manejador(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Solo POST' }); }
-    const token = env.TELEGRAM_BOT_COMANDOS_TOKEN;
-    if (!token || !env.TELEGRAM_WEBHOOK_SECRET) return res.status(503).json({ error: 'No configurado' });
-    if (!secretoValido(req.headers?.['x-telegram-bot-api-secret-token'], env.TELEGRAM_WEBHOOK_SECRET)) return res.status(401).json({ error: 'No autorizado' });
+    const token = env[vars.token];
+    const secreto = env[vars.secreto];
+    if (!token || !secreto) return res.status(503).json({ error: 'No configurado' });
+    if (!secretoValido(req.headers?.['x-telegram-bot-api-secret-token'], secreto)) return res.status(401).json({ error: 'No autorizado' });
 
     let update = req.body;
     if (typeof update === 'string') { try { update = JSON.parse(update); } catch { update = null; } }
@@ -292,13 +418,13 @@ export function crearManejador({ env = process.env, consultar, chatsExtra = asyn
     // Autorizados: los de la variable (administradores) y los que da de alta el módulo «Accesos»; si la base falla, solo los de la variable
     const permitidos = chatsPermitidos(env.TELEGRAM_CHATS_PERMITIDOS);
     try { for (const c of await chatsExtra()) permitidos.add(String(c)); } catch { /* la lista de la base no está disponible: se sigue solo con la variable */ }
-    const acciones = await procesarUpdate(update, { consultar, permitidos, hoy: hoyEnLima(ahora()) });
-    for (const a of acciones) {
-      try {
-        const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) });
-        if (!r.ok) console.error('Telegram respondió', r.status, 'a', a.metodo);
-      } catch { console.error('No se pudo enviar a Telegram:', a.metodo); }
-    }
+    const hora = horaEnLima(ahora());
+    const acciones = modo === 'resumen'
+      ? procesarUpdateResumen(update, { permitidos, hora })
+      : await procesarUpdate(update, { consultar, permitidos, hoy: hoyEnLima(ahora()), hora });
+    for (const a of acciones) await ejecutar(fetchFn, token, a);
     return res.status(200).json({ ok: true }); // siempre 200: Telegram reintenta si no
   };
 }
+
+export { BOT_CONSULTAS, BOT_RESUMEN };
