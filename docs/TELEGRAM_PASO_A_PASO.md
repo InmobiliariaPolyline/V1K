@@ -88,16 +88,55 @@ Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** 
 
 <img src="assets/telegram-uso.svg" alt="Ejemplo de conversación: se pide /resumen y el bot responde con lo urgente, los datos al día y los botones del menú" width="100%" />
 
+**Hoy**
+
 | Para saber… | Escribe o pulsa | Ejemplos |
 |---|---|---|
-| Lo urgente de hoy | `/resumen` | |
-| Cómo van los proyectos | `/proyectos` | `/proyectos atrasado` · `/proyectos en curso` · `/proyectos torre` |
+| Lo urgente y los cambios de la semana | `/resumen` | |
+| Solo lo que requiere atención | `/alertas` | con botones para ir al detalle |
+| Qué viene en los próximos días | `/agenda` | `/agenda 7` · `/agenda 30` |
+
+**Operación**
+
+| Para saber… | Escribe o pulsa | Ejemplos |
+|---|---|---|
+| Cómo van todos los proyectos (tabla) | `/proyectos` | `/proyectos atrasado` · `/proyectos en curso` · `/proyectos torre` |
+| La ficha de un proyecto, con sus hitos | `/proyecto` | `/proyecto V7K` (o toca su nombre en la tabla) |
 | Qué materiales faltan | `/materiales` | `/materiales cemento` |
-| Qué pedidos esperan llegar | `/pedidos` | `/pedidos parcial` · `/pedidos aceros` |
-| Propiedades del catálogo | `/propiedades` | `/propiedades venta miraflores hasta 300000` · `/propiedades alquiler oficina` |
+| Materiales por categoría (tabla) | `/stock` | |
+| Qué pedidos esperan llegar | `/pedidos` | `/pedidos vencidos` · `/pedidos parcial` · `/pedidos aceros` |
+
+**Mercado**
+
+| Para saber… | Escribe o pulsa | Ejemplos |
+|---|---|---|
+| Avisos de propiedades con filtros | `/propiedades` | `/propiedades venta miraflores hasta 300000` · `/propiedades alquiler oficina` |
+| Precio mediano por distrito (tabla) | `/mercado` | `/mercado venta` · `/mercado alquiler` |
+| Avisos por portal (tabla) | `/portales` | |
+
+**Herramientas y ayuda**
+
+| Para saber… | Escribe o pulsa | Ejemplos |
+|---|---|---|
+| Algo en todo a la vez | `/buscar` | `/buscar torre` · `/buscar cemento` · `/buscar OC-1040` |
 | Si los datos están al día | `/frescura` | |
-| Qué cambió en la semana | `/tendencias` | disponible desde el segundo día de historial |
-| Ver todo esto otra vez | `/ayuda` | |
+| Qué cambió en la semana (tabla) | `/tendencias` | disponible desde el segundo día de historial |
+| Qué usar para cada cosa | `/guia` | Coze, los bots o el panel |
+| Ver todos los comandos | `/ayuda` | |
+
+**Cada respuesta trae** un resumen arriba (totales, avance medio…), los datos en tarjetas o en una tabla, una línea **💡** con la lectura («2 de 10 proyectos están atrasados») y de cuándo son los datos
+(**🕒** «MRP ✅ hace 20 h»; si pasan de un día, avisa que pueden estar desactualizados). Las listas largas tienen botones **‹ Anterior** y **Siguiente ›**, y los filtros son botones: no hace falta escribir.
+
+### ¿Cuál uso: Coze, el bot de consultas, el del resumen o el panel?
+
+| Necesito… | Uso |
+|---|---|
+| Algo frecuente y exacto (ver lo urgente, un proyecto, un pedido, precios) | **El bot de consultas** (`@v1k_consultas_bot`): instantáneo y **sin costo** |
+| Enterarme sin preguntar, cada mañana | **El bot del resumen** (`@v1k_asistente_bot`): te escribe a las 08:07 y responde `/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia` |
+| Una pregunta en mis propias palabras, que no tiene botón | **Coze**: entiende lenguaje libre, pero **gasta créditos** (una pregunta al día en el plan actual) |
+| Gráficos, calendario o exportar a un archivo | **El panel web** |
+
+Regla práctica: **primero prueba un comando** (es gratis y más rápido) y guarda a Coze para lo que no tenga botón. Con `/guia` el propio bot te lo recuerda.
 
 **Consejos**
 - No hace falta escribir acentos: `/propiedades alquiler san isidro` funciona igual.
@@ -123,6 +162,7 @@ Llega a las **08:07** desde `@v1k_asistente_bot`. Léelo de arriba abajo:
 |---|---|
 | No encuentro el bot al buscar | Usa el enlace directo de la tabla de arriba |
 | «Tu acceso fue revocado» | El administrador te quitó el acceso. Escríbele con tu número de chat (sale en el mismo mensaje) si crees que es un error |
+| «Ese comando es del bot de consultas» (en el bot del resumen) | El bot del resumen solo tiene `/ahora`, `/alertas`, `/agenda`, `/semana` y `/guia`; para lo demás usa `@v1k_consultas_bot` |
 | «Este bot es privado» | Envía tu número de chat (Paso 5) al administrador y espera su aviso |
 | Pulso un botón y no responde | Espera unos segundos; si sigue igual, escribe `/ayuda` |
 | «No pude leer los datos ahora» | Es un fallo momentáneo de la base: intenta de nuevo en un minuto |

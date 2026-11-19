@@ -47,3 +47,60 @@ export function pasosDeAcceso(chatId) {
     '3️⃣ Te aviso aquí apenas tengas acceso',
   ].join('\n');
 }
+
+// ── Tablas, páginas y contexto ──────────────────────────────────────────────────────────
+
+/** Recorta un texto con «…» para que quepa en n caracteres (y lo deja en una línea). */
+export function recortar(t, n) {
+  const s = String(t ?? '').replace(/\s+/g, ' ').trim();
+  return s.length <= n ? s : `${s.slice(0, Math.max(1, n - 1))}…`;
+}
+
+/**
+ * Tabla en texto de ancho fijo dentro de <pre> (Telegram la muestra en monoespaciado y con fondo propio).
+ * columnas: [{ titulo, ancho, alinea: 'izq' | 'der' }]; filas: arreglos de textos. Sin emojis dentro (ocupan doble ancho). Todo se escapa.
+ */
+export function tablaPre(columnas, filas) {
+  const celda = (txt, c) => { const t = recortar(txt, c.ancho); return c.alinea === 'der' ? t.padStart(c.ancho) : t.padEnd(c.ancho); };
+  const cab = columnas.map((c) => celda(c.titulo, c)).join(' ');
+  const sep = columnas.map((c) => '-'.repeat(c.ancho)).join(' ');
+  const cuerpo = filas.map((f) => columnas.map((c, i) => celda(f[i] ?? '', c)).join(' '));
+  return `<pre>${esc([cab, sep, ...cuerpo].join('\n'))}</pre>`;
+}
+
+/** Divide una lista en páginas: { filas, pagina, paginas, total, desde, hasta }. La página se acota a lo que existe. */
+export function paginaDe(lista, pagina = 1, tam = 5) {
+  const total = lista.length;
+  const paginas = Math.max(1, Math.ceil(total / tam));
+  const p = Math.min(paginas, Math.max(1, Number(pagina) || 1));
+  const desde = (p - 1) * tam;
+  return { filas: lista.slice(desde, desde + tam), pagina: p, paginas, total, desde: total ? desde + 1 : 0, hasta: Math.min(total, desde + tam) };
+}
+
+/** Lee «atrasado p2» → { texto: 'atrasado', pagina: 2 }. */
+export function separarPagina(args) {
+  const m = /^(.*?)(?:\s*\bp(\d{1,2}))?$/.exec(String(args ?? '').trim());
+  return { texto: (m?.[1] ?? '').trim(), pagina: m?.[2] ? Number(m[2]) : 1 };
+}
+
+/** Datos de «a qué hora» cada app sincronizó, para cerrar una respuesta: «🕒 Planner ✅ hace 20 h · MRP 🟡 hace 1 día». */
+export function pieDatos(frescura, apps, { estado, haceHoras: hace }) {
+  const filas = (frescura ?? []).filter((f) => apps.includes(f.app));
+  if (!filas.length) return '';
+  const nombre = { planner: 'Planner', mrp: 'MRP', scraper: 'Scraper' };
+  const icono = { ok: '✅', aviso: '🟡', viejo: '🔴', desconocido: '⚪' };
+  const partes = filas.map((f) => `${nombre[f.app] ?? esc(f.app)} ${icono[estado(Number(f.hace_horas))]} ${hace(Number(f.hace_horas))}`);
+  const viejo = filas.some((f) => Number(f.hace_horas) >= 24);
+  return `🕒 <i>Datos: ${partes.join(' · ')}${viejo ? ' — pueden estar desactualizados' : ''}</i>`;
+}
+
+/** Una línea de lectura/interpretación debajo de los datos. El texto debe venir ya escapado. */
+export const lectura = (html) => `💡 <i>${html}</i>`;
+
+/** «2026-11-20» → «vie 20/11» (día de la semana abreviado y fecha corta). */
+export function diaCorto(iso) {
+  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return String(iso ?? '');
+  const dias = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  return `${dias[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+}

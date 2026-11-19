@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="t d">
   <title id="t">Usar el bot de consultas de V1K</title>
-  <desc id="d">Conversación de ejemplo con el bot de consultas: la persona escribe /resumen, el bot responde con el estado general, lo que hay que mirar primero y la antigüedad de los datos de cada app, y deja al pie los botones Resumen, Datos al día, Proyectos, Materiales, Pedidos, Propiedades, Tendencias y Ayuda. A la derecha, los ocho comandos disponibles y qué responde cada uno. Los datos del ejemplo son ficticios.</desc>
+  <desc id="d">Conversación de ejemplo con el bot de consultas: la persona escribe /resumen, el bot responde con el estado general, lo que hay que mirar primero y la antigüedad de los datos de cada app, y deja al pie los botones Resumen, Datos al día, Proyectos, Materiales, Pedidos, Propiedades, Tendencias y Ayuda. A la derecha, ocho de los dieciséis comandos disponibles y qué responde cada uno. Los datos del ejemplo son ficticios.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
     <radialGradient id="gB" cx="0.3" cy="0.1" r="0.6"><stop offset="0" stop-color="#38bdf8" stop-opacity="0.16"/><stop offset="1" stop-color="#38bdf8" stop-opacity="0"/></radialGradient>
@@ -60,26 +60,26 @@
 
     <g class="kb" font-size="13.5" font-weight="600" text-anchor="middle" fill="#cbd5e1">
       <rect x="64" y="418" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="142" y="443">Resumen</text>
-      <rect x="230" y="418" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="308" y="443">Datos al día</text>
+      <rect x="230" y="418" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="308" y="443">Alertas</text>
       <rect class="toque" x="396" y="418" width="156" height="40" rx="12" fill="#38bdf8" fill-opacity="0.14" stroke="#38bdf8"/><text x="474" y="443" fill="#bae6fd">Proyectos</text>
-      <rect x="562" y="418" width="170" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="647" y="443">Materiales</text>
-      <rect x="64" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="142" y="493">Pedidos</text>
-      <rect x="230" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="308" y="493">Propiedades</text>
-      <rect x="396" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="474" y="493">Tendencias</text>
-      <rect x="562" y="468" width="170" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="647" y="493">Ayuda</text>
+      <rect x="562" y="418" width="170" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="647" y="443">Agenda</text>
+      <rect x="64" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="142" y="493">Materiales</text>
+      <rect x="230" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="308" y="493">Pedidos</text>
+      <rect x="396" y="468" width="156" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="474" y="493">Mercado</text>
+      <rect x="562" y="468" width="170" height="40" rx="12" fill="#ffffff" fill-opacity="0.07" stroke="#ffffff" stroke-opacity="0.16"/><text x="647" y="493">Buscar</text>
     </g>
 
     <!-- Comandos -->
-    <text x="800" y="62" font-size="13" font-weight="700" letter-spacing="3" fill="#7dd3fc">COMANDOS</text>
+    <text x="800" y="62" font-size="13" font-weight="700" letter-spacing="3" fill="#7dd3fc">COMANDOS · 16 EN TOTAL</text>
     <g font-size="13" fill="#9aa4b2">
       <g class="c1"><rect x="800" y="80" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="102" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#7dd3fc">/resumen</text><text x="816" y="121">lo urgente del día y los cambios de la semana</text></g>
-      <g class="c2"><rect x="800" y="140" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="162" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#86efac">/proyectos atrasado</text><text x="816" y="181">estado y avance; también por nombre</text></g>
-      <g class="c3"><rect x="800" y="200" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="222" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#fde68a">/materiales cemento</text><text x="816" y="241">stock bajo su mínimo; avisa si el inventario no está cargado</text></g>
-      <g class="c4"><rect x="800" y="260" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="282" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#fdba74">/pedidos parcial</text><text x="816" y="301">órdenes de compra abiertas; marca las vencidas</text></g>
-      <g class="c5"><rect x="800" y="320" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="342" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#c4b5fd">/propiedades venta miraflores hasta 300000</text><text x="816" y="361">avisos del catálogo con tus filtros</text></g>
-      <g class="c6"><rect x="800" y="380" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="402" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#67e8f9">/frescura</text><text x="816" y="421">hace cuánto sincronizó cada app</text></g>
-      <g class="c7"><rect x="800" y="440" width="440" height="40" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="465" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#f9a8d4">/tendencias</text><text x="930" y="465">qué cambió frente a hace 7 días</text></g>
-      <g class="c8"><rect x="800" y="490" width="440" height="40" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="515" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#e6edf3">/ayuda</text><text x="930" y="515">la lista de comandos y botones</text></g>
+      <g class="c2"><rect x="800" y="140" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="162" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#86efac">/proyectos atrasado</text><text x="816" y="181">tabla de estado y avance; toca uno para su ficha</text></g>
+      <g class="c3"><rect x="800" y="200" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="222" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#fde68a">/materiales cemento</text><text x="816" y="241">stock bajo su mínimo, con barra y lectura</text></g>
+      <g class="c4"><rect x="800" y="260" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="282" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#fdba74">/pedidos vencidos</text><text x="816" y="301">las órdenes que ya debían haber llegado</text></g>
+      <g class="c5"><rect x="800" y="320" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="342" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#c4b5fd">/mercado alquiler</text><text x="816" y="361">tabla de precio mediano por distrito</text></g>
+      <g class="c6"><rect x="800" y="380" width="440" height="50" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="402" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#67e8f9">/buscar torre</text><text x="816" y="421">busca en proyectos, materiales, pedidos y avisos</text></g>
+      <g class="c7"><rect x="800" y="440" width="440" height="40" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="465" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#f9a8d4">/alertas</text><text x="930" y="465">solo lo que requiere atención</text></g>
+      <g class="c8"><rect x="800" y="490" width="440" height="40" rx="14" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/><text x="816" y="515" font-size="14.5" font-family="Consolas,'Courier New',monospace" font-weight="700" fill="#e6edf3">/guia</text><text x="930" y="515">¿Coze, bots o panel? qué usar</text></g>
     </g>
   </g>
 </svg>

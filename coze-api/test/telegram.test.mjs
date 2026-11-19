@@ -153,16 +153,19 @@ for (const c of NOMBRES_COMANDOS) {
   const a = envios(await ejecutar(msg('/proyectos')));
   const t = a[0].cuerpo.text;
   ok(a[0].cuerpo.parse_mode === 'HTML', 'proyectos va en HTML');
-  ok(t.includes('Torre &lt;Miraflores&gt; &amp; Co'), 'el nombre del proyecto va ESCAPADO');
+  ok(t.includes('<pre>') && t.includes('Torre &lt;Mi'), 'la lista de proyectos es una tabla y el nombre va ESCAPADO');
   ok(!t.includes('<Miraflores>'), 'nunca queda el < crudo de un dato');
-  ok(/6[23] %/.test(t) && t.includes('atrasado'), 'avance y estado');
-  ok(/6 tareas atrasadas/.test(t), 'tareas atrasadas');
+  ok(/6[23]%/.test(t) && t.includes('atras.'), 'avance y estado en la tabla');
+  ok(/<b>Proyectos/.test(t) && /avance medio/.test(t) && /🔴 1 atrasado/.test(t), 'con el total, el avance medio y el conteo por estado');
+  const ficha = envios(await ejecutar(msg('/proyecto torre'), crearConsulta({ proyectos: [DATOS.proyectos[0]] })))[0].cuerpo.text;
+  ok(ficha.includes('Torre &lt;Miraflores&gt; &amp; Co') && !ficha.includes('<Miraflores>'), 'la ficha del proyecto muestra el nombre completo y escapado');
+  ok(/6 atrasadas/.test(ficha), 'la ficha dice las tareas atrasadas');
 
   const consulta = crearConsulta();
   await ejecutar(msg('/proyectos atrasados'), consulta);
   igual(consulta.llamadas[0].filtros.estado, 'atrasado', 'el estado va como filtro');
   await ejecutar(msg('/proyectos torre'), consulta);
-  igual(consulta.llamadas[1].filtros.q, 'torre', 'un texto va como búsqueda');
+  igual(consulta.llamadas.filter((l) => l.vista === 'proyectos')[1].filtros.q, 'torre', 'un texto va como búsqueda');
 }
 {
   const t = envios(await ejecutar(msg('/materiales')))[0].cuerpo.text;
@@ -196,7 +199,7 @@ for (const c of NOMBRES_COMANDOS) {
   ok(t.includes('precio dudoso'), 'alquiler de 25 USD se marca como dudoso');
   const consulta = crearConsulta();
   await ejecutar(msg('/propiedades venta miraflores casa hasta 300000'), consulta);
-  igual(consulta.llamadas[0].filtros, { operacion: 'VENTA', inmueble: 'Casa', precio_max_usd: '300000', distrito: 'miraflores', limite: '10' }, 'filtros de propiedades');
+  igual(consulta.llamadas[0].filtros, { operacion: 'VENTA', inmueble: 'Casa', precio_max_usd: '300000', distrito: 'miraflores', limite: '100' }, 'filtros de propiedades');
 }
 {
   const t = envios(await ejecutar(msg('/frescura')))[0].cuerpo.text;
@@ -206,7 +209,7 @@ for (const c of NOMBRES_COMANDOS) {
 }
 {
   const t = envios(await ejecutar(msg('/tendencias')))[0].cuerpo.text;
-  ok(t.includes('Proyectos atrasados') && t.includes('2 → 3'), 'tendencia de proyectos atrasados');
+  ok(t.includes('<pre>') && t.includes('Proy. atrasados') && /2\s+3\s+\+1/.test(t), 'tendencia de proyectos atrasados en una tabla (antes, ahora, diferencia)');
   const sin = envios(await ejecutar(msg('/tendencias'), crearConsulta({ historial: [] })))[0].cuerpo.text;
   ok(sin.includes('Todavía no hay'), 'sin historial lo dice');
   const roto = envios(await ejecutar(msg('/tendencias'), crearConsulta({ historial: new Error('x') })))[0].cuerpo.text;
@@ -253,7 +256,7 @@ for (const c of NOMBRES_COMANDOS) {
   const largo = Array.from({ length: 100 }, (_, i) => ({ material: `Material ${i} `.repeat(6), categoria: 'Categoría', cantidad: '1', minimo: '9', unidad: 'u', faltante: '8' }));
   const tm = envios(await ejecutar(msg('/materiales'), crearConsulta({ 'stock-bajo': largo })))[0].cuerpo.text;
   ok(tm.length <= 4096, `con 100 materiales largos cabe (${tm.length})`);
-  ok(/y \d+ más/.test(tm), 'avisa cuántos faltaron');
+  ok(/página 1 de 25/.test(tm) && /Siguiente/.test(JSON.stringify(envios(await ejecutar(msg('/materiales'), crearConsulta({ 'stock-bajo': largo })))[0].cuerpo.reply_markup)), 'con 100 materiales pagina de a 4 y ofrece «Siguiente»');
 }
 
 // ── Teclado ──────────────────────────────────────────────────────────────────────────────
@@ -363,11 +366,14 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
   const codigo = sinComentarios(lib) + sinComentarios(api);
   ok(!/\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|GRANT)\b/.test(codigo), 'el bot no contiene SQL de escritura');
   ok(!/DATABASE_URL(?!_READER)/.test(codigo), 'el webhook solo usa la cadena de solo lectura');
-  ok(api.includes('DATABASE_URL_READER'), 'usa DATABASE_URL_READER');
+
   ok(!/\d{8,}:[A-Za-z0-9_-]{30,}/.test(lib + api), 'ningún token pegado en el código');
   ok(!/eval\(|new Function|child_process/.test(codigo), 'sin ejecución dinámica ni procesos');
   const mod = await import('../api/telegram.js');
   ok(typeof mod.default === 'function', 'api/telegram.js exporta el manejador');
+  const lectura = sinComentarios(fs.readFileSync(path.join(aqui, '..', 'lib', 'consultar-vistas.js'), 'utf8'));
+  ok(/DATABASE_URL_READER/.test(lectura) && !/DATABASE_URL(?!_READER)/.test(lectura), 'la lectura de datos usa solo la cadena de solo lectura');
+  ok(/consultar-vistas/.test(api) && !/DATABASE_URL(?!_READER)/.test(api), 'el webhook usa esa lectura');
   const r = resFalsa(); await mod.default(reqFalsa('GET'), r);
   igual(r.codigo, 405, 'el endpoint real responde 405 a un GET');
   const r2 = resFalsa(); const guardado = { ...process.env };

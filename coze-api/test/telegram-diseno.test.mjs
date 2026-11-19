@@ -62,7 +62,7 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   igual(a[0].metodo, 'sendAnimation', 'la bienvenida es una animación');
   igual(a[0].cuerpo.animation, 'https://ejemplo.test/bot/bienvenida.mp4', 'el video de bienvenida (sin barras repetidas)');
   ok(a[0].cuerpo.caption.includes('Ana') && a[0].cuerpo.parse_mode === 'HTML', 'con el nombre y en HTML');
-  ok(a[0].cuerpo.reply_markup?.inline_keyboard?.length === 4, 'con el menú de botones');
+  ok(a[0].cuerpo.reply_markup?.inline_keyboard?.length === 6, 'con el menú de botones (6 filas)');
   igual(a[0].alternativa.metodo, 'sendMessage', 'si el video falla, el mismo texto sale como mensaje');
   ok(a[0].alternativa.cuerpo.text === a[0].cuerpo.caption && a[0].alternativa.cuerpo.parse_mode === 'HTML', 'la alternativa lleva el mismo texto');
   const sinNombre = await ejecutar(msg('/start', 424242424, {}));
@@ -102,17 +102,17 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
 
 // ── El bot del resumen diario ────────────────────────────────────────────────────────────
 {
-  const a = procesarUpdateResumen(msg('/start'), { permitidos: PERMITIDOS, panel: 'https://ejemplo.test', hora: 8 });
+  const a = await procesarUpdateResumen(msg('/start'), { permitidos: PERMITIDOS, panel: 'https://ejemplo.test', hora: 8 });
   igual([a.length, a[0].metodo, a[0].cuerpo.animation], [1, 'sendAnimation', 'https://ejemplo.test/bot/resumen.mp4'], 'autorizado: animación del resumen diario');
   ok(a[0].cuerpo.caption.includes('08:07') && a[0].cuerpo.caption.includes('<code>424242424</code>'), 'con la hora del envío y su número de chat');
-  const b = procesarUpdateResumen(msg('/start', 999111222), { permitidos: PERMITIDOS, panel: 'https://ejemplo.test' });
+  const b = await procesarUpdateResumen(msg('/start', 999111222), { permitidos: PERMITIDOS, panel: 'https://ejemplo.test' });
   igual(b[0].cuerpo.animation, 'https://ejemplo.test/bot/privado.mp4', 'sin acceso: animación de acceso privado');
   ok(b[0].cuerpo.caption.includes('<code>999111222</code>'), 'con su número de chat para pedir acceso');
-  const c = procesarUpdateResumen(msg('buenas', 999111222), { permitidos: PERMITIDOS });
+  const c = await procesarUpdateResumen(msg('buenas', 999111222), { permitidos: PERMITIDOS });
   igual(c[0].metodo, 'sendMessage', 'otros mensajes: texto corto');
   ok(c[0].cuerpo.text.includes('privado'), 'sin acceso: dice que es privado');
-  igual(procesarUpdateResumen({}, { permitidos: PERMITIDOS }), [], 'sin chat no hace nada');
-  igual(procesarUpdateResumen({ callback_query: { id: 'x' } }, { permitidos: PERMITIDOS }), [], 'no atiende botones: no consulta nada');
+  igual(await procesarUpdateResumen({}, { permitidos: PERMITIDOS }), [], 'sin chat no hace nada');
+  igual(await procesarUpdateResumen({ callback_query: { id: 'x' } }, { permitidos: PERMITIDOS }), [], 'no atiende botones: no consulta nada');
 }
 
 // ── El manejador: modo resumen, alternativa y «no modificado» ────────────────────────────
@@ -244,7 +244,7 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   ok(/v_telegram_chats_activos/.test(lib), 'la lectura de accesos usa la vista de números de chat');
   for (const f of ['telegram.js', 'telegram-resumen.js']) {
     const api = fs.readFileSync(path.join(aqui, '..', 'api', f), 'utf8').replace(/^\s*\/\/.*$/gm, '');
-    ok(/crearLectorDeChats/.test(api) && !/telegram_accesos\b/.test(api) && /DATABASE_URL_READER/.test(api) && !/DATABASE_URL_ACCESOS/.test(api), `api/${f}: lee solo con el rol de solo lectura y la vista de chats`);
+    ok(/crearLectorDeChats/.test(api) && /consultar-vistas/.test(api) && !/telegram_accesos\b/.test(api) && !/DATABASE_URL_ACCESOS/.test(api), `api/${f}: lee solo con la lectura de solo lectura y la vista de chats`);
   }
   const mod = await import('../api/telegram-resumen.js');
   ok(typeof mod.default === 'function', 'api/telegram-resumen.js exporta el manejador');
@@ -300,11 +300,11 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   ok(adm.some((x) => x.metodo === 'sendMessage' && /Asistente V1K/.test(x.cuerpo.text)), 'un administrador fijo sigue atendido aunque su perfil del módulo esté revocado');
 
   // Bot del resumen
-  const r1 = procesarUpdateResumen(msg('/start', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS, panel: 'https://ejemplo.test' });
+  const r1 = await procesarUpdateResumen(msg('/start', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS, panel: 'https://ejemplo.test' });
   igual([r1[0].cuerpo.animation, r1[0].cuerpo.caption === t], ['https://ejemplo.test/bot/revocado.mp4', true], 'bot del resumen: «Iniciar» de un revocado → animación y aviso');
-  const r2 = procesarUpdateResumen(msg('buenas', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS });
+  const r2 = await procesarUpdateResumen(msg('buenas', 777888999), { permitidos: PERMITIDOS, revocados: REVOCADOS });
   ok(r2[0].metodo === 'sendMessage' && r2[0].cuerpo.text === t, 'bot del resumen: otros mensajes de un revocado reciben el aviso');
-  const r3 = procesarUpdateResumen(msg('/start', 555000111), { permitidos: PERMITIDOS, revocados: REVOCADOS });
+  const r3 = await procesarUpdateResumen(msg('/start', 555000111), { permitidos: PERMITIDOS, revocados: REVOCADOS });
   ok(r3[0].cuerpo.animation.endsWith('/privado.mp4'), 'bot del resumen: quien nunca tuvo acceso sigue viendo «acceso privado»');
 
   // El manejador lee la lista de revocados

@@ -11,18 +11,32 @@ tú autorices.
 
 ## Qué puedes pedirle
 
-| Comando | Qué responde |
-|---|---|
-| `/resumen` | Lo urgente del día y los cambios frente a hace 7 días (el mismo del resumen de la mañana) |
-| `/proyectos` | Todos los proyectos, los atrasados primero. `/proyectos atrasado`, `/proyectos en curso`, `/proyectos torre` |
-| `/materiales` | Materiales bajo su mínimo, con aviso si el inventario está casi sin cargar. `/materiales cemento` |
-| `/pedidos` | Órdenes de compra abiertas; marca ⏰ las que ya debían haber llegado. `/pedidos parcial`, `/pedidos aceros` |
-| `/propiedades` | Avisos recientes con filtros: `/propiedades venta miraflores casa hasta 300000`, `/propiedades alquiler san isidro` |
-| `/frescura` | Hace cuánto sincronizó cada app (✅ menos de 24 h, 🟡 hasta 72 h, 🔴 más) |
-| `/tendencias` | Qué cambió frente a hace 7 días (proyectos atrasados, pedidos vencidos, precios medianos…) |
-| `/ayuda` | La lista de comandos |
+Son **16 comandos** en el bot de consultas, agrupados en el menú «/» y en `/ayuda`; el bot del resumen tiene un «briefing» de 6 (`/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`).
 
-Cada respuesta trae botones para pasar a otra consulta sin escribir. Si escribes una frase suelta, el bot te orienta a `/ayuda`.
+| Grupo | Comando | Qué responde |
+|---|---|---|
+| Hoy | `/resumen` (`/ahora`) | Lo urgente y los cambios de la semana |
+| | `/alertas` | Solo lo que requiere atención, con botones al detalle |
+| | `/agenda` | Hitos y llegadas de pedidos de los próximos 7, 14 o 30 días, por día |
+| Operación | `/proyectos` | **Tabla** con estado, avance, fin y tareas atrasadas; filtros por estado; páginas |
+| | `/proyecto V7K` | La ficha de un proyecto con sus próximos hitos |
+| | `/materiales` | Los que están bajo su mínimo (tarjetas con barra), con el aviso del inventario sin cargar |
+| | `/stock` | **Tabla** de materiales por categoría |
+| | `/pedidos` | Órdenes abiertas; filtros `vencidos`, `pendiente`, `enviada`, `parcial` |
+| Mercado | `/propiedades` | Avisos con filtros (operación, distrito, tipo, precio), mediana y avisos de precio dudoso |
+| | `/mercado` | **Tabla** de precio mediano por distrito, en venta y en alquiler |
+| | `/portales` | **Tabla** de avisos por portal |
+| Herramientas | `/buscar torre` | Busca en proyectos, materiales, pedidos y propiedades a la vez |
+| | `/frescura` | Hace cuánto sincronizó cada app |
+| | `/tendencias` (`/semana`) | **Tabla** de cambios frente a hace 7 días |
+| Ayuda | `/guia` | Cuándo usar Coze, los bots o el panel |
+| | `/ayuda` | La lista de comandos |
+
+**Cada respuesta** trae un encabezado con totales, los datos en tarjetas (`<blockquote>`) o en tablas (`<pre>`, monoespaciado), una línea **💡 de lectura** y el **pie de frescura**
+(«🕒 MRP ✅ hace 20 h»), que avisa cuando los datos tienen más de un día. Las listas largas se paginan con botones y los filtros son botones. Todo es de solo lectura.
+
+**Por qué tantos comandos.** Coze cobra créditos por pregunta y solo permite una al día en el plan actual; el bot de Telegram es instantáneo y gratis, así que conviene que cubra lo frecuente.
+`/guia` ayuda a decidir: primero un comando, y Coze para lo que no tenga botón. Si escribes una frase suelta, el bot te orienta a `/ayuda`.
 
 ## Cómo está protegido
 

@@ -10,7 +10,7 @@
 // Opcional: WEBHOOK_URL. El token y el secreto NUNCA se escriben en pantalla.
 // Ojo: mientras un bot tiene webhook, Telegram no permite getUpdates (el --buscar-chat de resumen-diario.mjs); usa --borrar antes si lo necesitas.
 import { fileURLToPath } from 'node:url';
-import { NOMBRES_COMANDOS } from '../lib/telegram.js';
+import { MENU_DE_COMANDOS } from '../lib/telegram-comandos.js';
 
 export const BASES = 'https://v1k-coze-api.vercel.app';
 export const URL_DEFECTO = `${BASES}/api/telegram`;
@@ -20,31 +20,19 @@ export const URL_RESUMEN = `${BASES}/api/telegram-resumen`;
 export const BOTS = {
   consultas: {
     token: 'TELEGRAM_BOT_COMANDOS_TOKEN', secreto: 'TELEGRAM_WEBHOOK_SECRET', url: URL_DEFECTO,
-    descripcion: 'Consulta proyectos, materiales, pedidos y propiedades de V1K con comandos y botones. Solo lectura y de uso privado: pulsa Iniciar para ver tu número de chat y pedirle acceso al administrador.',
+    descripcion: 'Consulta proyectos, materiales, pedidos, agenda, mercado y propiedades de V1K con comandos y botones. Solo lectura y de uso privado: pulsa Iniciar para ver tu número de chat y pedirle acceso al administrador.',
     corta: 'Consultas de solo lectura de V1K (uso privado)',
   },
   resumen: {
     token: 'TELEGRAM_BOT_RESUMEN_TOKEN', secreto: 'TELEGRAM_RESUMEN_WEBHOOK_SECRET', url: URL_RESUMEN,
-    descripcion: 'Te escribe cada mañana a las 08:07 (hora de Lima) con el resumen de V1K: lo urgente y los cambios de la semana. Pulsa Iniciar para ver tu número de chat y pedir acceso.',
+    descripcion: 'Te escribe cada mañana a las 08:07 (hora de Lima) con el resumen de V1K y responde a /ahora, /alertas, /agenda y /semana. Pulsa Iniciar para ver tu número de chat y pedir acceso.',
     corta: 'Resumen diario de V1K, cada mañana a las 08:07',
   },
 };
 
-const DESCRIPCION = {
-  resumen: 'Lo urgente del día y los cambios de la semana',
-  proyectos: 'Estado y avance de los proyectos',
-  materiales: 'Materiales bajo su mínimo',
-  pedidos: 'Órdenes de compra abiertas',
-  propiedades: 'Propiedades del catálogo con filtros',
-  frescura: 'Hace cuánto sincronizó cada app',
-  tendencias: 'Cambios frente a hace 7 días',
-  ayuda: 'Cómo usar el bot',
-};
-
-/** Lista de comandos para el menú «/» de Telegram. */
+/** Lista de comandos para el menú «/» de Telegram (cada bot tiene la suya). */
 export function comandosDelMenu(bot = 'consultas') {
-  if (bot === 'resumen') return [{ command: 'start', description: 'Ver tu número de chat y si recibes el resumen' }];
-  return NOMBRES_COMANDOS.map((command) => ({ command, description: DESCRIPCION[command] }));
+  return MENU_DE_COMANDOS[bot] ?? MENU_DE_COMANDOS.consultas;
 }
 
 /** Cuerpo de setWebhook: solo mensajes y botones, y descarta lo que haya quedado pendiente. */
