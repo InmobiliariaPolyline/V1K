@@ -30,7 +30,7 @@ Planner · MRP · Scraper  →  Neon (resúmenes)  →  API de solo lectura  →
 | Herramientas del agente | **8**, todas de solo lectura (una, `resumen_general`, trae todo en una llamada) |
 | Panel web | **10 secciones**, tema claro/oscuro, móvil, modo demostración sin token |
 | Comprobaciones contra el sistema real | **1,314** (A: 569 · B: 535 · C: 155 · D: 55), todas correctas |
-| Pruebas automáticas sin red (en cada cambio) | **9 suites**, p. ej. panel 1,087 e ilustraciones 1,445 comprobaciones |
+| Pruebas automáticas sin red (en cada cambio) | **10 suites**, p. ej. panel 1,087 e ilustraciones 1,445 comprobaciones |
 | Roles de base de datos | **5**, cada uno con el mínimo privilegio |
 | Automatización | CI en cada cambio, vigilancia cada 6 h, foto diaria y resumen por Telegram cada mañana |
 | Ritmo | el repositorio central tiene **más de 20 commits en 7 días** (13 a 19/11/2026), cada uno con pruebas |
@@ -107,7 +107,7 @@ vea mejor en el proyector (el oscuro suele verse bien en pantallas grandes; el c
   de precio dudoso) y se preparó un cambio en el Scraper (PR) para guardar el total mensual.
 
 **Operación.**
-- Un flujo de **CI** (Node 20 y 22) corre las 9 suites en cada cambio.
+- Un flujo de **CI** (Node 20 y 22) corre las 10 suites en cada cambio.
 - La **vigilancia** comprueba cada 6 horas la API, el panel y la frescura de cada app; abre una incidencia si algo falla.
 - Cada mañana, un **resumen por Telegram** con lo urgente y los cambios de la semana; el registro público del flujo nunca incluye datos del negocio.
 

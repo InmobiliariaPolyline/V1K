@@ -8,7 +8,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs && node test/panel.test.mjs && node test/ilustraciones.test.mjs && node test/vigilancia.test.mjs && node test/historial.test.mjs && node test/diario.test.mjs",
+    "test": "node test/smoke.mjs && node test/sql.test.mjs && node test/filtros.test.mjs && node test/openapi.test.mjs && node test/panel.test.mjs && node test/ilustraciones.test.mjs && node test/vigilancia.test.mjs && node test/historial.test.mjs && node test/diario.test.mjs && node test/telegram.test.mjs",
     "openapi": "node scripts/generar-openapi.mjs",
     "panel": "node scripts/servir-panel.mjs"
   },

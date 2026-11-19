@@ -49,6 +49,13 @@ stock, pedidos, propiedades y precios medianos) y te manda por **Telegram** un r
 La foto la escribe un 5.º rol, `writer_historial`, que solo puede leer las tablas centrales y escribir su propia tabla. Las apps no
 cambian. El historial alimenta la sección **Tendencias** del panel. Cómo activarlo: [`docs/OPERACION.md`](docs/OPERACION.md).
 
+### Bot de consultas por Telegram
+
+Un bot **privado y de solo lectura** que contesta con los datos reales mediante comandos y botones (`/resumen`, `/proyectos`,
+`/materiales`, `/pedidos`, `/propiedades venta miraflores hasta 300000`, `/frescura`, `/tendencias`). No usa IA: responde al
+instante, no cuesta nada y no puede inventar. Solo atiende a los chats autorizados y solo lo puede llamar Telegram (secreto de
+webhook). Guía: [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md).
+
 ### Qué pasa cuando una app guarda datos
 
 <img src="docs/assets/sincronizacion.svg" alt="Cinco pasos: la app guarda datos, espera un instante, sincroniza en segundo plano, escribe en una sola transacción y marca la hora en sync_estado" width="100%" />
@@ -169,7 +176,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1314 comprobaciones en cuatro baterías: A 569, B 535, C 155 y D 55, todas correctas" width="100%" />
 
-Las 9 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+Las 10 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
 
 Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
@@ -220,6 +227,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md) | Resultados de las baterías y fallos encontrados |
 | [`docs/PRESENTACION.md`](docs/PRESENTACION.md) | Guion de presentación de 10 minutos: resumen de una página, demo del panel paso a paso, preguntas probables y lista de verificación |
 | [`docs/OPERACION.md`](docs/OPERACION.md) | Pruebas automáticas (CI), vigilancia cada 6 horas, qué hacer según la alerta y cómo rotar el token |
+| [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md) | Bot de consultas por Telegram: comandos, seguridad, puesta en marcha en 5 pasos y solución de problemas |
 | [`docs/CALIDAD_DE_DATOS.md`](docs/CALIDAD_DE_DATOS.md) | Revisión de los datos reales: inventario sin cargar en el MRP y alquileres «por m²» en el Scraper, y qué se corrigió |
 | [`coze-api/README.md`](coze-api/README.md) | Endpoints de la API y cómo conectarla a Coze |
 | [`tests-integracion/README.md`](tests-integracion/README.md) | Cómo ejecutar las baterías |

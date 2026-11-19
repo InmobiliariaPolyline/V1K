@@ -335,6 +335,30 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   }
 }
 
+// ── 6e) Webhook del bot de Telegram (/api/telegram): cerrado para cualquiera que no sea Telegram ──
+{
+  const ruta = '/api/telegram';
+  for (const m of ['GET', 'PUT', 'DELETE', 'PATCH']) {
+    const r = await llama(ruta, { raw: true, metodo: m });
+    chequea(`[telegram] ${m} rechazado`, r.status === 405, `-> ${r.status}`);
+    chequea(`[telegram] ${m} no filtra datos`, !/proyecto|material|propiedad/i.test(r.cuerpo));
+  }
+  const variantes = [
+    ['sin cabecera', {}],
+    ['secreto vacío', { 'X-Telegram-Bot-Api-Secret-Token': '' }],
+    ['secreto adivinado', { 'X-Telegram-Bot-Api-Secret-Token': 'secreto-que-no-es' }],
+    ['con el token de la API (no sirve aquí)', { 'X-Telegram-Bot-Api-Secret-Token': TOKEN }],
+    ['Authorization de la API (no sirve aquí)', { Authorization: `Bearer ${TOKEN}` }],
+  ];
+  for (const [nombre, headers] of variantes) {
+    const r = await llama(ruta, { raw: true, metodo: 'POST', headers });
+    chequea(`[telegram] POST ${nombre} → 401`, r.status === 401, `-> ${r.status}`);
+    chequea(`[telegram] POST ${nombre} no filtra datos ni errores`, r.cuerpo.length < 200 && !/neon|postgres|stack|at /i.test(r.cuerpo), r.cuerpo.slice(0, 120));
+  }
+  const r = await llama(ruta, { raw: true, metodo: 'GET' });
+  chequea('[telegram] sin caché', /no-store/.test(r.headers.get('cache-control') ?? ''), r.headers.get('cache-control') ?? '');
+}
+
 // ── 7) La base sigue intacta tras todos los intentos hostiles ───────────────────────
 {
   const r = await llama('frescura', { headers: A() });
