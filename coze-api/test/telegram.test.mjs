@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  MAX_MENSAJE, NOMBRES_COMANDOS, chatsPermitidos, crearLimitador, crearManejador, esc, estadoProyecto,
+  MAX_MENSAJE, NOMBRES_COMANDOS, chatsPermitidos, crearLimitador, crearManejador, esc, estadoProyecto, fechaHoraLima,
   parsearComando, parsearPropiedades, procesarUpdate, secretoValido, tecladoMenu,
 } from '../lib/telegram.js';
 import { VISTAS } from '../lib/vistas.js';
@@ -88,6 +88,12 @@ igual(chatsPermitidos('').size, 0, 'vacío, nadie');
   ok(limitar('a', 1200), 'pasada la ventana vuelve a permitir');
 }
 
+igual(fechaHoraLima('2026-11-18T20:43:00Z'), '18/11/2026 15:43', 'hora de Lima (UTC−5)');
+igual(fechaHoraLima('2026-11-19T03:30:00Z'), '18/11/2026 22:30', 'cruza de día hacia atrás');
+igual(fechaHoraLima('basura'), '—', 'fecha inválida');
+igual(fechaHoraLima(null), '—', 'sin fecha (null) no inventa 1969');
+igual(fechaHoraLima(''), '—', 'cadena vacía');
+
 // ── Análisis de comandos ─────────────────────────────────────────────────────────────────
 igual(parsearComando('/proyectos atrasado'), { cmd: 'proyectos', args: 'atrasado' }, 'comando con argumento');
 igual(parsearComando('/Proyectos@mi_bot   en   curso '), { cmd: 'proyectos', args: 'en curso' }, 'con @bot, mayúsculas y espacios');
@@ -162,6 +168,7 @@ for (const c of NOMBRES_COMANDOS) {
   const t = envios(await ejecutar(msg('/materiales')))[0].cuerpo.text;
   ok(t.includes('Acero 1/2"') && t.includes('4.185') || t.includes('4185') || t.includes('4,185'), 'material y faltante');
   ok(t.includes('Inventario casi sin cargar'), 'avisa que el inventario está casi sin cargar (499 de 501)');
+  ok(/hay 15 · mínimo 4[.,]200 · faltan <b>4[.,]185<\/b>\n   unidad: kg/.test(t), 'la línea de material es clara: hay · mínimo · faltan · unidad');
   const consulta = crearConsulta();
   await ejecutar(msg('/materiales cemento'), consulta);
   igual(consulta.llamadas.find((l) => l.vista === 'stock-bajo').filtros.q, 'cemento', 'búsqueda de material');
@@ -177,6 +184,10 @@ for (const c of NOMBRES_COMANDOS) {
 }
 {
   const t = envios(await ejecutar(msg('/propiedades venta miraflores')))[0].cuerpo.text;
+  ok(t.includes('(venta · miraflores)'), 'el título de propiedades muestra los filtros de forma legible');
+  ok(!/operacion:|precio_max/.test(t), 'sin nombres técnicos de filtros');
+  const tope = envios(await ejecutar(msg('/propiedades alquiler casa desde 500 hasta 3000')))[0].cuerpo.text;
+  ok(/\(alquiler · casa · desde US\$ 500 · hasta US\$ 3[.,]000\)/.test(tope), 'rango de precio legible');
   ok(t.includes('&lt;script&gt;'), 'el título del aviso va escapado');
   ok(!t.includes('<script>'), 'sin <script> crudo');
   ok(t.includes('href="https://portal.test/aviso/1"'), 'enlace seguro como vínculo');
@@ -189,6 +200,7 @@ for (const c of NOMBRES_COMANDOS) {
 {
   const t = envios(await ejecutar(msg('/frescura')))[0].cuerpo.text;
   ok(t.includes('Planner') && t.includes('Scraper'), 'apps');
+  ok(t.includes('19/11/2026 05:00') && t.includes('hora de Lima'), 'la hora de la sincronización va en hora de Lima (10:00 UTC → 05:00), no en la del servidor');
   ok(t.includes('🟡') && t.includes('✅'), 'hace 60 h sale en amarillo y hace 5 h en verde');
 }
 {

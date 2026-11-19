@@ -7,7 +7,7 @@
 // Seguridad: solo responde con datos a los chats de TELEGRAM_CHATS_PERMITIDOS; a cualquier otro le dice que el bot es privado y su
 // número de chat (para que el administrador lo autorice). Todo texto que viene de los datos se escapa antes de enviarlo como HTML.
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { dinero, estadoFrescura, fechaCorta, fechaHora, haceHoras, diasEntre, normalizar, numero, plural, relativoDias, urlSegura } from '../public/js/nucleo/formato.js';
+import { dinero, estadoFrescura, fechaCorta, haceHoras, diasEntre, normalizar, numero, plural, relativoDias, urlSegura } from '../public/js/nucleo/formato.js';
 import { inventarioSinCargar, precioDudoso } from '../public/js/nucleo/insights.js';
 import { compararCon } from '../public/js/nucleo/tendencias.js';
 import { componerResumen, hoyEnLima } from '../scripts/resumen-diario.mjs';
@@ -18,6 +18,15 @@ export const ESTADOS_PROYECTO = ['atrasado', 'en curso', 'por iniciar', 'termina
 const ESTADOS_PEDIDO = ['pendiente', 'enviada', 'parcial'];
 const INMUEBLES = ['departamento', 'casa', 'terreno', 'oficina', 'local'];
 const NOMBRE_INMUEBLE = { departamento: 'Departamento', casa: 'Casa', terreno: 'Terreno', oficina: 'Oficina', local: 'Local' };
+
+/** «2026-11-18T20:43:00Z» → «18/11/2026 15:43» en hora de Lima, sea cual sea la zona del servidor (en Vercel es UTC). */
+export function fechaHoraLima(valor) {
+  if (valor === null || valor === undefined || valor === '') return '—';
+  const d = new Date(valor);
+  if (Number.isNaN(d.getTime())) return '—';
+  const p = Object.fromEntries(new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map((x) => [x.type, x.value]));
+  return `${p.day}/${p.month}/${p.year} ${p.hour}:${p.minute}`;
+}
 
 /** Escapa texto para el modo HTML de Telegram (nombres, títulos y demás datos nunca se envían sin escapar). */
 export const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -133,7 +142,7 @@ async function cmdMateriales({ args, consultar }) {
   const aviso = resumen && inventarioSinCargar(resumen.stock)
     ? `⚠️ <b>Inventario casi sin cargar:</b> ${numero(resumen.stock.sin_existencias, 0)} de ${numero(resumen.stock.materiales_con_minimo, 0)} materiales sin existencias. Estos faltantes son mínimos de partida, no una falta real.`
     : '';
-  const bloques = filas.map((m) => `• <b>${esc(m.material)}</b>${m.categoria ? ` — ${esc(m.categoria)}` : ''}\n   hay ${numero(m.cantidad, 2)} de ${numero(m.minimo, 2)} ${esc(m.unidad ?? '')} · faltan <b>${numero(m.faltante, 2)}</b>`);
+  const bloques = filas.map((m) => `• <b>${esc(m.material)}</b>${m.categoria ? ` — ${esc(m.categoria)}` : ''}\n   hay ${numero(m.cantidad, 2)} · mínimo ${numero(m.minimo, 2)} · faltan <b>${numero(m.faltante, 2)}</b>${m.unidad ? `\n   unidad: ${esc(m.unidad)}` : ''}`);
   const titulo = `📦 <b>Materiales bajo su mínimo</b>${args ? ` · «${esc(args)}»` : ''}`;
   const cuerpo = filas.length ? unir(titulo, bloques, 'Busca: /materiales cemento') : `${titulo}\n\nNingún material coincide.`;
   return { html: aviso ? `${aviso}\n\n${cuerpo}` : cuerpo, teclado: tecladoMenu() };
@@ -163,7 +172,7 @@ async function cmdPropiedades({ args, consultar }) {
     const datos = [p.distrito ? esc(p.distrito) : null, dinero(p.precio, p.moneda), area > 0 ? `${numero(area, 0)} m²` : null, p.dormitorios ? `${numero(parseFloat(p.dormitorios), 0)} dorm.` : null].filter(Boolean).join(' · ');
     return `• <b>${esc(p.titulo ?? 'Sin título')}</b>\n   ${esc(p.operacion ?? '')} · ${datos}${dudoso ? '\n   ⚠️ precio dudoso (parece por m²)' : ''}${enlace ? `\n   <a href="${esc(enlace)}">Ver aviso</a>` : ''}`;
   });
-  const etiqueta = Object.entries(filtros).map(([k, v]) => `${k.replace('precio_max_usd', 'hasta US$').replace('precio_min_usd', 'desde US$')}: ${esc(v)}`).join(' · ');
+  const etiqueta = [filtros.operacion?.toLowerCase(), filtros.inmueble?.toLowerCase(), filtros.distrito, filtros.precio_min_usd ? `desde US$ ${numero(Number(filtros.precio_min_usd), 0)}` : null, filtros.precio_max_usd ? `hasta US$ ${numero(Number(filtros.precio_max_usd), 0)}` : null].filter(Boolean).map(esc).join(' · ');
   const titulo = `🏠 <b>Propiedades</b>${etiqueta ? ` (${etiqueta})` : ' recientes'}`;
   const pie = 'Ejemplos: /propiedades venta miraflores hasta 300000 · /propiedades alquiler casa';
   return { html: filas.length ? unir(titulo, bloques, pie) : `${titulo}\n\nNingún aviso coincide.\n${pie}`, teclado: tecladoMenu() };
@@ -172,7 +181,7 @@ async function cmdPropiedades({ args, consultar }) {
 async function cmdFrescura({ consultar }) {
   const filas = await consultar('frescura', {});
   const nombre = { planner: 'Planner', mrp: 'MRP', scraper: 'Scraper' };
-  const lineas = filas.map((f) => `${{ ok: '✅', aviso: '🟡', viejo: '🔴', desconocido: '⚪' }[estadoFrescura(Number(f.hace_horas))]} <b>${esc(nombre[f.app] ?? f.app)}</b> — ${haceHoras(Number(f.hace_horas))}\n   ${esc(fechaHora(f.ultima_sync))} (hora del servidor)`);
+  const lineas = filas.map((f) => `${{ ok: '✅', aviso: '🟡', viejo: '🔴', desconocido: '⚪' }[estadoFrescura(Number(f.hace_horas))]} <b>${esc(nombre[f.app] ?? f.app)}</b> — ${haceHoras(Number(f.hace_horas))}\n   ${esc(fechaHoraLima(f.ultima_sync))} (hora de Lima)`);
   return { html: `🕒 <b>Datos al día</b>\n\n${lineas.join('\n\n') || 'Todavía no hay datos de sincronización.'}`, teclado: tecladoMenu() };
 }
 
