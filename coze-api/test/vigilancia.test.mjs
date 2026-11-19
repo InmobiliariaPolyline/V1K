@@ -104,7 +104,7 @@ ok(APPS.every((a) => UMBRALES_H[a] > 0), 'umbrales positivos para cada app');
 const flujo = (f) => YAML.parse(fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8'));
 const crudo = (f) => fs.readFileSync(path.join(raiz, '.github', 'workflows', f), 'utf8');
 const archivos = fs.readdirSync(path.join(raiz, '.github', 'workflows')).filter((f) => f.endsWith('.yml'));
-igual(archivos.sort(), ['ci.yml', 'vigilancia.yml'], 'los dos flujos esperados');
+igual(archivos.sort(), ['ci.yml', 'diario.yml', 'vigilancia.yml'], 'los tres flujos esperados');
 
 for (const f of archivos) {
   const w = flujo(f), texto = crudo(f);

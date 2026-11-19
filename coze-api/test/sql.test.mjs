@@ -10,6 +10,7 @@ import { construirConsulta, ErrorFiltro, patronBusqueda, VISTAS } from '../lib/v
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const pg = new PGlite();
 await pg.exec(fs.readFileSync(path.join(raiz, 'db', '01_schema.sql'), 'utf8'));
+await pg.exec(fs.readFileSync(path.join(raiz, 'db', '03_historial.sql'), 'utf8')); // la tabla del historial y su función (la vista «historial» la lee)
 
 const ejecuta = async (nombre, query = {}) => {
   const { text, params } = construirConsulta(VISTAS[nombre], query);
@@ -38,12 +39,13 @@ await pg.exec(`
            ('infocasas:4', 'infocasas', 'VENTA', 'Casa', 'Sin precio', 0, 'USD', 0, 'Surco', 'https://x/4', now() - interval '3 hours');
   INSERT INTO central.scraper_resumen (portal, operacion, total) VALUES ('urbania', 'VENTA', 1), ('infocasas', 'VENTA', 900), ('infocasas', 'ALQUILER', 300);
   INSERT INTO central.sync_estado (app) VALUES ('planner'), ('mrp'), ('scraper');
+  SELECT * FROM central.tomar_foto_diaria();  -- una foto de hoy para la vista «historial»
 `);
 
 // ── 1) Cada vista, sin filtros ───────────────────────────────────────────────────────
 const esperadas = {
   proyectos: 4, hitos: 3, 'stock-bajo': 2, pedidos: 2, propiedades: 4, 'propiedades-resumen': 3, frescura: 3, 'resumen-general': 1,
-  'stock-categorias': 2, 'propiedades-distritos': 3,
+  'stock-categorias': 2, 'propiedades-distritos': 3, historial: 1,
 };
 for (const nombre of Object.keys(VISTAS)) {
   assert.ok(nombre in esperadas, `la vista nueva «${nombre}» necesita su caso de prueba`);

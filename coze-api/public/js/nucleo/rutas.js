@@ -1,7 +1,7 @@
 // Enrutador por hash (sin dependencias). Formato: #/propiedades?operacion=VENTA&limite=20
 // Funciones puras: se prueban en test/panel.test.mjs.
 
-export const RUTAS = ['inicio', 'proyectos', 'calendario', 'materiales', 'pedidos', 'propiedades', 'explorador', 'asistente', 'sistema'];
+export const RUTAS = ['inicio', 'tendencias', 'proyectos', 'calendario', 'materiales', 'pedidos', 'propiedades', 'explorador', 'asistente', 'sistema'];
 export const RUTA_INICIAL = 'inicio';
 
 /** '#/propiedades?operacion=VENTA' -> { ruta: 'propiedades', params: { operacion: 'VENTA' } }. Rutas desconocidas -> inicio. */

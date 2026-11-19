@@ -324,9 +324,9 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   chequea('[panel] ningún recurso externo (CDN, fuentes)', !/(https?:)?\/\/(cdn|unpkg|fonts|cdnjs)\./i.test(raiz.cuerpo + js));
   chequea('[panel] el JS publicado no contiene el token', !js.includes(TOKEN) && !raiz.cuerpo.includes(TOKEN));
   const vj = json((await llama('/vistas.json', { raw: true })).cuerpo);
-  chequea('[panel] vistas.json describe 10 vistas (2 solo del panel) y no contiene secretos', vj?.vistas?.length === 10 && vj.vistas.filter((v) => v.soloPanel).length === 2 && !JSON.stringify(vj).includes(TOKEN));
+  chequea('[panel] vistas.json describe 11 vistas (3 solo del panel) y no contiene secretos', vj?.vistas?.length === 11 && vj.vistas.filter((v) => v.soloPanel).length === 3 && !JSON.stringify(vj).includes(TOKEN));
   // Las vistas solo del panel exigen token y no están en el contrato de Coze
-  for (const v of ['stock-categorias', 'propiedades-distritos']) {
+  for (const v of ['stock-categorias', 'propiedades-distritos', 'historial']) {
     const sin = await llama(v), con = await llama(v, { headers: A() });
     chequea(`[panel] /api/${v} sin token => 401`, sin.status === 401, `-> ${sin.status}`);
     const c = json(con.cuerpo);

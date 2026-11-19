@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="400" viewBox="0 0 1280 400" role="img" aria-labelledby="t d">
-  <title id="t">Las nueve secciones del Panel V1K</title>
-  <desc id="d">Inicio, Proyectos, Calendario, Materiales, Pedidos, Propiedades, Explorador de API, Agente de Coze y Sistema, resaltadas una a una con su descripción.</desc>
+  <title id="t">Las diez secciones del Panel V1K</title>
+  <desc id="d">Inicio, Tendencias, Proyectos, Calendario, Materiales, Pedidos, Propiedades, Explorador de API, Agente de Coze y Sistema, resaltadas una a una con su descripción.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
     <radialGradient id="gV" cx="0.9" cy="0.05" r="0.55"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.22"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
@@ -13,37 +13,40 @@
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="0" stdDeviation="9" flood-color="#4ade80" flood-opacity="0.5"/></filter>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
     <style>
-    @keyframes d0 { 0%, 0% { opacity: 0; transform: translateY(6px); } 3%, 10.911% { opacity: 1; transform: none; } 13.911%, 100% { opacity: 0; transform: none; } }
+    @keyframes d0 { 0%, 0% { opacity: 0; transform: translateY(6px); } 3%, 9.8% { opacity: 1; transform: none; } 12.8%, 100% { opacity: 0; transform: none; } }
     .d0 { animation: d0 13.5s ease-out infinite; }
-    @keyframes d1 { 0%, 11.111% { opacity: 0; transform: translateY(6px); } 14.111%, 22.022% { opacity: 1; transform: none; } 25.022%, 100% { opacity: 0; transform: none; } }
+    @keyframes d1 { 0%, 10% { opacity: 0; transform: translateY(6px); } 13%, 19.8% { opacity: 1; transform: none; } 22.8%, 100% { opacity: 0; transform: none; } }
     .d1 { animation: d1 13.5s ease-out infinite; }
-    @keyframes d2 { 0%, 22.222% { opacity: 0; transform: translateY(6px); } 25.222%, 33.133% { opacity: 1; transform: none; } 36.133%, 100% { opacity: 0; transform: none; } }
+    @keyframes d2 { 0%, 20% { opacity: 0; transform: translateY(6px); } 23%, 29.8% { opacity: 1; transform: none; } 32.8%, 100% { opacity: 0; transform: none; } }
     .d2 { animation: d2 13.5s ease-out infinite; }
-    @keyframes d3 { 0%, 33.333% { opacity: 0; transform: translateY(6px); } 36.333%, 44.244% { opacity: 1; transform: none; } 47.244%, 100% { opacity: 0; transform: none; } }
+    @keyframes d3 { 0%, 30% { opacity: 0; transform: translateY(6px); } 33%, 39.8% { opacity: 1; transform: none; } 42.8%, 100% { opacity: 0; transform: none; } }
     .d3 { animation: d3 13.5s ease-out infinite; }
-    @keyframes d4 { 0%, 44.444% { opacity: 0; transform: translateY(6px); } 47.444%, 55.356% { opacity: 1; transform: none; } 58.356%, 100% { opacity: 0; transform: none; } }
+    @keyframes d4 { 0%, 40% { opacity: 0; transform: translateY(6px); } 43%, 49.8% { opacity: 1; transform: none; } 52.8%, 100% { opacity: 0; transform: none; } }
     .d4 { animation: d4 13.5s ease-out infinite; }
-    @keyframes d5 { 0%, 55.556% { opacity: 0; transform: translateY(6px); } 58.556%, 66.467% { opacity: 1; transform: none; } 69.467%, 100% { opacity: 0; transform: none; } }
+    @keyframes d5 { 0%, 50% { opacity: 0; transform: translateY(6px); } 53%, 59.8% { opacity: 1; transform: none; } 62.8%, 100% { opacity: 0; transform: none; } }
     .d5 { animation: d5 13.5s ease-out infinite; }
-    @keyframes d6 { 0%, 66.667% { opacity: 0; transform: translateY(6px); } 69.667%, 77.578% { opacity: 1; transform: none; } 80.578%, 100% { opacity: 0; transform: none; } }
+    @keyframes d6 { 0%, 60% { opacity: 0; transform: translateY(6px); } 63%, 69.8% { opacity: 1; transform: none; } 72.8%, 100% { opacity: 0; transform: none; } }
     .d6 { animation: d6 13.5s ease-out infinite; }
-    @keyframes d7 { 0%, 77.778% { opacity: 0; transform: translateY(6px); } 80.778%, 88.689% { opacity: 1; transform: none; } 91.689%, 100% { opacity: 0; transform: none; } }
+    @keyframes d7 { 0%, 70% { opacity: 0; transform: translateY(6px); } 73%, 79.8% { opacity: 1; transform: none; } 82.8%, 100% { opacity: 0; transform: none; } }
     .d7 { animation: d7 13.5s ease-out infinite; }
-    @keyframes d8 { 0%, 88.889% { opacity: 0; transform: translateY(6px); } 91.889%, 99.8% { opacity: 1; transform: none; } 100%, 100% { opacity: 0; transform: none; } }
+    @keyframes d8 { 0%, 80% { opacity: 0; transform: translateY(6px); } 83%, 89.8% { opacity: 1; transform: none; } 92.8%, 100% { opacity: 0; transform: none; } }
     .d8 { animation: d8 13.5s ease-out infinite; }
+    @keyframes d9 { 0%, 90% { opacity: 0; transform: translateY(6px); } 93%, 99.8% { opacity: 1; transform: none; } 100%, 100% { opacity: 0; transform: none; } }
+    .d9 { animation: d9 13.5s ease-out infinite; }
     .tile { animation: sel 13.5s ease-in-out infinite; }
     .arriba { animation: arriba 13.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-    @keyframes sel { 0% { stroke-opacity: 1; fill-opacity: 0.2; } 10.111% { stroke-opacity: 1; fill-opacity: 0.2; } 12.111%, 100% { stroke-opacity: 0.3; fill-opacity: 0.05; } }
-    @keyframes arriba { 0% { transform: translateY(-5px) scale(1.1); } 10.111% { transform: translateY(-5px) scale(1.1); } 12.111%, 100% { transform: none; } }
+    @keyframes sel { 0% { stroke-opacity: 1; fill-opacity: 0.2; } 9% { stroke-opacity: 1; fill-opacity: 0.2; } 11%, 100% { stroke-opacity: 0.3; fill-opacity: 0.05; } }
+    @keyframes arriba { 0% { transform: translateY(-5px) scale(1.1); } 9% { transform: translateY(-5px) scale(1.1); } 11%, 100% { transform: none; } }
     .t0 { animation-delay: 0s; }
-    .t1 { animation-delay: 1.5s; }
-    .t2 { animation-delay: 3s; }
-    .t3 { animation-delay: 4.5s; }
-    .t4 { animation-delay: 6s; }
-    .t5 { animation-delay: 7.5s; }
-    .t6 { animation-delay: 9s; }
-    .t7 { animation-delay: 10.5s; }
-    .t8 { animation-delay: 12s; }
+    .t1 { animation-delay: 1.35s; }
+    .t2 { animation-delay: 2.7s; }
+    .t3 { animation-delay: 4.05s; }
+    .t4 { animation-delay: 5.4s; }
+    .t5 { animation-delay: 6.75s; }
+    .t6 { animation-delay: 8.1s; }
+    .t7 { animation-delay: 9.45s; }
+    .t8 { animation-delay: 10.8s; }
+    .t9 { animation-delay: 12.15s; }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
   </defs>
   <rect width="1280" height="400" rx="28" fill="url(#bg)"/>
@@ -52,43 +55,47 @@
   <rect width="1280" height="400" rx="28" fill="url(#gC)"/>
   <rect x="1" y="1" width="1278" height="398" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
   <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
-    <text x="40" y="56" font-size="13" font-weight="700" letter-spacing="2" fill="#6e7681">UN PANEL, NUEVE SECCIONES · SIN GASTAR CRÉDITOS DE COZE</text>
-    <g class="arriba t0"><rect class="tile t0" x="36" y="96" width="120" height="124" rx="18" fill="#4ade80" fill-opacity="0.05" stroke="#4ade80" stroke-width="1.6"/>
-    <g transform="translate(68 118) scale(1.75)" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 L16 6 L27 15 V26 H19 V19 H13 V26 H5 Z"/></g>
-    <text x="96" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Inicio</text></g>
-    <g class="arriba t1"><rect class="tile t1" x="172" y="96" width="120" height="124" rx="18" fill="#22d3ee" fill-opacity="0.05" stroke="#22d3ee" stroke-width="1.6"/>
-    <g transform="translate(204 118) scale(1.75)" fill="none" stroke="#22d3ee" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5 L28 11 L16 17 L4 11 Z M4 16 L16 22 L28 16 M4 21 L16 27 L28 21"/></g>
-    <text x="232" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Proyectos</text></g>
-    <g class="arriba t2"><rect class="tile t2" x="308" y="96" width="120" height="124" rx="18" fill="#60a5fa" fill-opacity="0.05" stroke="#60a5fa" stroke-width="1.6"/>
-    <g transform="translate(340 118) scale(1.75)" fill="none" stroke="#60a5fa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8 H27 V27 H5 Z M5 14 H27 M11 5 V10 M21 5 V10"/></g>
-    <text x="368" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Calendario</text></g>
-    <g class="arriba t3"><rect class="tile t3" x="444" y="96" width="120" height="124" rx="18" fill="#fbbf24" fill-opacity="0.05" stroke="#fbbf24" stroke-width="1.6"/>
-    <g transform="translate(476 118) scale(1.75)" fill="none" stroke="#fbbf24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4 L27 10 V22 L16 28 L5 22 V10 Z M5 10 L16 16 L27 10 M16 16 V28"/></g>
-    <text x="504" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Materiales</text></g>
-    <g class="arriba t4"><rect class="tile t4" x="580" y="96" width="120" height="124" rx="18" fill="#fb923c" fill-opacity="0.05" stroke="#fb923c" stroke-width="1.6"/>
-    <g transform="translate(612 118) scale(1.75)" fill="none" stroke="#fb923c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 H19 V21 H3 Z M19 13 H25 L29 18 V21 H19 M9 24 a2.5 2.5 0 1 0 0.01 0 M23 24 a2.5 2.5 0 1 0 0.01 0"/></g>
-    <text x="640" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Pedidos</text></g>
-    <g class="arriba t5"><rect class="tile t5" x="716" y="96" width="120" height="124" rx="18" fill="#a78bfa" fill-opacity="0.05" stroke="#a78bfa" stroke-width="1.6"/>
-    <g transform="translate(748 118) scale(1.75)" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 27 V6 H22 V27 M5 27 H27 M12 11 H14 M16 11 H18 M12 16 H14 M16 16 H18 M12 21 H14 M16 21 H18"/></g>
-    <text x="776" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Propiedades</text></g>
-    <g class="arriba t6"><rect class="tile t6" x="852" y="96" width="120" height="124" rx="18" fill="#f472b6" fill-opacity="0.05" stroke="#f472b6" stroke-width="1.6"/>
-    <g transform="translate(884 118) scale(1.75)" fill="none" stroke="#f472b6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 9 L4 16 L11 23 M21 9 L28 16 L21 23 M18 6 L14 26"/></g>
-    <text x="912" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Explorador</text></g>
-    <g class="arriba t7"><rect class="tile t7" x="988" y="96" width="120" height="124" rx="18" fill="#818cf8" fill-opacity="0.05" stroke="#818cf8" stroke-width="1.6"/>
-    <g transform="translate(1020 118) scale(1.75)" fill="none" stroke="#818cf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7 H27 V21 H15 L9 27 V21 H5 Z M11 13 H21 M11 17 H17"/></g>
-    <text x="1048" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Agente</text></g>
-    <g class="arriba t8"><rect class="tile t8" x="1124" y="96" width="120" height="124" rx="18" fill="#94a3b8" fill-opacity="0.05" stroke="#94a3b8" stroke-width="1.6"/>
-    <g transform="translate(1156 118) scale(1.75)" fill="none" stroke="#94a3b8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7 H26 V13 H6 Z M6 15 H26 V21 H6 Z M10 10 H12 M10 18 H12 M18 27 H14 M16 21 V27"/></g>
-    <text x="1184" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Sistema</text></g>
+    <text x="40" y="56" font-size="13" font-weight="700" letter-spacing="2" fill="#6e7681">UN PANEL, DIEZ SECCIONES · SIN GASTAR CRÉDITOS DE COZE</text>
+    <g class="arriba t0"><rect class="tile t0" x="36" y="96" width="112" height="124" rx="18" fill="#4ade80" fill-opacity="0.05" stroke="#4ade80" stroke-width="1.6"/>
+    <g transform="translate(64 118) scale(1.75)" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15 L16 6 L27 15 V26 H19 V19 H13 V26 H5 Z"/></g>
+    <text x="92" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Inicio</text></g>
+    <g class="arriba t1"><rect class="tile t1" x="157.2" y="96" width="112" height="124" rx="18" fill="#34d399" fill-opacity="0.05" stroke="#34d399" stroke-width="1.6"/>
+    <g transform="translate(185.2 118) scale(1.75)" fill="none" stroke="#34d399" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24 L11 15 L17 20 L28 7 M22 7 H28 V13"/></g>
+    <text x="213.2" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Tendencias</text></g>
+    <g class="arriba t2"><rect class="tile t2" x="278.4" y="96" width="112" height="124" rx="18" fill="#22d3ee" fill-opacity="0.05" stroke="#22d3ee" stroke-width="1.6"/>
+    <g transform="translate(306.4 118) scale(1.75)" fill="none" stroke="#22d3ee" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5 L28 11 L16 17 L4 11 Z M4 16 L16 22 L28 16 M4 21 L16 27 L28 21"/></g>
+    <text x="334.4" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Proyectos</text></g>
+    <g class="arriba t3"><rect class="tile t3" x="399.6" y="96" width="112" height="124" rx="18" fill="#60a5fa" fill-opacity="0.05" stroke="#60a5fa" stroke-width="1.6"/>
+    <g transform="translate(427.6 118) scale(1.75)" fill="none" stroke="#60a5fa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8 H27 V27 H5 Z M5 14 H27 M11 5 V10 M21 5 V10"/></g>
+    <text x="455.6" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Calendario</text></g>
+    <g class="arriba t4"><rect class="tile t4" x="520.8" y="96" width="112" height="124" rx="18" fill="#fbbf24" fill-opacity="0.05" stroke="#fbbf24" stroke-width="1.6"/>
+    <g transform="translate(548.8 118) scale(1.75)" fill="none" stroke="#fbbf24" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4 L27 10 V22 L16 28 L5 22 V10 Z M5 10 L16 16 L27 10 M16 16 V28"/></g>
+    <text x="576.8" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Materiales</text></g>
+    <g class="arriba t5"><rect class="tile t5" x="642" y="96" width="112" height="124" rx="18" fill="#fb923c" fill-opacity="0.05" stroke="#fb923c" stroke-width="1.6"/>
+    <g transform="translate(670 118) scale(1.75)" fill="none" stroke="#fb923c" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 H19 V21 H3 Z M19 13 H25 L29 18 V21 H19 M9 24 a2.5 2.5 0 1 0 0.01 0 M23 24 a2.5 2.5 0 1 0 0.01 0"/></g>
+    <text x="698" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Pedidos</text></g>
+    <g class="arriba t6"><rect class="tile t6" x="763.2" y="96" width="112" height="124" rx="18" fill="#a78bfa" fill-opacity="0.05" stroke="#a78bfa" stroke-width="1.6"/>
+    <g transform="translate(791.2 118) scale(1.75)" fill="none" stroke="#a78bfa" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 27 V6 H22 V27 M5 27 H27 M12 11 H14 M16 11 H18 M12 16 H14 M16 16 H18 M12 21 H14 M16 21 H18"/></g>
+    <text x="819.2" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Propiedades</text></g>
+    <g class="arriba t7"><rect class="tile t7" x="884.4" y="96" width="112" height="124" rx="18" fill="#f472b6" fill-opacity="0.05" stroke="#f472b6" stroke-width="1.6"/>
+    <g transform="translate(912.4 118) scale(1.75)" fill="none" stroke="#f472b6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 9 L4 16 L11 23 M21 9 L28 16 L21 23 M18 6 L14 26"/></g>
+    <text x="940.4" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Explorador</text></g>
+    <g class="arriba t8"><rect class="tile t8" x="1005.6" y="96" width="112" height="124" rx="18" fill="#818cf8" fill-opacity="0.05" stroke="#818cf8" stroke-width="1.6"/>
+    <g transform="translate(1033.6 118) scale(1.75)" fill="none" stroke="#818cf8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7 H27 V21 H15 L9 27 V21 H5 Z M11 13 H21 M11 17 H17"/></g>
+    <text x="1061.6" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Agente</text></g>
+    <g class="arriba t9"><rect class="tile t9" x="1126.8" y="96" width="112" height="124" rx="18" fill="#94a3b8" fill-opacity="0.05" stroke="#94a3b8" stroke-width="1.6"/>
+    <g transform="translate(1154.8 118) scale(1.75)" fill="none" stroke="#94a3b8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7 H26 V13 H6 Z M6 15 H26 V21 H6 Z M10 10 H12 M10 18 H12 M18 27 H14 M16 21 V27"/></g>
+    <text x="1182.8" y="206" text-anchor="middle" font-size="13.5" font-weight="700" fill="#e6edf3">Sistema</text></g>
     <g filter="url(#sh)"><rect x="36" y="262" width="1208" height="110" rx="22" fill="url(#glass)" stroke="#ffffff" stroke-opacity="0.1"/></g>
     <g class="d0"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#4ade80">Inicio</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Alertas «qué mirar primero», indicadores y frescura de cada app</text></g>
-    <g class="d1"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#22d3ee">Proyectos</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Tarjetas, línea de tiempo (Gantt) o tabla, con detalle de hitos</text></g>
-    <g class="d2"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#60a5fa">Calendario</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Hitos de los proyectos en una cuadrícula mensual y una agenda</text></g>
-    <g class="d3"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#fbbf24">Materiales</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Stock bajo el mínimo por categoría, con tabla y exportación</text></g>
-    <g class="d4"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#fb923c">Pedidos</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Órdenes de compra abiertas, llegadas vencidas y avance</text></g>
-    <g class="d5"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#a78bfa">Propiedades</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Filtros avanzados por operación, distrito, portal y precio</text></g>
-    <g class="d6"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#f472b6">Explorador</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Prueba cada consulta de la API: JSON, tabla y curl</text></g>
-    <g class="d7"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#818cf8">Agente</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Preguntas sugeridas para Coze y sus herramientas</text></g>
-    <g class="d8"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#94a3b8">Sistema</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Latencia, frescura, preferencias y atajos de teclado</text></g>
+    <g class="d1"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#34d399">Tendencias</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Cómo cambian en el tiempo proyectos, stock, pedidos y precios</text></g>
+    <g class="d2"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#22d3ee">Proyectos</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Tarjetas, línea de tiempo (Gantt) o tabla, con detalle de hitos</text></g>
+    <g class="d3"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#60a5fa">Calendario</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Hitos de los proyectos en una cuadrícula mensual y una agenda</text></g>
+    <g class="d4"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#fbbf24">Materiales</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Stock bajo el mínimo por categoría, con tabla y exportación</text></g>
+    <g class="d5"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#fb923c">Pedidos</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Órdenes de compra abiertas, llegadas vencidas y avance</text></g>
+    <g class="d6"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#a78bfa">Propiedades</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Filtros avanzados por operación, distrito, portal y precio</text></g>
+    <g class="d7"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#f472b6">Explorador</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Prueba cada consulta de la API: JSON, tabla y curl</text></g>
+    <g class="d8"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#818cf8">Agente</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Preguntas sugeridas para Coze y sus herramientas</text></g>
+    <g class="d9"><text x="640" y="316" text-anchor="middle" font-size="22" font-weight="800" fill="#94a3b8">Sistema</text><text x="640" y="346" text-anchor="middle" font-size="15.5" fill="#c9d1d9">Latencia, frescura, preferencias y atajos de teclado</text></g>
   </g>
 </svg>

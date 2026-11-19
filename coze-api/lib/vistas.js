@@ -283,6 +283,29 @@ export const VISTAS = {
     campos: { categoria: S, materiales: I, en_stock_bajo: I, sin_existencias: I, faltante_total: N },
   },
 
+  historial: {
+    panel: true,
+    operationId: 'historial',
+    titulo: 'Historial diario: una foto por día de proyectos, stock, pedidos, propiedades y precios medianos (los días más recientes primero)',
+    select: `SELECT dia::text AS dia, proyectos_total, proyectos_en_curso, proyectos_atrasados, tareas_atrasadas,
+                    avance_medio_pct::float8 AS avance_medio_pct, materiales_con_minimo, materiales_sin_existencias,
+                    materiales_en_stock_bajo, pedidos_abiertos, pedidos_vencidos, propiedades_catalogo::float8 AS propiedades_catalogo,
+                    propiedades_copiadas, propiedades_dudosas, precio_mediano_venta_usd::float8 AS precio_mediano_venta_usd,
+                    precio_mediano_alquiler_usd::float8 AS precio_mediano_alquiler_usd
+               FROM central.historial_diario`,
+    orden: 'dia DESC',
+    limite: 90, limiteMax: 400,
+    filtros: {
+      desde: { tipo: 'fecha', sql: 'dia >= ?::date', descripcion: 'Solo días desde esta fecha (AAAA-MM-DD)' },
+      hasta: { tipo: 'fecha', sql: 'dia <= ?::date', descripcion: 'Solo días hasta esta fecha (AAAA-MM-DD)' },
+    },
+    campos: {
+      dia: S, proyectos_total: I, proyectos_en_curso: I, proyectos_atrasados: I, tareas_atrasadas: I, avance_medio_pct: N,
+      materiales_con_minimo: I, materiales_sin_existencias: I, materiales_en_stock_bajo: I, pedidos_abiertos: I, pedidos_vencidos: I,
+      propiedades_catalogo: N, propiedades_copiadas: I, propiedades_dudosas: I, precio_mediano_venta_usd: N, precio_mediano_alquiler_usd: N,
+    },
+  },
+
   'propiedades-distritos': {
     panel: true,
     operationId: 'propiedades_distritos',

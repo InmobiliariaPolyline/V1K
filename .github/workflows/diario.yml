@@ -1,0 +1,56 @@
+# Cada mañana (08:07 hora de Lima): 1) toma la foto diaria del historial en Neon y 2) te manda el resumen del día por Telegram.
+#
+# Secretos (Settings → Secrets and variables → Actions):
+#   HISTORIAL_DATABASE_URL  cadena de conexión del rol writer_historial (solo escribe en central.historial_diario)
+#   API_TOKEN               el mismo token de la API que usa la vigilancia
+#   TELEGRAM_BOT_TOKEN      el token que te da @BotFather al crear tu bot
+#   TELEGRAM_CHAT_ID        el número de tu chat con el bot
+#
+# El repositorio es público y el registro de esta ejecución también: los scripts NO escriben números ni nombres del negocio,
+# solo «foto tomada» y «resumen enviado (N caracteres)». El contenido viaja únicamente a Telegram.
+name: Diario
+
+on:
+  schedule:
+    - cron: "7 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diario
+  cancel-in-progress: false
+
+jobs:
+  diario:
+    name: Foto diaria y resumen
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: coze-api
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: coze-api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Tomar la foto diaria del historial
+        env:
+          HISTORIAL_DATABASE_URL: ${{ secrets.HISTORIAL_DATABASE_URL }}
+        run: node scripts/foto-diaria.mjs
+
+      - name: Enviar el resumen por Telegram
+        if: ${{ !cancelled() }}
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scripts/resumen-diario.mjs

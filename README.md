@@ -7,7 +7,7 @@
 <img src="docs/assets/badges/sincroniza.svg" alt="Sincroniza 3 apps" />
 <img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1162 OK" />
 <img src="docs/assets/badges/api.svg" alt="API solo lectura" />
-<img src="docs/assets/badges/roles.svg" alt="Roles 4 con RLS" />
+<img src="docs/assets/badges/roles.svg" alt="Roles 5 con RLS" />
 <br />
 <img src="docs/assets/badges/base.svg" alt="Base Neon central" />
 <img src="docs/assets/badges/hosting.svg" alt="Hosting Vercel" />
@@ -42,6 +42,13 @@ través de una API pequeña y de solo lectura.
    `coze_reader`. Una de ellas, `resumen_general`, devuelve todo el panorama en **una sola llamada**.
 4. **El plugin de Coze** llama a esa API y el **agente** redacta la respuesta. Nunca escribe nada.
 
+### Historial y resumen diario
+
+Cada mañana (08:07, hora de Lima) un flujo de GitHub Actions toma **una foto** de los números que importan (proyectos atrasados,
+stock, pedidos, propiedades y precios medianos) y te manda por **Telegram** un resumen con lo urgente y los cambios de la semana.
+La foto la escribe un 5.º rol, `writer_historial`, que solo puede leer las tablas centrales y escribir su propia tabla. Las apps no
+cambian. El historial alimenta la sección **Tendencias** del panel. Cómo activarlo: [`docs/OPERACION.md`](docs/OPERACION.md).
+
 ### Qué pasa cuando una app guarda datos
 
 <img src="docs/assets/sincronizacion.svg" alt="Cinco pasos: la app guarda datos, espera un instante, sincroniza en segundo plano, escribe en una sola transacción y marca la hora en sync_estado" width="100%" />
@@ -49,11 +56,12 @@ través de una API pequeña y de solo lectura.
 ## Panel web
 
 La raíz del proyecto de Vercel es un **panel de solo lectura** que se abre con el token de la API y muestra lo mismo
-que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
+que consulta el agente, **sin gastar créditos de Coze**. Tiene diez secciones:
 
 | Sección | Qué muestra |
 |---|---|
 | **Inicio** | Saludo con el estado general, alertas automáticas («qué mirar primero»), indicadores, frescura de cada app, proyectos por estado, faltante de stock por categoría, propiedades por portal, próximos hitos y llegadas |
+| **Tendencias** | Cómo cambian en el tiempo los proyectos atrasados, las tareas, el stock, los pedidos, el catálogo y los precios medianos (una foto por día), con variación frente a hace 7 días |
 | **Proyectos** | Tarjetas, **línea de tiempo (Gantt)** o tabla; búsqueda, filtro por estado, orden y panel de detalle con los hitos |
 | **Calendario** | Hitos en una cuadrícula mensual y una agenda; filtro por proyecto |
 | **Materiales** | Stock bajo el mínimo con gráfico por categoría, búsqueda, tabla ordenable y exportación |
@@ -63,7 +71,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
 | **Agente de Coze** | Preguntas sugeridas con botón de copiar y las herramientas que tiene el agente |
 | **Sistema** | Latencia, frescura, preferencias, atajos de teclado y el diagrama de la arquitectura |
 
-<img src="docs/assets/panel-secciones.svg" alt="Las nueve secciones del panel, resaltadas una a una" width="100%" />
+<img src="docs/assets/panel-secciones.svg" alt="Las diez secciones del panel, resaltadas una a una" width="100%" />
 
 <img src="docs/assets/panel.svg" alt="Inicio del Panel V1K con datos de ejemplo" width="100%" />
 
@@ -98,7 +106,8 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene nueve secciones:
 V1K/
 ├── db/
 │   ├── 01_schema.sql              esquema `central`: 7 tablas y la vista v_stock_bajo
-│   └── 02_roles.sql               4 roles de mínimo privilegio + seguridad por fila
+│   ├── 02_roles.sql               4 roles de mínimo privilegio + seguridad por fila
+│   └── 03_historial.sql           historial diario (tabla y función de la foto) + 5.º rol, writer_historial
 ├── coze-api/                      API de solo lectura y panel web (Vercel)
 │   ├── api/[vista].js             función serverless: 8 rutas GET con token
 │   ├── lib/vistas.js              consultas cerradas y filtros validados (fuente del contrato)
@@ -149,7 +158,8 @@ git clone https://github.com/InmobiliariaPolyline/REAL_ESTATE_SCRAPER.git
 Los pasos completos, con las variables de cada servicio, están en
 [`docs/GUIA_PUESTA_EN_MARCHA.md`](docs/GUIA_PUESTA_EN_MARCHA.md). En resumen:
 
-1. En Neon, ejecutar `db/01_schema.sql` y luego `db/02_roles.sql` (con contraseñas nuevas para los 4 roles).
+1. En Neon, ejecutar `db/01_schema.sql` y luego `db/02_roles.sql` (con contraseñas nuevas para los 4 roles). Opcional: `db/03_historial.sql` para el historial y el resumen diario (ver
+   [`docs/OPERACION.md`](docs/OPERACION.md)).
 2. Desplegar `coze-api` en Vercel con `DATABASE_URL_READER` y `API_TOKEN`.
 3. Poner `CENTRAL_DATABASE_URL` (cadena de su rol `writer_*`) en el servidor de cada app.
 4. Crear en Coze el plugin importando `coze-api/openapi.yaml` y un agente con las instrucciones de
@@ -159,7 +169,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1162 comprobaciones en cuatro baterías: A 557, B 397, C 155 y D 53, todas correctas" width="100%" />
 
-Las 7 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+Las 9 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
 
 Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
@@ -169,7 +179,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Batería | Qué comprueba | Resultado |
 |---|---|---|
 | **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones | 557 / 557 |
-| **B · Permisos** | Los 4 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 397 / 397 |
+| **B · Permisos** | Los 5 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 397 / 397 |
 | **C · Sincronización** | El código real del MRP, el Planner y el Scraper con datos extremos | 60 · 46 · 49 |
 | **D · Datos reales** | Integridad de lo que hay en la base y que la API devuelva lo mismo, fila por fila | 53 / 53 |
 
@@ -178,7 +188,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 <img src="docs/assets/capas-seguridad.svg" alt="Cuatro capas: token, lista cerrada de consultas, rol de solo lectura y una base con solo resúmenes. Una petición legítima pasa; una con SQL malicioso se detiene" width="100%" />
 
 - **Coze nunca escribe** y nunca ve credenciales de las apps: solo llama a la API con un token.
-- **Mínimo privilegio:** `coze_reader` solo tiene `SELECT`; cada `writer_*` solo toca sus tablas y su fila de `sync_estado`.
+- **Mínimo privilegio:** `coze_reader` solo tiene `SELECT`; cada `writer_*` solo toca sus tablas y su fila de `sync_estado`; `writer_historial` solo lee las tablas centrales y escribe su tabla (sin poder borrarla).
 - **Consultas fijas:** el cliente no puede enviar SQL. Los filtros están en una lista cerrada, se validan (valores permitidos, números, fechas) y viajan siempre como parámetros; un valor no válido da un 400 que explica qué se acepta.
 - **Panel web:** CSP estricta, sin scripts ni estilos en línea, sin recursos externos y datos insertados solo como texto.
 - **Solo resúmenes:** sin presupuestos, precios, usuarios, contactos ni adjuntos.
@@ -196,6 +206,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Sincronización del MRP (Streamlit) | En producción |
 | Sincronización del Scraper (Netlify) | En producción: se dispara con cada ingesta |
 | Panel web (Vercel) | En producción: se abre con el token de la API |
+| Historial diario y resumen por Telegram | Código listo; se activa con `db/03_historial.sql` y 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
 | Plugin y agente de Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](docs/coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 
 ## Documentación

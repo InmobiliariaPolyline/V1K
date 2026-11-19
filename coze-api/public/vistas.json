@@ -291,6 +291,43 @@
       ]
     },
     {
+      "nombre": "historial",
+      "titulo": "Historial diario: una foto por día de proyectos, stock, pedidos, propiedades y precios medianos (los días más recientes primero)",
+      "soloPanel": true,
+      "limite": 90,
+      "limiteMax": 400,
+      "filtros": [
+        {
+          "nombre": "desde",
+          "tipo": "fecha",
+          "descripcion": "Solo días desde esta fecha (AAAA-MM-DD)"
+        },
+        {
+          "nombre": "hasta",
+          "tipo": "fecha",
+          "descripcion": "Solo días hasta esta fecha (AAAA-MM-DD)"
+        }
+      ],
+      "campos": [
+        "dia",
+        "proyectos_total",
+        "proyectos_en_curso",
+        "proyectos_atrasados",
+        "tareas_atrasadas",
+        "avance_medio_pct",
+        "materiales_con_minimo",
+        "materiales_sin_existencias",
+        "materiales_en_stock_bajo",
+        "pedidos_abiertos",
+        "pedidos_vencidos",
+        "propiedades_catalogo",
+        "propiedades_copiadas",
+        "propiedades_dudosas",
+        "precio_mediano_venta_usd",
+        "precio_mediano_alquiler_usd"
+      ]
+    },
+    {
       "nombre": "propiedades-distritos",
       "titulo": "Avisos y precio mediano en dólares por distrito y operación, sobre las propiedades más recientes copiadas (la mediana no se deja engañar por precios mal publicados)",
       "soloPanel": true,

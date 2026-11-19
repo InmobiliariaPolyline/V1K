@@ -140,7 +140,39 @@ export function construirDemo(ahora = new Date()) {
   }
   const frescura = [['mrp', 1.3], ['planner', 1.6], ['scraper', 0.5]].map(([app, h]) => ({ app, ultima_sync: instante(h), hace_horas: h }));
 
-  return { hoy, ahora: ts, proyectos, hitos, materiales: conFaltante, pedidos, propiedades, resumenPortal, frescura };
+  // Historial de los últimos 60 días: una caminata hacia atrás desde los números de hoy, con pasos pequeños (determinista)
+  const rh = semilla(424242);
+  const paso = (v, max = 1) => Math.max(0, v + (rh() < 0.35 ? (rh() < 0.5 ? -1 : 1) * (1 + Math.floor(rh() * max)) : 0));
+  const hoyN = {
+    proyectos_atrasados: proyectos.filter((p) => p.estado === 'atrasado').length,
+    proyectos_en_curso: proyectos.filter((p) => p.estado === 'en curso').length,
+    tareas_atrasadas: proyectos.reduce((a, p) => a + p.tareas_atrasadas, 0),
+    materiales_sin_existencias: conFaltante.filter((m) => m.cantidad === 0).length,
+    pedidos_abiertos: pedidos.length,
+    pedidos_vencidos: pedidos.filter((p) => p.llegada_estimada && p.llegada_estimada.slice(0, 10) < hoy).length,
+    propiedades_catalogo: resumenPortal.reduce((a, x) => a + x.total, 0),
+    venta: 268000, alquiler: 1320,
+  };
+  const historial = [];
+  let v = { ...hoyN };
+  for (let i = 0; i < 60; i++) {
+    historial.push({
+      dia: sumarDias(hoy, -i), proyectos_total: proyectos.length, proyectos_en_curso: v.proyectos_en_curso, proyectos_atrasados: v.proyectos_atrasados,
+      tareas_atrasadas: v.tareas_atrasadas, avance_medio_pct: Math.round((54 - i * 0.18) * 10) / 10, materiales_con_minimo: conFaltante.length,
+      materiales_sin_existencias: v.materiales_sin_existencias, materiales_en_stock_bajo: Math.min(conFaltante.length, v.materiales_sin_existencias + 18),
+      pedidos_abiertos: v.pedidos_abiertos, pedidos_vencidos: v.pedidos_vencidos, propiedades_catalogo: v.propiedades_catalogo,
+      propiedades_copiadas: Math.min(200, propiedades.length), propiedades_dudosas: i % 9 === 0 ? 3 : 2,
+      precio_mediano_venta_usd: Math.round(v.venta / 100) * 100, precio_mediano_alquiler_usd: Math.round(v.alquiler / 10) * 10,
+    });
+    v = {
+      ...v, proyectos_atrasados: paso(v.proyectos_atrasados), tareas_atrasadas: paso(v.tareas_atrasadas, 3),
+      materiales_sin_existencias: Math.min(conFaltante.length, paso(v.materiales_sin_existencias, 2)), pedidos_abiertos: paso(v.pedidos_abiertos),
+      pedidos_vencidos: paso(v.pedidos_vencidos), propiedades_catalogo: Math.max(0, v.propiedades_catalogo - Math.round(20 + rh() * 60)),
+      venta: v.venta * (1 + (rh() - 0.5) * 0.012), alquiler: v.alquiler * (1 + (rh() - 0.5) * 0.012),
+    };
+  }
+
+  return { hoy, ahora: ts, proyectos, hitos, materiales: conFaltante, pedidos, propiedades, resumenPortal, frescura, historial };
 }
 
 // ── Reglas de validación y de filtrado idénticas a las de la API ───────────────────────
@@ -271,6 +303,7 @@ export async function consultar(vista, params = {}, meta = null, ahora = new Dat
       break;
     }
     case 'propiedades-distritos': datos = distritos(T.propiedades); break;
+    case 'historial': datos = T.historial.filter((x) => (!f.desde || x.dia >= f.desde) && (!f.hasta || x.dia <= f.hasta)).map((x) => ({ ...x })).sort((a, b) => b.dia.localeCompare(a.dia)); break;
     case 'resumen-general': {
       const pr = T.proyectos;
       const bajos = T.materiales.filter((x) => x.stock_bajo).sort((a, b) => b.faltante - a.faltante);

@@ -47,7 +47,7 @@
     </g>
   </g>
   <text x="84" y="48" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#f0f6fc">Solo lectura</text>
-  <text x="84" y="76" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#9aa4b2">Coze nunca escribe: 4 roles con</text>
+  <text x="84" y="76" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#9aa4b2">Coze nunca escribe: 5 roles con</text>
   <text x="84" y="96" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#9aa4b2">mínimo privilegio en Neon</text>
   <g clip-path="url(#rec)"><path class="brillo" d="M0 0H70L40 132H-30Z" fill="url(#bri)"/></g>
 </svg>

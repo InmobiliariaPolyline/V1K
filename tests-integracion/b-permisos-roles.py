@@ -1,4 +1,4 @@
-"""BATERÍA B — matriz de permisos de los 4 roles contra el Neon REAL.
+"""BATERÍA B — matriz de permisos de los 5 roles contra el Neon REAL.
 Cada prueba corre dentro de un SAVEPOINT que se deshace, y toda la sesión termina con ROLLBACK: no deja nada.
 No imprime contraseñas."""
 import re
@@ -10,8 +10,8 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent  # raíz del repositorio V1K
 texto = open(RAIZ / "db" / "conexiones.local.txt", encoding="utf-8").read()
-URL = {m.group(1): m.group(2) for m in re.finditer(r"(?m)^(coze_reader|writer_scraper|writer_planner|writer_mrp) = (\S+)$", texto)}
-assert len(URL) == 4
+URL = {m.group(1): m.group(2) for m in re.finditer(r"(?m)^(coze_reader|writer_scraper|writer_planner|writer_mrp|writer_historial) = (\S+)$", texto)}
+assert len(URL) == 5, "faltan cadenas de conexión en db/conexiones.local.txt (¿ya se creó writer_historial con db/03_historial.sql?)"
 
 TABLAS = {  # tabla -> (columna cualquiera, dueño)
     "planner_proyectos": ("proyecto_id", "writer_planner"),
@@ -21,7 +21,10 @@ TABLAS = {  # tabla -> (columna cualquiera, dueño)
     "scraper_propiedades": ("propiedad_id", "writer_scraper"),
     "scraper_resumen": ("portal", "writer_scraper"),
     "sync_estado": ("app", None),
+    "historial_diario": ("dia", "writer_historial"),
 }
+# Lo único que writer_historial puede LEER además de su propia tabla (para tomar la foto diaria)
+LECTURA_HISTORIAL = {"planner_proyectos", "mrp_stock", "mrp_pedidos", "scraper_propiedades", "scraper_resumen", "historial_diario"}
 VISTA = "v_stock_bajo"
 OPS = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE"]
 
@@ -104,6 +107,12 @@ def sql_op(op, tabla, col):
 def permitido(rol, tabla, op):
     if rol == "coze_reader":
         return op == "SELECT"
+    if rol == "writer_historial":
+        if tabla == "historial_diario":
+            return op in ("SELECT", "INSERT", "UPDATE")  # sin DELETE ni TRUNCATE: el historial no se borra
+        return op == "SELECT" and tabla in LECTURA_HISTORIAL
+    if tabla == "historial_diario":
+        return False  # las apps no tocan el historial
     dueno = TABLAS[tabla][1]
     if tabla == "sync_estado":
         return op in ("SELECT", "INSERT", "UPDATE")
@@ -240,8 +249,29 @@ try:
             check("[coze_reader] ve todas las filas de sync_estado", set(apps) >= {"planner", "mrp"}, f"-> {apps}")
             st, filas, _n = s.intenta("SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public'")
             check("[coze_reader] no hay tablas en public", filas and filas[0][0] == 0, f"-> {filas}")
+            st, _f, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
+            check("[coze_reader] NO puede ejecutar tomar_foto_diaria() (no escribe)", st in ("42501", "25006"), f"-> {st}")
+            st, filas, _n = s.intenta("SELECT dia FROM central.historial_diario ORDER BY dia DESC LIMIT 1")
+            check("[coze_reader] lee el historial", st is None, f"-> {st}")
+        elif rol == "writer_historial":
+            st, filas, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
+            check("[writer_historial] puede tomar la foto diaria (una fila)", st is None and filas and len(filas) == 1, f"-> {st}")
+            st, filas, _n = s.intenta("SELECT rolconnlimit FROM pg_roles WHERE rolname = current_user")
+            check("[writer_historial] máximo 2 conexiones", filas and filas[0][0] == 2, f"-> {filas}")
+            st, filas, _n = s.intenta("SHOW statement_timeout")
+            check("[writer_historial] statement_timeout=15s", filas and filas[0][0] == "15s", f"-> {filas}")
+            st, _f, _n = s.intenta("SELECT 1 FROM central.sync_estado LIMIT 1")
+            check("[writer_historial] NO lee sync_estado", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT 1 FROM central.planner_hitos LIMIT 1")
+            check("[writer_historial] NO lee tablas que no necesita (planner_hitos)", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("INSERT INTO central.historial_diario (dia) VALUES ('2000-01-01')")
+            check("[writer_historial] puede insertar un día (se deshace)", st is None, f"-> {st}")
+            st, _f, _n = s.intenta("DELETE FROM central.historial_diario WHERE false")
+            check("[writer_historial] NO puede borrar del historial", st == "42501", f"-> {st}")
         else:
             propia = rol.split("_")[1]
+            st, _f, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
+            check(f"[{rol}] NO puede ejecutar tomar_foto_diaria()", st == "42501", f"-> {st}")
             st, filas, _n = s.intenta("SELECT app FROM central.sync_estado")
             apps = [f[0] for f in (filas or [])]
             check(f"[rls] {rol} solo ve su fila de sync_estado", set(apps) <= {propia}, f"-> {apps}")

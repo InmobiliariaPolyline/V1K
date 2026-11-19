@@ -15,6 +15,7 @@ export const VERSION = '2.0.0';
 // ── Secciones ──────────────────────────────────────────────────────────────────────────
 const SECCIONES = [
   { id: 'inicio', titulo: 'Inicio', icono: 'inicio', grupo: 'Panel', atajo: 'h', cargar: () => import('./vistas/inicio.js') },
+  { id: 'tendencias', titulo: 'Tendencias', icono: 'linea', grupo: 'Panel', atajo: 't', cargar: () => import('./vistas/tendencias.js') },
   { id: 'proyectos', titulo: 'Proyectos', icono: 'proyectos', grupo: 'Operación', atajo: 'p', cargar: () => import('./vistas/proyectos.js') },
   { id: 'calendario', titulo: 'Calendario', icono: 'calendario', grupo: 'Operación', atajo: 'c', cargar: () => import('./vistas/calendario.js') },
   { id: 'materiales', titulo: 'Materiales', icono: 'materiales', grupo: 'Operación', atajo: 'm', cargar: () => import('./vistas/materiales.js') },

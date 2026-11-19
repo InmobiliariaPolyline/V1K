@@ -362,6 +362,60 @@ for (const f of ['favicon.svg', 'hero.svg', 'arquitectura.svg', 'vistas.json']) 
 ok(/class="saltar"/.test(html) && /id="entrada"/.test(html) && /<label[^>]*for="token"/.test(html), 'enlace «saltar», entrada y etiqueta del campo del token');
 ok(/<input[^>]*id="token"[^>]*type="password"|<input[^>]*type="password"[^>]*id="token"/.test(html) && /autocomplete="off"/.test(html), 'el token se escribe como contraseña y sin autocompletar');
 
+// ══════════════ Tendencias: historial diario (tendencias.js y lineas.js) ══════════════
+{
+  const T = await nucleo('tendencias');
+  const L = await nucleo('lineas');
+  const dia = (d, extra = {}) => ({ dia: `2026-11-${String(d).padStart(2, '0')}`, proyectos_atrasados: 2, tareas_atrasadas: 10, pedidos_vencidos: 0, materiales_sin_existencias: 400, propiedades_catalogo: 5000, precio_mediano_venta_usd: 260000, precio_mediano_alquiler_usd: 1300, ...extra });
+
+  // Orden y limpieza
+  igual(T.ordenarPorDia([dia(3), dia(1), dia(2)]).map((f) => f.dia), ['2026-11-01', '2026-11-02', '2026-11-03'], 'la API entrega lo más reciente primero: se ordena');
+  igual(T.ordenarPorDia([dia(1), dia(1, { tareas_atrasadas: 99 })]).length, 1, 'un día repetido se cuenta una vez');
+  igual(T.ordenarPorDia([{ dia: '2026-11-05T00:00:00.000Z' }]).map((f) => f.dia), ['2026-11-05'], 'acepta fechas con hora');
+  igual(T.ordenarPorDia([null, {}, { dia: 'ayer' }, undefined]), [], 'ignora filas rotas'); igual(T.ordenarPorDia(undefined), []);
+  // Diferencias y tonos
+  igual(T.delta(2, 5), 3); igual(T.delta('7', '4'), -3); igual(T.delta(null, 3), null); igual(T.delta(3, undefined), null); igual(T.delta(0.1, 0.3), 0.2, 'sin ruido de decimales');
+  igual(T.tonoDeCambio(-1, 'menos'), 'mejor'); igual(T.tonoDeCambio(2, 'menos'), 'peor'); igual(T.tonoDeCambio(0, 'menos'), 'igual'); igual(T.tonoDeCambio(5, 'neutro'), 'neutro'); igual(T.tonoDeCambio(null, 'menos'), 'igual');
+  igual(T.tonoDeCambio(3, 'mas'), 'mejor');
+  // Texto de cada cambio
+  igual(T.textoCambio({ antes: 2, ahora: 3, delta: 1, formato: 'entero' }), '2 → 3 (+1)');
+  igual(T.textoCambio({ antes: 499, ahora: 480, delta: -19, formato: 'entero' }), '499 → 480 (−19)');
+  igual(T.textoCambio({ antes: 5, ahora: 5, delta: 0, formato: 'entero' }), '5 (sin cambios)');
+  igual(T.textoCambio({ antes: 260000, ahora: 265000, delta: 5000, formato: 'usd' }), 'US$ 260,000 → US$ 265,000 (+US$ 5,000)');
+  igual(T.textoCambio({ antes: null, ahora: 4, delta: null, formato: 'entero' }), '4'); igual(T.textoCambio({ antes: 4, ahora: null, delta: null }), 'sin datos');
+  // Comparar con hace 7 días
+  const sem = [dia(19, { proyectos_atrasados: 3, materiales_sin_existencias: 380 }), dia(18), dia(15), dia(12, { proyectos_atrasados: 1 }), dia(10), dia(5, { proyectos_atrasados: 9 })];
+  const c = T.compararCon(sem, 7);
+  igual([c.desde, c.hasta, c.dias], ['2026-11-12', '2026-11-19', 7], 'compara con el último día que tenga 7 días o más de antigüedad');
+  const f = (clave) => c.filas.find((x) => x.clave === clave);
+  igual([f('proyectos_atrasados').antes, f('proyectos_atrasados').ahora, f('proyectos_atrasados').delta, f('proyectos_atrasados').tono], [1, 3, 2, 'peor'], 'más proyectos atrasados = peor');
+  igual([f('materiales_sin_existencias').delta, f('materiales_sin_existencias').tono], [-20, 'mejor'], 'menos materiales sin existencias = mejor');
+  igual(f('propiedades_catalogo').tono, 'igual'); igual(f('proyectos_atrasados').texto, '1 → 3 (+2)');
+  igual(T.compararCon([dia(19), dia(18)], 7).desde, '2026-11-18', 'con poco historial usa el día más antiguo disponible');
+  igual(T.compararCon([dia(19)], 7), null, 'un solo día no se puede comparar'); igual(T.compararCon([], 7), null); igual(T.compararCon(undefined), null);
+  igual(T.compararCon([dia(19), dia(19)], 7), null, 'dos filas del mismo día = un día');
+  ok(T.compararCon(sem, 1).dias === 1 && T.compararCon(sem, 1).desde === '2026-11-18', 'comparar con ayer');
+  ok(T.METRICAS.every((m) => m.clave && m.etiqueta && ['menos', 'mas', 'neutro'].includes(m.mejor)), 'métricas bien definidas');
+  igual(T.serieDe([dia(2), dia(1, { precio_mediano_venta_usd: null })], 'precio_mediano_venta_usd').map((p) => p.dia), ['2026-11-02'], 'la serie omite los días sin dato');
+  igual(T.valorDe({ x: '12.5' }, 'x'), 12.5); igual(T.valorDe({ x: '' }, 'x'), null); igual(T.valorDe(undefined, 'x'), null);
+
+  // Matemática del gráfico
+  igual(L.pasoRedondo(10, 4), 2.5 > 2 ? 5 : 2, 'paso redondo para rango 10 y 4 marcas'); igual(L.pasoRedondo(100, 4), 50); igual(L.pasoRedondo(0), 1); igual(L.pasoRedondo(NaN), 1);
+  const e1 = L.escalaY(2, 9, { desdeCero: true });
+  ok(e1.min === 0 && e1.max >= 9 && e1.marcas[0] === 0 && e1.marcas.at(-1) === e1.max, 'la escala empieza en 0 y contiene el máximo');
+  ok(e1.marcas.every((m, i) => i === 0 || m > e1.marcas[i - 1]) && e1.marcas.length <= 12, 'marcas crecientes y pocas');
+  const e2 = L.escalaY(260000, 270000); ok(e2.min <= 260000 && e2.max >= 270000 && e2.min > 0, 'sin «desde cero» la escala se ajusta al rango');
+  const e3 = L.escalaY(5, 5, { desdeCero: true }); ok(e3.min <= 5 && e3.max >= 5 && e3.max > e3.min, 'valor constante: la escala igual tiene alto');
+  const e4 = L.escalaY(7, 7); ok(e4.max > e4.min, 'valor constante sin cero también');
+  igual(L.escalaY(NaN, 1).marcas, [0, 1], 'datos rotos no lanzan');
+  igual([L.fraccionDia('2026-11-01', '2026-11-01', '2026-11-11'), L.fraccionDia('2026-11-06', '2026-11-01', '2026-11-11'), L.fraccionDia('2026-11-11', '2026-11-01', '2026-11-11')], [0, 0.5, 1], 'posición horizontal por día');
+  igual(L.fraccionDia('2026-11-05', '2026-11-05', '2026-11-05'), 0.5, 'un solo día va al centro'); igual(L.fraccionDia('2020-01-01', '2026-11-01', '2026-11-11'), 0, 'acotado');
+  const esc = L.escalaY(0, 10, { desdeCero: true });
+  const co = L.coordenadas([{ dia: '2026-11-01', valor: 0 }, { dia: '2026-11-11', valor: esc.max }], { primero: '2026-11-01', ultimo: '2026-11-11', escala: esc, area: { x0: 50, x1: 250, y0: 10, y1: 110 } });
+  igual([co[0].x, co[0].y, co[1].x, co[1].y], [50, 110, 250, 10], 'el valor mínimo va abajo-izquierda y el máximo arriba-derecha');
+  igual(L.rutaDe(co), 'M50 110L250 10'); igual(L.rutaDe([]), '');
+}
+
 // ══════════════ Pantalla de carga (js/carga.js, css/carga.css) ══════════════
 {
   const C = await import('../public/js/carga.js');

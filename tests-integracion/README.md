@@ -9,7 +9,7 @@ de cada app. Sirven para comprobar, sin leer los registros de Render ni de Netli
 | Archivo | Qué prueba | Resultado (13/11/2026) |
 |---|---|---|
 | `a-api-en-vivo.mjs` | **API en vivo**: autenticación (13 variantes × 8 rutas), métodos HTTP, rutas hostiles, parámetro `q`, filtros válidos y no válidos (400), `resumen_general`, panel web y cabeceras de seguridad, forma de cada respuesta contra el OpenAPI, ráfaga de 60 peticiones. Solo lectura | 557 / 557 |
-| `b-permisos-roles.py` | **Permisos de los 4 roles** en Neon: cada rol × tabla × operación, DDL y escapes (`SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, contraseñas falsas, sin SSL | 397 / 397 |
+| `b-permisos-roles.py` | **Permisos de los 5 roles** en Neon: cada rol × tabla × operación, DDL y escapes (`SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, contraseñas falsas, sin SSL | 397 / 397 |
 | `c-sync-mrp.py` | **Sincronización del MRP** (`utils/vista_central.py`) con datos extremos, como `writer_mrp` | 60 / 60 |
 | `c-sync-planner.mts` | **Sincronización del Planner** (`src/lib/vistaCentral.ts`), como `writer_planner` | 46 / 46 |
 | `c-sync-scraper.mts` | **Sincronización del Scraper** (`api/vistaCentral.ts`), como `writer_scraper`, incluido el controlador HTTP de Neon que usa Netlify | 49 / 49 |
@@ -17,7 +17,7 @@ de cada app. Sirven para comprobar, sin leer los registros de Render ni de Netli
 
 ## Requisitos
 
-1. `db/conexiones.local.txt` con las cadenas de los 4 roles y el `API_TOKEN` (ver `docs/GUIA_PUESTA_EN_MARCHA.md`).
+1. `db/conexiones.local.txt` con las cadenas de los 5 roles y el `API_TOKEN` (ver `docs/GUIA_PUESTA_EN_MARCHA.md`).
 2. Las tres apps clonadas en `apps/` (ver el README de la raíz) y con sus dependencias instaladas (la batería D usa también `coze-api/lib/vistas.js`):
    `npm install` en `apps/planner-backend`, `pnpm install` en `apps/REAL_ESTATE_SCRAPER`. El MRP solo necesita Python.
 3. Node 20+ y, en esta carpeta, `npm install`.

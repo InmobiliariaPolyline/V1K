@@ -8,6 +8,8 @@
     <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.03"/></pattern>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
     <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#9aa4b2"/></marker>
+      <filter id="dot" x="-200%" y="-200%" width="500%" height="500%"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.9"/></filter>
+    <style>@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
   </defs>
 
   <rect width="1280" height="560" rx="28" fill="url(#bg)"/>
@@ -72,7 +74,7 @@
       <rect x="412" y="376" width="300" height="30" rx="10" fill="#4ade80" fill-opacity="0.12"/><text x="426" y="396">sync_estado</text><text x="700" y="396" text-anchor="end" fill="#6e7681">frescura de cada app</text>
     </g>
     <rect x="412" y="424" width="300" height="44" rx="12" fill="#4ade80" fill-opacity="0.08" stroke="#4ade80" stroke-opacity="0.35" stroke-dasharray="4 4"/>
-    <text x="562" y="443" text-anchor="middle" font-size="12" fill="#bbf7d0" font-weight="600">4 roles · mínimo privilegio · RLS en sync_estado</text>
+    <text x="562" y="443" text-anchor="middle" font-size="12" fill="#bbf7d0" font-weight="600">5 roles · mínimo privilegio · RLS en sync_estado</text>
     <text x="562" y="459" text-anchor="middle" font-size="11" fill="#8b949e">cada app solo toca sus propias tablas</text>
 
     <!-- central → API -->
@@ -94,12 +96,13 @@
       <text x="822" y="274">/api/propiedades</text>
       <text x="822" y="300">/api/propiedades-resumen</text>
       <text x="822" y="326">/api/frescura</text>
+      <text x="822" y="352">/api/resumen-general</text>
     </g>
-    <rect x="822" y="352" width="186" height="46" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
-    <text x="915" y="372" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">Authorization: Bearer …</text>
-    <text x="915" y="388" text-anchor="middle" font-size="11" fill="#8b949e">consultas fijas · sin SQL del cliente</text>
-    <text x="915" y="430" text-anchor="middle" font-size="12" fill="#9aa4b2">respuesta ≈ 150 ms</text>
-    <text x="915" y="452" text-anchor="middle" font-size="12" fill="#9aa4b2">nunca duerme</text>
+    <rect x="822" y="372" width="186" height="46" rx="12" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="915" y="392" text-anchor="middle" font-size="12" font-weight="600" fill="#e6edf3">Authorization: Bearer …</text>
+    <text x="915" y="408" text-anchor="middle" font-size="11" fill="#8b949e">consultas fijas · sin SQL del cliente</text>
+    <text x="915" y="442" text-anchor="middle" font-size="12" fill="#9aa4b2">respuesta ≈ 150 ms</text>
+    <text x="915" y="464" text-anchor="middle" font-size="12" fill="#9aa4b2">nunca duerme</text>
 
     <!-- API → Coze -->
     <path d="M1030 280 H 1068" fill="none" stroke="#e5e7eb" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
@@ -112,7 +115,7 @@
     <text x="1090" y="134" font-size="13" fill="#8b949e">plugin + agente</text>
     <rect x="1088" y="156" width="140" height="64" rx="14" fill="#6366f1" fill-opacity="0.18" stroke="#6366f1" stroke-opacity="0.45"/>
     <text x="1158" y="184" text-anchor="middle" font-size="13" font-weight="700" fill="#c7d2fe">Plugin</text>
-    <text x="1158" y="203" text-anchor="middle" font-size="11" fill="#a5b4fc">Vista Central · 7 herramientas</text>
+    <text x="1158" y="203" text-anchor="middle" font-size="11" fill="#a5b4fc">Vista Central · 8 herramientas</text>
     <path d="M1158 220 V 240" stroke="#6366f1" stroke-opacity="0.7" stroke-width="2" marker-end="url(#arr)"/>
     <rect x="1088" y="244" width="140" height="64" rx="14" fill="#6366f1" fill-opacity="0.18" stroke="#6366f1" stroke-opacity="0.45"/>
     <text x="1158" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#c7d2fe">Agente</text>
@@ -125,5 +128,24 @@
     <rect x="1100" y="399" width="116" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.14"/>
     <rect x="1100" y="414" width="70" height="7" rx="3.5" fill="#ffffff" fill-opacity="0.14"/>
     <text x="1158" y="466" text-anchor="middle" font-size="12" fill="#9aa4b2">tú preguntas en español</text>
+    <!-- ── animación: un ciclo de 6 s (los sistemas escriben → se actualiza la base → la API responde → el agente contesta) ── -->
+    <g class="anim">
+      <circle r="5" fill="#22d3ee" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0;0.16;1" path="M330 140 C 360 140, 365 250, 392 250"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0;0.030;0.130;0.16;1"/></circle>
+      <circle r="5" fill="#fbbf24" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.05;0.21;1" path="M330 280 H 392"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.05;0.080;0.180;0.21;1"/></circle>
+      <circle r="5" fill="#a78bfa" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.1;0.26;1" path="M330 420 C 360 420, 365 310, 392 310"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.1;0.130;0.230;0.26;1"/></circle>
+      <rect x="412" y="160" width="300" height="30" rx="10" fill="#22d3ee" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.2;0.240;0.300;0.34;1"/></rect>
+      <rect x="412" y="196" width="300" height="30" rx="10" fill="#22d3ee" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.22;0.260;0.320;0.36;1"/></rect>
+      <rect x="412" y="232" width="300" height="30" rx="10" fill="#fbbf24" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.24;0.280;0.340;0.38;1"/></rect>
+      <rect x="412" y="268" width="300" height="30" rx="10" fill="#fbbf24" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.26;0.300;0.360;0.4;1"/></rect>
+      <rect x="412" y="304" width="300" height="30" rx="10" fill="#a78bfa" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.28;0.320;0.380;0.42;1"/></rect>
+      <rect x="412" y="340" width="300" height="30" rx="10" fill="#a78bfa" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.3;0.340;0.400;0.44;1"/></rect>
+      <rect x="412" y="376" width="300" height="30" rx="10" fill="#4ade80" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.32;0.360;0.420;0.46;1"/></rect>
+      <circle r="5" fill="#4ade80" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.46;0.58;1" path="M732 280 H 800"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.46;0.490;0.550;0.58;1"/></circle>
+      <rect x="816" y="156" width="206" height="24" rx="8" fill="#ffffff" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.58;0.620;0.700;0.74;1"/></rect>
+      <circle r="5" fill="#e5e7eb" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.72;0.82;1" path="M1030 280 H 1068"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.72;0.750;0.790;0.82;1"/></circle>
+      <circle r="4" fill="#818cf8" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.82;0.88;1" path="M1158 220 V 240"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.82;0.850;0.850;0.88;1"/></circle>
+      <circle r="4" fill="#818cf8" filter="url(#dot)" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.88;0.94;1" path="M1158 308 V 332"/><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.88;0.910;0.910;0.94;1"/></circle>
+      <rect x="1100" y="384" width="116" height="7" rx="3.5" fill="#a5b4fc" opacity="0"><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;0.22;0.22;0;0" keyTimes="0;0.92;0.960;0.960;1;1"/></rect>
+    </g>
   </g>
 </svg>
