@@ -1,0 +1,52 @@
+# Pruebas automáticas en cada cambio. No usan secretos ni red: corren las 6 suites de coze-api
+# (humo, consultas y filtros, contrato OpenAPI, panel e ilustraciones). Las baterías contra el sistema real
+# (tests-integracion/) se ejecutan a mano porque necesitan credenciales.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    name: Pruebas (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+    defaults:
+      run:
+        working-directory: coze-api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sin secretos versionados
+        working-directory: .
+        run: |
+          if git ls-files | grep -E '(\.local\.|(^|/)\.env($|\.)|secrets\.toml$|\.pem$)' | grep -vE '(\.example|\.env\.example)$'; then
+            echo "Hay archivos que parecen secretos dentro del repositorio (arriba)."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: coze-api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar las pruebas
+        run: npm test

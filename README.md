@@ -107,6 +107,7 @@ V1K/
 │   ├── public/                    Panel V1K: index.html, css/, js/ (núcleo y una vista por sección)
 │   ├── vercel.json                sirve public/ y añade las cabeceras de seguridad
 │   └── test/                      humo, consultas y filtros, contrato OpenAPI y panel
+├── .github/                       CI (pruebas en cada cambio), vigilancia cada 6 horas y Dependabot
 ├── tests-integracion/             6 baterías de pruebas contra el sistema real
 ├── docs/
 │   ├── GUIA_PUESTA_EN_MARCHA.md   orden de despliegue, variables, qué se copia y cómo revertir
@@ -158,7 +159,10 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1162 comprobaciones en cuatro baterías: A 557, B 397, C 155 y D 53, todas correctas" width="100%" />
 
-Seis baterías, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
+Las 7 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
+
+Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
 que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) y en
 [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md).
 
@@ -203,6 +207,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | [`docs/coze/GUIA_SKILLS.md`](docs/coze/GUIA_SKILLS.md) | Qué configurar en Coze: plugin, preguntas iniciales, atajos y base de conocimiento |
 | [`docs/coze/glosario.md`](docs/coze/glosario.md) | Glosario que se sube como conocimiento del agente |
 | [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md) | Resultados de las baterías y fallos encontrados |
+| [`docs/OPERACION.md`](docs/OPERACION.md) | Pruebas automáticas (CI), vigilancia cada 6 horas, qué hacer según la alerta y cómo rotar el token |
 | [`docs/CALIDAD_DE_DATOS.md`](docs/CALIDAD_DE_DATOS.md) | Revisión de los datos reales: inventario sin cargar en el MRP y alquileres «por m²» en el Scraper, y qué se corrigió |
 | [`coze-api/README.md`](coze-api/README.md) | Endpoints de la API y cómo conectarla a Coze |
 | [`tests-integracion/README.md`](tests-integracion/README.md) | Cómo ejecutar las baterías |

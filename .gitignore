@@ -27,3 +27,7 @@ Thumbs.db
 # Contraseñas generadas en local: nunca al repositorio
 *.local.sql
 *.local.txt
+
+# Resultados de la vigilancia (scripts/vigilancia.mjs)
+/coze-api/incidencia.md
+/coze-api/vigilancia.json

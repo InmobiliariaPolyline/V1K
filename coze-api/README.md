@@ -105,10 +105,10 @@ npm install
 npm test
 ```
 
-Seis suites, sin red: humo (autenticación, métodos, nombres heredados), cada consulta y cada filtro contra
+Siete suites, sin red (corren solas en el CI de GitHub): humo (autenticación, métodos, nombres heredados), cada consulta y cada filtro contra
 `db/01_schema.sql` en un Postgres de prueba (PGlite), el manejo de filtros no válidos, que `openapi.yaml` esté al día y el panel
 (funciones puras, modo demostración con las mismas reglas que la API, y comprobaciones estáticas de CSP, XSS, importaciones,
-iconos y estilos) y las ilustraciones SVG del README (bien formadas, animaciones coherentes y cifras al día). Las baterías contra el sistema real están en [`../tests-integracion/`](../tests-integracion).
+iconos y estilos) las ilustraciones SVG del README (bien formadas, animaciones coherentes y cifras al día) y la vigilancia con los flujos de GitHub Actions. Las baterías contra el sistema real están en [`../tests-integracion/`](../tests-integracion).
 
 ## Seguridad
 

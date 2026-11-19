@@ -1,0 +1,68 @@
+# Vigilancia: cada 6 horas comprueba desde fuera que la API y el panel respondan y que Planner, MRP y Scraper hayan
+# sincronizado hace poco. Si algo falla abre (o actualiza) una incidencia con la etiqueta «vigilancia» y marca la ejecución
+# como fallida (GitHub avisa por correo). Cuando todo vuelve a la normalidad, cierra la incidencia sola.
+#
+# Requiere el secreto API_TOKEN (el mismo token de la API): Settings → Secrets and variables → Actions → New repository secret.
+# El repositorio es público: la incidencia solo lleva el estado de cada pieza, nunca datos del negocio ni el token.
+name: Vigilancia
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vigilancia
+  cancel-in-progress: false
+
+jobs:
+  vigilar:
+    name: Comprobar la API y la frescura de los datos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Comprobar la API, el panel y la frescura
+        id: vigilar
+        working-directory: coze-api
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+        run: node scripts/vigilancia.mjs
+
+      - name: Abrir o actualizar la incidencia
+        if: steps.vigilar.outputs.errores != '0' || steps.vigilar.outputs.avisos != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ERRORES: ${{ steps.vigilar.outputs.errores }}
+        run: |
+          gh label create vigilancia --color d93f0b --description "Alertas automáticas de la vigilancia" --force
+          numero=$(gh issue list --label vigilancia --state open --json number --jq '.[0].number // empty')
+          if [ -n "$numero" ]; then
+            gh issue edit "$numero" --body-file coze-api/incidencia.md
+          elif [ "$ERRORES" != "0" ]; then
+            gh issue create --label vigilancia --title "Vigilancia V1K: hay problemas que atender" --body-file coze-api/incidencia.md
+          fi
+
+      - name: Cerrar la incidencia si todo volvió a la normalidad
+        if: steps.vigilar.outputs.errores == '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for numero in $(gh issue list --label vigilancia --state open --json number --jq '.[].number'); do
+            gh issue close "$numero" --comment "Todo volvió a la normalidad: la API responde y las tres apps sincronizaron dentro de sus límites."
+          done
+
+      - name: Marcar la ejecución como fallida si hay problemas
+        if: steps.vigilar.outputs.errores != '0'
+        run: |
+          echo "La vigilancia encontró problemas. Detalle arriba y en la incidencia «vigilancia»."
+          exit 1
