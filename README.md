@@ -206,7 +206,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Sincronización del MRP (Streamlit) | En producción |
 | Sincronización del Scraper (Netlify) | En producción: se dispara con cada ingesta |
 | Panel web (Vercel) | En producción: se abre con el token de la API |
-| Historial diario y resumen por Telegram | Código listo; se activa con `db/03_historial.sql` y 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
+| Historial diario y resumen por Telegram | En producción: foto y resumen cada mañana a las 08:07 (Lima); lo activa `db/03_historial.sql` más 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
 | Plugin y agente de Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](docs/coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 
 ## Documentación
