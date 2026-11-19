@@ -16,7 +16,7 @@
     "@neondatabase/serverless": "1.2.0"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.10",
+    "@electric-sql/pglite": "0.5.16",
     "yaml": "2.8.1"
   }
 }
