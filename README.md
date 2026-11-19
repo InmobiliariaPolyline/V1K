@@ -218,6 +218,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | [`docs/coze/GUIA_SKILLS.md`](docs/coze/GUIA_SKILLS.md) | Qué configurar en Coze: plugin, preguntas iniciales, atajos y base de conocimiento |
 | [`docs/coze/glosario.md`](docs/coze/glosario.md) | Glosario que se sube como conocimiento del agente |
 | [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md) | Resultados de las baterías y fallos encontrados |
+| [`docs/PRESENTACION.md`](docs/PRESENTACION.md) | Guion de presentación de 10 minutos: resumen de una página, demo del panel paso a paso, preguntas probables y lista de verificación |
 | [`docs/OPERACION.md`](docs/OPERACION.md) | Pruebas automáticas (CI), vigilancia cada 6 horas, qué hacer según la alerta y cómo rotar el token |
 | [`docs/CALIDAD_DE_DATOS.md`](docs/CALIDAD_DE_DATOS.md) | Revisión de los datos reales: inventario sin cargar en el MRP y alquileres «por m²» en el Scraper, y qué se corrigió |
 | [`coze-api/README.md`](coze-api/README.md) | Endpoints de la API y cómo conectarla a Coze |
