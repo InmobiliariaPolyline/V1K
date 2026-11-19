@@ -292,7 +292,7 @@
     },
     {
       "nombre": "propiedades-distritos",
-      "titulo": "Avisos y precios en dólares por distrito y operación, sobre las propiedades más recientes copiadas",
+      "titulo": "Avisos y precio mediano en dólares por distrito y operación, sobre las propiedades más recientes copiadas (la mediana no se deja engañar por precios mal publicados)",
       "soloPanel": true,
       "limite": null,
       "limiteMax": null,
@@ -301,7 +301,7 @@
         "distrito",
         "operacion",
         "avisos",
-        "precio_prom_usd",
+        "precio_mediano_usd",
         "precio_min_usd",
         "precio_max_usd"
       ]

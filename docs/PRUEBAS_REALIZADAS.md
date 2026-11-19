@@ -25,7 +25,7 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
 
 `npm test` en `coze-api/` ejecuta cinco suites: humo (autenticación, métodos, nombres heredados), cada consulta y cada filtro contra
 el esquema real en un Postgres de prueba, el manejo de filtros no válidos, que `openapi.yaml` esté al día respecto de `lib/vistas.js`,
-y el panel web (832 comprobaciones): funciones puras de formato, rutas, gráficos SVG y alertas; el modo demostración, que debe devolver las mismas columnas y los mismos mensajes de error que la API real (más de 40 casos comparados contra `lib/vistas.js`); y la seguridad estática (sin `innerHTML`, sin scripts ni estilos en línea, sin recursos externos, enlaces solo `http(s)`, importaciones que existen, iconos del sprite y clases de CSS definidas).
+y el panel web (963 comprobaciones): funciones puras de formato, rutas, gráficos SVG y alertas; el modo demostración, que debe devolver las mismas columnas y los mismos mensajes de error que la API real (más de 40 casos comparados contra `lib/vistas.js`); y la seguridad estática (sin `innerHTML`, sin scripts ni estilos en línea, sin recursos externos, enlaces solo `http(s)`, importaciones que existen, iconos del sprite y clases de CSS definidas).
 
 El panel rediseñado además se revisó en un servidor local con las mismas cabeceras que Vercel (`npm run panel`), en modo demostración: las nueve secciones en escritorio y móvil (375 px), tema claro y oscuro, sin errores de consola ni violaciones de la CSP, y sin desbordes horizontales. En producción se repitió el recorrido de las nueve secciones con datos de ejemplo.
 

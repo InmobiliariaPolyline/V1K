@@ -4,7 +4,7 @@ import { h, icono } from '../nucleo/dom.js';
 import { banner, insigniaEstado, kpi, tarjeta, vacio } from '../nucleo/componentes.js';
 import { anillo, barrasH, dona, leyenda } from '../nucleo/graficos.js';
 import { compacto, estadoFrescura, fechaCorta, haceHoras, NOMBRE_APP, numero, plural, relativoDias, saludo } from '../nucleo/formato.js';
-import { generarAlertas, horasCorto, pctFrescura, saludGlobal } from '../nucleo/insights.js';
+import { generarAlertas, horasCorto, inventarioSinCargar, pctFrescura, saludGlobal } from '../nucleo/insights.js';
 import { cargandoGenerico, fila, poner } from './_comun.js';
 
 const COLOR_ESTADO = { atrasado: 'var(--peligro)', 'en curso': 'var(--primario-2)', terminado: 'var(--ok)', 'por iniciar': 'var(--txt-3)' };
@@ -55,7 +55,9 @@ export default {
     const indicadores = h('div.rejilla.rejilla--4', {},
       kpi({ icono: 'proyectos', etiqueta: 'Proyectos', valor: numero(p.total, 0), pie: `${numero(p.en_curso, 0)} en curso · ${numero(p.terminados, 0)} terminados`, onClick: () => ctx.navegar('proyectos') }),
       kpi({ icono: 'alerta', etiqueta: 'Atrasados', valor: numero(p.atrasados, 0), pie: plural(p.tareas_atrasadas, 'tarea atrasada', 'tareas atrasadas'), tono: p.atrasados ? 'alerta' : 'ok', onClick: () => ctx.navegar('proyectos', { estado: 'atrasado' }) }),
-      kpi({ icono: 'materiales', etiqueta: 'Stock bajo mínimo', valor: numero(st.en_stock_bajo, 0), pie: `de ${numero(st.materiales_con_minimo, 0)} materiales · ${numero(st.sin_existencias, 0)} sin existencias`, tono: st.en_stock_bajo ? 'aviso' : 'ok', onClick: () => ctx.navegar('materiales') }),
+      inventarioSinCargar(st)
+        ? kpi({ icono: 'materiales', etiqueta: 'Inventario cargado', valor: numero(st.materiales_con_minimo - st.sin_existencias, 0), pie: `de ${numero(st.materiales_con_minimo, 0)} materiales con mínimo · el resto sin existencias`, tono: 'aviso', titulo: 'Casi ningún material tiene existencias registradas en el MRP', onClick: () => ctx.navegar('materiales') })
+        : kpi({ icono: 'materiales', etiqueta: 'Stock bajo mínimo', valor: numero(st.en_stock_bajo, 0), pie: `de ${numero(st.materiales_con_minimo, 0)} materiales · ${numero(st.sin_existencias, 0)} sin existencias`, tono: st.en_stock_bajo ? 'aviso' : 'ok', onClick: () => ctx.navegar('materiales') }),
       kpi({ icono: 'pedidos', etiqueta: 'Pedidos abiertos', valor: numero(r.pedidos.abiertos, 0), pie: r.proximos_pedidos[0] ? `Próximo: ${relativoDias(r.proximos_pedidos[0].llegada_estimada, hoy)}` : 'Sin pedidos abiertos', onClick: () => ctx.navegar('pedidos') }),
       kpi({ icono: 'propiedades', etiqueta: 'Propiedades', valor: compacto(pr.total_catalogo), pie: `${numero(pr.copiadas, 0)} copiadas al panel`, onClick: () => ctx.navegar('propiedades') }),
     );

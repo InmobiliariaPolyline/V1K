@@ -9,7 +9,7 @@
 export const ESPERADOS = [
   'css/base.css', 'css/componentes.css', 'css/vistas.css',
   'js/app.js',
-  'js/nucleo/api.js', 'js/nucleo/componentes.js', 'js/nucleo/dom.js', 'js/nucleo/estado.js', 'js/nucleo/formato.js', 'js/nucleo/rutas.js',
+  'js/nucleo/api.js', 'js/nucleo/componentes.js', 'js/nucleo/dom.js', 'js/nucleo/estado.js', 'js/nucleo/formato.js', 'js/nucleo/insights.js', 'js/nucleo/rutas.js',
 ];
 
 /** Parte de la barra que corresponde a descargar archivos; el resto son las etapas del panel. */

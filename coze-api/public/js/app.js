@@ -7,6 +7,7 @@ import {
   haySesion, leerPrefs, prefs,
 } from './nucleo/estado.js';
 import { fechaHora, hoyIso, numero } from './nucleo/formato.js';
+import { inventarioSinCargar } from './nucleo/insights.js';
 import { RUTAS, RUTA_INICIAL, armarHash, combinarParams, parsearHash } from './nucleo/rutas.js';
 
 export const VERSION = '2.0.0';
@@ -155,7 +156,7 @@ async function cargarInsignias() {
     insigniasNav = {};
     if (r.proyectos.atrasados > 0) insigniasNav.proyectos = { texto: String(r.proyectos.atrasados), tono: 'alerta' };
     if (r.pedidos.abiertos > 0) insigniasNav.pedidos = { texto: String(r.pedidos.abiertos), tono: '' };
-    if (r.stock.en_stock_bajo > 0) insigniasNav.materiales = { texto: r.stock.en_stock_bajo > 99 ? '99+' : String(r.stock.en_stock_bajo), tono: 'alerta' };
+    if (r.stock.en_stock_bajo > 0 && !inventarioSinCargar(r.stock)) insigniasNav.materiales = { texto: r.stock.en_stock_bajo > 99 ? '99+' : String(r.stock.en_stock_bajo), tono: 'alerta' };
     const viejas = r.frescura.filter((f) => f.hace_horas >= 72).length;
     if (viejas) insigniasNav.sistema = { texto: String(viejas), tono: 'alerta' };
     construirLateral();

@@ -104,16 +104,21 @@ assert.deepEqual(ids(await ejecuta('propiedades-resumen', { portal: 'infocasas',
   const dist = await ejecuta('propiedades-distritos');
   const surco = dist.find((d) => d.distrito === 'Surco' && d.operacion === 'VENTA');
   assert.equal(surco.avisos, 2);
-  assert.equal(surco.precio_prom_usd, 210000, 'el promedio ignora los avisos sin precio (0)');
+  assert.equal(surco.precio_mediano_usd, 210000, 'la mediana ignora los avisos sin precio (0)');
   assert.equal(surco.precio_min_usd, 210000);
   assert.equal(surco.precio_max_usd, 210000);
   const mira = dist.find((d) => d.distrito === 'Miraflores' && d.operacion === 'ALQUILER');
-  assert.deepEqual([mira.avisos, mira.precio_prom_usd], [1, 650]);
+  assert.deepEqual([mira.avisos, mira.precio_mediano_usd], [1, 650]);
   assert.ok(VISTAS['stock-categorias'].panel && VISTAS['propiedades-distritos'].panel, 'son vistas solo del panel');
   // Sin filas con precio el promedio es null, no un error
   await pg.exec(`INSERT INTO central.scraper_propiedades (propiedad_id, portal, operacion, distrito, precio_usd, encontrada_en) VALUES ('z1','x','VENTA','Lince',0,now())`);
-  assert.equal((await ejecuta('propiedades-distritos')).find((d) => d.distrito === 'Lince').precio_prom_usd, null);
+  assert.equal((await ejecuta('propiedades-distritos')).find((d) => d.distrito === 'Lince').precio_mediano_usd, null);
   await pg.exec(`DELETE FROM central.scraper_propiedades WHERE propiedad_id = 'z1'`);
+  // La mediana resiste a un precio mal publicado (un alquiler de US$ 12 por m² y otro absurdo): el promedio habría dado 33,670
+  await pg.exec(`INSERT INTO central.scraper_propiedades (propiedad_id, portal, operacion, distrito, precio_usd, encontrada_en) VALUES ('m1','x','ALQUILER','Barranco',12,now()),('m2','x','ALQUILER','Barranco',1000,now()),('m3','x','ALQUILER','Barranco',101000,now()),('m4','x','ALQUILER','Barranco',0,now())`);
+  const barr = (await ejecuta('propiedades-distritos')).find((d) => d.distrito === 'Barranco');
+  assert.deepEqual([barr.avisos, barr.precio_mediano_usd, barr.precio_min_usd, barr.precio_max_usd], [4, 1000, 12, 101000], 'mediana robusta; el aviso sin precio cuenta pero no entra en la mediana');
+  await pg.exec(`DELETE FROM central.scraper_propiedades WHERE propiedad_id IN ('m1','m2','m3','m4')`);
 }
 
 // ── 3) Valores no válidos: ErrorFiltro (la API responde 400 explicando qué se acepta) ──

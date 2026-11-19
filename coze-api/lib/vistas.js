@@ -286,10 +286,10 @@ export const VISTAS = {
   'propiedades-distritos': {
     panel: true,
     operationId: 'propiedades_distritos',
-    titulo: 'Avisos y precios en dólares por distrito y operación, sobre las propiedades más recientes copiadas',
+    titulo: 'Avisos y precio mediano en dólares por distrito y operación, sobre las propiedades más recientes copiadas (la mediana no se deja engañar por precios mal publicados)',
     sql: `SELECT distrito, operacion,
                  count(*)::int AS avisos,
-                 round(avg(precio_usd) FILTER (WHERE precio_usd > 0))::float8 AS precio_prom_usd,
+                 round((percentile_cont(0.5) WITHIN GROUP (ORDER BY precio_usd) FILTER (WHERE precio_usd > 0))::numeric)::float8 AS precio_mediano_usd,
                  min(precio_usd) FILTER (WHERE precio_usd > 0)::float8 AS precio_min_usd,
                  max(precio_usd)::float8 AS precio_max_usd
             FROM central.scraper_propiedades
@@ -298,6 +298,6 @@ export const VISTAS = {
            ORDER BY avisos DESC, distrito
            LIMIT 40`,
     filtros: {},
-    campos: { distrito: S, operacion: S, avisos: I, precio_prom_usd: N, precio_min_usd: N, precio_max_usd: N },
+    campos: { distrito: S, operacion: S, avisos: I, precio_mediano_usd: N, precio_min_usd: N, precio_max_usd: N },
   },
 };

@@ -1,6 +1,29 @@
 // Alertas automáticas del Inicio, a partir de resumen-general. Función pura: se prueba en Node.
 import { diasEntre, haceHoras, NOMBRE_APP, numero, plural } from './formato.js';
 
+/** Si casi todo el catálogo está sin existencias, lo más probable es que el inventario nunca se cargó (los mínimos son valores de partida). */
+export const UMBRAL_INVENTARIO_VACIO = 0.9;
+export function inventarioSinCargar(stock) {
+  const total = Number(stock?.materiales_con_minimo) || 0;
+  return total >= 20 && (Number(stock.sin_existencias) || 0) / total >= UMBRAL_INVENTARIO_VACIO;
+}
+
+/**
+ * Un precio publicado que casi seguro no es el precio total: los portales a veces muestran el precio por m² (típico en alquileres
+ * de oficinas) o un error de tipeo. Devuelve el motivo o null. Son umbrales holgados: solo señala los absurdos.
+ */
+export function precioDudoso(p) {
+  const usd = Number(p?.precio_usd);
+  if (!(usd > 0)) return null;
+  if (p.operacion === 'ALQUILER') {
+    if (usd < 80) return 'Parece un precio por m², no el alquiler mensual';
+    if (usd > 100000) return 'Alquiler mensual fuera de lo normal';
+  } else if (p.operacion === 'VENTA') {
+    if (usd < 5000) return 'Precio de venta demasiado bajo';
+  }
+  return null;
+}
+
 /**
  * generarAlertas(resumen, hoy) -> [{ tono: 'peligro'|'aviso'|'info'|'ok', icono, titulo, texto, ir: { ruta, params } }]
  * Ordenadas por gravedad. `resumen` es la fila de /api/resumen-general.
@@ -25,7 +48,10 @@ export function generarAlertas(r, hoy) {
 
   if (st.materiales_con_minimo > 0) {
     const pct = (st.en_stock_bajo / st.materiales_con_minimo) * 100;
-    if (st.en_stock_bajo > 0) {
+    if (inventarioSinCargar(st)) {
+      a.push({ tono: 'aviso', icono: 'materiales', titulo: `Inventario casi sin cargar: ${numero(st.sin_existencias, 0)} de ${numero(st.materiales_con_minimo, 0)} materiales sin existencias`,
+        texto: 'Los mínimos son valores de partida; mientras no se registren las existencias del almacén en el MRP, «stock bajo» no refleja una falta real.', ir: { ruta: 'materiales', params: {} } });
+    } else if (st.en_stock_bajo > 0) {
       a.push({ tono: pct >= 50 ? 'peligro' : 'aviso', icono: 'materiales', titulo: `${numero(st.en_stock_bajo, 0)} de ${numero(st.materiales_con_minimo, 0)} materiales bajo su mínimo`,
         texto: `${numero(pct, 0)} % del catálogo con mínimo; ${numero(st.sin_existencias, 0)} sin existencias.${r.mayor_faltante[0] ? ` Mayor faltante: ${r.mayor_faltante[0].material}.` : ''}`, ir: { ruta: 'materiales', params: {} } });
     } else {

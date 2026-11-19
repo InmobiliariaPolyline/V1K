@@ -4,6 +4,8 @@ import { h } from '../nucleo/dom.js';
 import { barraExportar, buscador, kpi, paginacion, paginar, tabla, tarjeta, vacio } from '../nucleo/componentes.js';
 import { barrasH } from '../nucleo/graficos.js';
 import { compacto, numero, ordenarPor, plural } from '../nucleo/formato.js';
+import { inventarioSinCargar } from '../nucleo/insights.js';
+import { banner } from '../nucleo/componentes.js';
 import { cargandoGenerico, encabezado, poner } from './_comun.js';
 
 const LIMITES = [25, 50, 100];
@@ -19,6 +21,8 @@ export default {
     let pagina = 1;
 
     const cats = await consultar('stock-categorias').catch(() => ({ datos: [] }));
+    const resumen = await consultar('resumen-general').then((r) => r.datos[0]).catch(() => null);
+    const sinCargar = resumen ? inventarioSinCargar(resumen.stock) : false;
     const zonaKpi = h('div.rejilla.rejilla--4'), zonaTabla = h('div'), zonaExport = h('div'), zonaGrafico = h('div');
     const tGraf = tarjeta({ titulo: 'Faltante por categoría', icono: 'materiales', clase: 'c-4' });
     const tTabla = tarjeta({ titulo: 'Materiales bajo su mínimo', icono: 'lista', clase: 'c-8' });
@@ -71,6 +75,7 @@ export default {
 
     poner(contenedor, 
       encabezado({ titulo: 'Materiales', sub: 'Los materiales del MRP que están en o bajo su stock mínimo. Pulsa una barra para filtrar por categoría.' }),
+      sinCargar ? banner({ tipo: 'aviso', texto: `Casi ningún material tiene existencias registradas: ${numero(resumen.stock.sin_existencias, 0)} de ${numero(resumen.stock.materiales_con_minimo, 0)} están en cero. Los mínimos son valores de partida; hasta que se cargue el inventario en el MRP, «stock bajo» no refleja una falta real.` }) : null,
       zonaKpi, barra, h('div.grid12', {}, tTabla.el, tGraf.el));
     await cargar();
   },

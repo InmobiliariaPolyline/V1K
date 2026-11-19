@@ -6,6 +6,7 @@ import { barrasH } from '../nucleo/graficos.js';
 import { compacto, dinero, dolares, haceDesde, mediana, numero, plural, urlSegura } from '../nucleo/formato.js';
 import { guardarPref, prefs } from '../nucleo/estado.js';
 import { segmentado } from '../nucleo/componentes.js';
+import { precioDudoso } from '../nucleo/insights.js';
 import { cargandoGenerico, encabezado, poner } from './_comun.js';
 
 const CLAVES = ['q', 'operacion', 'inmueble', 'distrito', 'portal', 'precio_min_usd', 'precio_max_usd'];
@@ -64,6 +65,7 @@ export default {
       return h('article.tarjeta.prop', {},
         foto,
         h('div.prop__precio', {}, dinero(p.precio, p.moneda), p.moneda !== 'USD' && Number(p.precio_usd) > 0 ? h('small', { texto: `≈ ${dolares(p.precio_usd)}` }) : null),
+        precioDudoso(p) ? h('div', {}, h('span.insignia.insignia--aviso', { texto: '¿Precio dudoso?', attrs: { title: precioDudoso(p) } })) : null,
         h('div.prop__titulo', { texto: p.titulo ?? 'Sin título' }),
         h('div.prop__meta', {}, p.distrito ? h('span', {}, icono('pin'), p.distrito) : null, p.inmueble ? h('span', { texto: p.inmueble }) : null,
           p.dormitorios ? h('span', { texto: `${numero(parseFloat(p.dormitorios), 0)} dorm.` }) : null, p.banios ? h('span', { texto: `${numero(parseFloat(p.banios), 0)} baños` }) : null, parseFloat(p.area) > 0 ? h('span', { texto: `${numero(parseFloat(p.area), 0)} m²` }) : null),
@@ -72,14 +74,16 @@ export default {
     }
 
     function pintarEstadisticas(filas) {
-      const precios = filas.map((p) => Number(p.precio_usd)).filter((v) => v > 0);
+      const dudosos = filas.filter((p) => precioDudoso(p)).length;
+      const precios = filas.filter((p) => !precioDudoso(p)).map((p) => Number(p.precio_usd)).filter((v) => v > 0);
       const est = (valor, etiqueta) => h('div.estadistica', {}, h('div.estadistica__valor', { texto: valor }), h('div.estadistica__etiqueta', { texto: etiqueta }));
       poner(zonaStats, 
         est(numero(filas.length, 0), filas.length >= limite ? `avisos (tope de ${limite})` : 'avisos'),
         est(precios.length ? dolares(mediana(precios)) : '—', 'precio mediano'),
         est(precios.length ? dolares(Math.min(...precios)) : '—', 'más económico'),
         est(precios.length ? dolares(Math.max(...precios)) : '—', 'más caro'),
-        est(numero(new Set(filas.map((p) => p.distrito).filter(Boolean)).size, 0), 'distritos'));
+        est(numero(new Set(filas.map((p) => p.distrito).filter(Boolean)).size, 0), 'distritos'),
+        ...(dudosos ? [h('div.estadistica', { attrs: { title: 'Alquileres que parecen precio por m² y otros precios absurdos: no entran en el mediano, el más económico ni el más caro' } }, h('div.estadistica__valor', { texto: numero(dudosos, 0) }), h('div.estadistica__etiqueta', { texto: 'precios dudosos (excluidos)' }))] : []));
     }
 
     function pintarDistritos() {
@@ -87,12 +91,12 @@ export default {
       const acum = new Map();
       for (const d of distritos.datos ?? []) {
         if (op && d.operacion !== op) continue;
-        const a = acum.get(d.distrito) ?? { avisos: 0, suma: 0, n: 0 };
+        const a = acum.get(d.distrito) ?? { avisos: 0, medianas: [] };
         a.avisos += d.avisos;
-        if (d.precio_prom_usd > 0) { a.suma += d.precio_prom_usd * d.avisos; a.n += d.avisos; }
+        if (d.precio_mediano_usd > 0) a.medianas.push(`${d.operacion === 'VENTA' ? 'Venta' : 'Alquiler'} ${dolares(d.precio_mediano_usd)}`);
         acum.set(d.distrito, a);
       }
-      const top = [...acum].sort((a, b) => b[1].avisos - a[1].avisos).slice(0, 8).map(([dist, a]) => ({ etiqueta: dist, valor: a.avisos, extra: a.n ? `Promedio ${dolares(a.suma / a.n)}` : 'Sin precios', color: filtros.distrito.toLowerCase() === dist.toLowerCase() ? 'var(--primario)' : 'var(--scraper)', onClick: () => { filtros.distrito = dist; campos.distrito.entrada.value = dist; buscar(); } }));
+      const top = [...acum].sort((a, b) => b[1].avisos - a[1].avisos).slice(0, 8).map(([dist, a]) => ({ etiqueta: dist, valor: a.avisos, extra: a.medianas.length ? `Mediana: ${a.medianas.join(' · ')}` : 'Sin precios', color: filtros.distrito.toLowerCase() === dist.toLowerCase() ? 'var(--primario)' : 'var(--scraper)', onClick: () => { filtros.distrito = dist; campos.distrito.entrada.value = dist; buscar(); } }));
       poner(zonaDist, top.length ? barrasH(top) : vacio({ icono: 'pin', titulo: 'Sin distritos', texto: 'Aún no hay avisos con distrito.' }));
     }
 
@@ -137,7 +141,7 @@ export default {
     const tFiltros = tarjeta({ titulo: 'Filtros', icono: 'filtro', clase: 'c-12' });
     tFiltros.cuerpo.append(formulario);
     const tDist = tarjeta({ titulo: 'Distritos con más avisos', icono: 'pin', clase: 'c-4' });
-    tDist.cuerpo.append(zonaDist, h('p.suave', { texto: 'Pulsa un distrito para filtrar. El promedio usa solo avisos con precio.', estilo: { marginTop: '0.8rem', fontSize: '0.8rem' } }));
+    tDist.cuerpo.append(zonaDist, h('p.suave', { texto: 'Pulsa un distrito para filtrar. La mediana usa solo avisos con precio y no se deja engañar por precios mal publicados.', estilo: { marginTop: '0.8rem', fontSize: '0.8rem' } }));
     const tRes = tarjeta({ titulo: 'Resultados', icono: 'lista', clase: 'c-8' });
     tRes.acciones.append(segmentado([{ valor: 'tarjetas', etiqueta: 'Tarjetas', icono: 'cuadricula' }, { valor: 'lista', etiqueta: 'Lista', icono: 'lista' }], vista, (v) => { vista = v; guardarPref('propVista', v); buscar(); }, { etiqueta: 'Tipo de vista' }), zonaExport);
     tRes.cuerpo.append(zonaActivos, aviso, zonaStats, zonaResultados);

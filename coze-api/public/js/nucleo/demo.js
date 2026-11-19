@@ -125,6 +125,12 @@ export function construirDemo(ahora = new Date()) {
     };
   });
 
+  // Un par de alquileres de oficina publicados «por m²» (pasa en los portales reales): el panel debe marcarlos como precio dudoso
+  propiedades.filter((p) => p.operacion === 'ALQUILER').slice(0, 2).forEach((p, k) => {
+    const porM2 = k === 0 ? 41 : 52;
+    Object.assign(p, { inmueble: 'Oficina', moneda: 'PEN', precio: dosDec(porM2), precio_usd: dosDec(porM2 / TC), area: `${k === 0 ? 92 : 170} m2`, dormitorios: null, banios: null, titulo: `Oficina en alquiler en ${p.distrito} · ${k === 0 ? 92 : 170} m2` });
+  });
+
   // Resúmenes derivados
   const factorCat = 32;
   const resumenPortal = [];
@@ -178,6 +184,8 @@ function datosDe(ahora) {
   return tablas;
 }
 
+const medianaDe = (v) => { const o = [...v].sort((a, b) => a - b); const m = Math.floor(o.length / 2); return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2; };
+
 /** Agrega las propiedades por distrito y operación, como la vista de la API. */
 function distritos(props) {
   const g = new Map();
@@ -191,7 +199,7 @@ function distritos(props) {
   }
   return [...g.values()].map((x) => ({
     distrito: x.distrito, operacion: x.operacion, avisos: x.avisos,
-    precio_prom_usd: x.precios.length ? Math.round(x.precios.reduce((a, b) => a + b, 0) / x.precios.length) : null,
+    precio_mediano_usd: x.precios.length ? Math.round(medianaDe(x.precios)) : null,
     precio_min_usd: x.precios.length ? Math.min(...x.precios) : null,
     precio_max_usd: x.precios.length ? Math.max(...x.precios) : null,
   })).sort((a, b) => b.avisos - a.avisos || a.distrito.localeCompare(b.distrito)).slice(0, 40);

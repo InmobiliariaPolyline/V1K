@@ -183,6 +183,26 @@ const base = () => ({
   const vacio = base(); vacio.proyectos.total = 0; vacio.stock.materiales_con_minimo = 0; vacio.pedidos.abiertos = 0; vacio.frescura = [];
   ok(Array.isArray(I.generarAlertas(vacio, HOY)), 'sin datos no lanza');
   igual(I.horasCorto(0.5), '30 min'); igual(I.horasCorto(5), '5 h'); igual(I.horasCorto(49), '2 d'); igual(I.horasCorto(null), '—');
+  // Inventario sin cargar: casi todo en cero no es «peligro», es un dato por completar (caso real: 499 de 501 en cero)
+  igual(I.inventarioSinCargar({ materiales_con_minimo: 501, sin_existencias: 499 }), true);
+  igual(I.inventarioSinCargar({ materiales_con_minimo: 501, sin_existencias: 200 }), false);
+  igual(I.inventarioSinCargar({ materiales_con_minimo: 10, sin_existencias: 10 }), false, 'con pocos materiales no se presume que falte cargar');
+  igual(I.inventarioSinCargar(undefined), false);
+  {
+    const real = base(); real.stock = { materiales_con_minimo: 501, en_stock_bajo: 501, sin_existencias: 499 }; real.mayor_faltante = [{ material: 'Acero' }];
+    const al2 = I.generarAlertas(real, HOY);
+    ok(al2.some((a) => /Inventario casi sin cargar: 499 de 501/.test(a.titulo) && a.tono === 'aviso'), 'inventario sin cargar = aviso, no peligro');
+    ok(!al2.some((a) => /bajo su mínimo/.test(a.titulo)), 'no se presenta como 501 materiales en falta');
+    igual(I.saludGlobal(al2), 'aviso', 'el estado general no se pone en rojo por un inventario que nunca se cargó');
+  }
+  // Precios dudosos (casos reales del Scraper: oficinas publicadas por m²)
+  igual(I.precioDudoso({ operacion: 'ALQUILER', precio_usd: '12.00' }), 'Parece un precio por m², no el alquiler mensual');
+  igual(I.precioDudoso({ operacion: 'ALQUILER', precio_usd: 1280 }), null);
+  igual(I.precioDudoso({ operacion: 'ALQUILER', precio_usd: 250000 }), 'Alquiler mensual fuera de lo normal');
+  igual(I.precioDudoso({ operacion: 'VENTA', precio_usd: 2934 }), 'Precio de venta demasiado bajo');
+  igual(I.precioDudoso({ operacion: 'VENTA', precio_usd: 265000 }), null);
+  igual(I.precioDudoso({ operacion: 'ALQUILER', precio_usd: 0 }), null, 'sin precio no hay nada que dudar');
+  igual(I.precioDudoso({ operacion: 'ALQUILER', precio_usd: null }), null); igual(I.precioDudoso(null), null);
   igual(I.pctFrescura(0), 100); igual(I.pctFrescura(36), 50); igual(I.pctFrescura(500), 0); igual(I.pctFrescura(-3), 100); igual(I.pctFrescura(undefined), 0);
 }
 
@@ -250,6 +270,9 @@ await assert.rejects(() => demo('no-existe'), (e) => e instanceof ErrorApi && e.
   // Fechas relativas a hoy: el día siguiente sigue teniendo hitos futuros y proyectos atrasados
   const manana = await D.consultar('resumen-general', {}, meta, new Date('2027-03-01T10:00:00'));
   ok(manana.datos[0].proyectos.total === res.proyectos.total, 'misma cantidad de proyectos en otra fecha');
+  // La demostración trae alquileres de oficina «por m²» para enseñar el aviso de precio dudoso
+  const dudosos = (await demo('propiedades', { limite: '100' })).datos.filter((p) => I.precioDudoso(p)); ok(dudosos.length === 2 && dudosos.every((p) => p.inmueble === 'Oficina'), 'dos precios dudosos de ejemplo');
+  const med = (await demo('propiedades-distritos')).datos; ok(med.every((d) => d.precio_mediano_usd === null || d.precio_mediano_usd > 0) && med.every((d) => !('precio_prom_usd' in d)), 'distritos con mediana (sin el promedio antiguo)');
   // Todo texto de la demostración es ficticio: enlaces de ejemplo, nunca dominios reales de portales
   const urls = (await demo('propiedades', { limite: '100' })).datos.map((p) => p.url); ok(urls.every((u) => u.startsWith('https://example.com/')), 'enlaces de ejemplo');
 }
