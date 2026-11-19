@@ -5,7 +5,7 @@
 <br />
 
 <img src="docs/assets/badges/sincroniza.svg" alt="Sincroniza 3 apps" />
-<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1538 OK" />
+<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1543 OK" />
 <img src="docs/assets/badges/api.svg" alt="API solo lectura" />
 <img src="docs/assets/badges/roles.svg" alt="Roles 6 con RLS" />
 <br />
@@ -128,7 +128,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene once secciones:
   <tr>
     <td width="33%"><img src="docs/assets/card-solo-lectura.svg" alt="Solo lectura" width="100%" /></td>
     <td width="33%"><img src="docs/assets/card-rapida.svg" alt="Respuesta en unos 150 ms" width="100%" /></td>
-    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="1538 comprobaciones" width="100%" /></td>
+    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="1543 comprobaciones" width="100%" /></td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/assets/card-opcional.svg" alt="Apagado por defecto" width="100%" /></td>
@@ -206,7 +206,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 ## Pruebas
 
-<img src="docs/assets/pruebas-baterias.svg" alt="1538 comprobaciones en cuatro baterías: A 638, B 690, C 155 y D 55, todas correctas" width="100%" />
+<img src="docs/assets/pruebas-baterias.svg" alt="1543 comprobaciones en cuatro baterías: A 638, B 695, C 155 y D 55, todas correctas" width="100%" />
 
 Las 12 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
@@ -218,7 +218,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Batería | Qué comprueba | Resultado |
 |---|---|---|
 | **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones, webhook del bot de Telegram cerrado | 638 / 638 |
-| **B · Permisos** | Los 6 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 690 / 690 |
+| **B · Permisos** | Los 6 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 695 / 695 |
 | **C · Sincronización** | El código real del MRP, el Planner y el Scraper con datos extremos | 60 · 46 · 49 |
 | **D · Datos reales** | Integridad de lo que hay en la base y que la API devuelva lo mismo, fila por fila | 55 / 55 |
 
