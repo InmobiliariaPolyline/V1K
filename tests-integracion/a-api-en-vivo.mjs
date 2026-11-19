@@ -359,6 +359,34 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   chequea('[telegram] sin caché', /no-store/.test(r.headers.get('cache-control') ?? ''), r.headers.get('cache-control') ?? '');
 }
 
+// ── 6f) Módulo de accesos (/api/accesos): cerrado sin el token de ADMINISTRADOR (el de lectura de Coze no sirve) ──
+{
+  const ruta = '/api/accesos';
+  const r405 = await llama(ruta, { raw: true, metodo: 'PUT', headers: { Authorization: `Bearer ${TOKEN}` } });
+  chequea('[accesos] PUT rechazado', r405.status === 405, `-> ${r405.status}`);
+  const variantes = [
+    ['sin cabecera', {}],
+    ['token vacío', { Authorization: 'Bearer ' }],
+    ['token adivinado', { Authorization: 'Bearer ' + 'x'.repeat(48) }],
+    ['el token de LECTURA de Coze', { Authorization: `Bearer ${TOKEN}` }],
+    ['cabecera del bot de Telegram', { 'X-Telegram-Bot-Api-Secret-Token': TOKEN }],
+  ];
+  for (const m of ['GET', 'POST', 'PATCH', 'DELETE']) {
+    for (const [nombre, headers] of variantes) {
+      const r = await llama(ruta, { raw: true, metodo: m, headers });
+      chequea(`[accesos] ${m} ${nombre} → 401`, r.status === 401, `-> ${r.status}`);
+      chequea(`[accesos] ${m} ${nombre} no filtra datos ni errores`, r.cuerpo.length < 160 && !/neon|postgres|chat_id|telefono|stack/i.test(r.cuerpo), r.cuerpo.slice(0, 100));
+    }
+  }
+  const r = await llama(ruta, { raw: true, metodo: 'GET' });
+  chequea('[accesos] sin caché', /no-store/.test(r.headers.get('cache-control') ?? ''), r.headers.get('cache-control') ?? '');
+  // El bot de consultas y la API de datos no exponen la lista de accesos
+  for (const vista of ['telegram_accesos', 'v_telegram_chats_activos', 'accesos']) {
+    const rv = await llama(vista, { headers: A() });
+    chequea(`[accesos] /api/${vista} no existe como vista de datos`, [404, 400].includes(rv.status) && !/nombre|telefono/i.test(rv.cuerpo), `-> ${rv.status}`);
+  }
+}
+
 // ── 7) La base sigue intacta tras todos los intentos hostiles ───────────────────────
 {
   const r = await llama('frescura', { headers: A() });

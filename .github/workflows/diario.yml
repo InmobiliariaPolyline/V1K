@@ -53,4 +53,5 @@ jobs:
           API_TOKEN: ${{ secrets.API_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HISTORIAL_DATABASE_URL: ${{ secrets.HISTORIAL_DATABASE_URL }}   # solo para leer la lista de accesos (números de chat)
         run: node scripts/resumen-diario.mjs

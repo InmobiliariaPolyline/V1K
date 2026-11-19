@@ -24,6 +24,7 @@ const SECCIONES = [
   { id: 'explorador', titulo: 'Explorador de API', icono: 'explorador', grupo: 'Herramientas', atajo: 'e', cargar: () => import('./vistas/explorador.js') },
   { id: 'asistente', titulo: 'Agente de Coze', icono: 'asistente', grupo: 'Herramientas', atajo: 'a', cargar: () => import('./vistas/asistente.js') },
   { id: 'sistema', titulo: 'Estado del sistema', icono: 'sistema', grupo: 'Sistema', atajo: 's', cargar: () => import('./vistas/sistema.js') },
+  { id: 'accesos', titulo: 'Accesos de Telegram', icono: 'candado', grupo: 'Sistema', atajo: 'u', cargar: () => import('./vistas/accesos.js') },
 ];
 const SECCION = Object.fromEntries(SECCIONES.map((x) => [x.id, x]));
 

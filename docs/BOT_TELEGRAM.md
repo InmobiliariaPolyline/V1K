@@ -62,18 +62,42 @@ Cada respuesta trae botones para pasar a otra consulta sin escribir. Si escribes
 5. **Probar.** Abre el bot, escribe `/resumen`. Para ver el estado del webhook: `node scripts/telegram-webhook.mjs --info`
    (muestra mensajes pendientes y el último error de Telegram, nunca el token).
 
-## Dar o quitar acceso a una persona
+## Dar o quitar acceso a una persona (módulo «Accesos» del panel)
 
-La persona se registra en Telegram, busca `@v1k_consultas_bot` y pulsa **Iniciar**; el bot le contesta su **número de chat** y ella te lo envía
-(guía para ella: [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md)). Es el mismo número para los dos bots.
+La persona se registra en Telegram, busca `@v1k_consultas_bot`, pulsa **Iniciar** y el bot le contesta su **número de chat**. Ella te envía ese número
+y su teléfono (guía para ella: [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md)). Tú:
 
-| Para… | Dónde se agrega el número (separado por comas) | Hace falta |
-|---|---|---|
-| Que use el bot de consultas | Vercel → variable `TELEGRAM_CHATS_PERMITIDOS` | *Redeploy* |
-| Que reciba el resumen de la mañana | GitHub → secreto `TELEGRAM_CHAT_ID` | Nada más (y que haya pulsado **Iniciar** en `@v1k_asistente_bot`) |
+1. Abre el panel (https://v1k-coze-api.vercel.app) y entra a **Accesos de Telegram** (menú «Sistema», atajo **U**).
+2. Pega tu **token de administrador** (`ADMIN_TOKEN`; es distinto del token de solo lectura del panel). Solo se guarda en memoria, en esa pestaña.
+3. Escribe **nombre, teléfono y número de chat** y pulsa **Dar acceso**. Si la persona ya había pulsado «Iniciar», el bot le avisa que ya tiene acceso.
+4. Desde ese momento usa el bot (en menos de 15 segundos) y recibe el resumen de la mañana. No hace falta tocar Vercel ni GitHub, ni hacer *Redeploy*.
 
-Para quitar a alguien, borra su número de las dos listas. El número de teléfono **no** sirve para autorizar a nadie: Telegram solo
-identifica a las personas por este número de chat. No lo escribas en el repositorio (es público).
+En la misma pantalla: **Revocar** (sin acceso, pero queda en la lista), **Reactivar** y **Quitar** (la borra). Máximo 50 personas.
+
+| Dato | Para qué sirve |
+|---|---|
+| Número de chat | Es lo que **autoriza**: Telegram identifica a las personas por él. Es el mismo para los dos bots. |
+| Teléfono | Solo es un dato de **tu registro**: Telegram no permite comprobarlo desde un bot, así que no autoriza a nadie. |
+| Nombre | Para reconocer a la persona en la lista. |
+
+**Quién ve qué.** La tabla con nombres y teléfonos (`central.telegram_accesos`) solo la toca el rol `writer_accesos`, y solo desde el módulo. El bot y el resumen
+diario leen únicamente la lista de números de chat activos (vista `v_telegram_chats_activos`); Coze y el panel de datos no la ven.
+
+**Administradores fijos.** Los números de `TELEGRAM_CHATS_PERMITIDOS` (Vercel) y `TELEGRAM_CHAT_ID` (GitHub) siguen funcionando sin aparecer en la lista del módulo: son tu
+acceso de respaldo si el módulo o la base fallan. Si la base falla, el bot atiende solo a esos administradores (nadie entra por error).
+
+## Activar el módulo «Accesos» (una sola vez)
+
+1. **Crear la tabla y el rol en Neon.** En el SQL Editor, con el rol dueño, ejecuta `db/04_accesos.sql` **con una contraseña real en lugar de
+   `CAMBIAR_POR_CONTRASENA_LARGA_6`** (el archivo local `db/04_accesos.local.sql` ya la lleva; no se versiona). Es seguro repetirlo.
+2. **Crear 2 variables en Vercel** (*Production*, tipo *Secret*): `DATABASE_URL_ACCESOS` (la cadena de `writer_accesos`) y `ADMIN_TOKEN` (largo y aleatorio,
+   32 caracteres o más). Ambas están en `db/conexiones.local.txt`. Luego **Redeploy**.
+3. **Probar:** panel → **Accesos de Telegram** → pega el `ADMIN_TOKEN`. Debe mostrar la lista vacía y el formulario.
+4. Si quieres que el resumen de la mañana también llegue a las personas del módulo, el flujo **Diario** ya usa `HISTORIAL_DATABASE_URL` para leer la lista
+   (no hay que crear secretos nuevos: el rol `writer_historial` recibe lectura de la vista en el mismo SQL).
+
+**Seguridad del módulo.** Sin el token de administrador no se ve ni se cambia nada (401). El token de lectura de Coze **no** sirve aquí. Los datos se validan, hay un tope de 50
+personas y los errores de la base nunca llegan al navegador. Para cambiar el token: nuevo valor en Vercel → *Redeploy*.
 
 ## Si algo falla
 
@@ -84,6 +108,10 @@ identifica a las personas por este número de chat. No lo escribas en el reposit
 | `--info` muestra «…401» | El secreto de Vercel no coincide con el usado en `--instalar`: vuelve a instalar |
 | El bot responde «Este bot es privado» | El número de chat no está en `TELEGRAM_CHATS_PERMITIDOS` |
 | «No pude leer los datos ahora» | La base no respondió; reintenta. Si persiste, mira la vigilancia (Actions) |
+| El módulo dice «no está configurado en el servidor» | Faltan `ADMIN_TOKEN` o `DATABASE_URL_ACCESOS` en Vercel, o falta el *Redeploy* |
+| El módulo dice «Token de administrador incorrecto» | Estás usando el token de lectura u otro: usa el valor de `ADMIN_TOKEN` |
+| El módulo dice «no pudo usar la base de datos» | Falta ejecutar `db/04_accesos.sql` en Neon, o la contraseña de `DATABASE_URL_ACCESOS` no coincide con la del rol |
+| Di acceso a alguien pero el bot le dice «privado» | Espera unos segundos (la lista se refresca cada 15 s) y comprueba que el número de chat sea el que el bot le mostró |
 | Quieres apagarlo | `node scripts/telegram-webhook.mjs --borrar` (o quita `TELEGRAM_CHATS_PERMITIDOS` en Vercel) |
 
 ## Cambiar el token o el secreto

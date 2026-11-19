@@ -59,15 +59,15 @@ La **primera vez**, el bot de consultas te responderá algo así:
 
 Es lo esperado: el bot solo atiende a las personas que el administrador autorizó.
 
-## Paso 5 · Enviar tu número de chat al administrador
+## Paso 5 · Enviar tu número de chat y tu teléfono al administrador
 
-Copia ese número (mantén presionado sobre el mensaje) y envíaselo al administrador por el medio que ya usan (WhatsApp, correo…).
+Copia ese número (mantén presionado sobre el mensaje) y envíaselo al administrador junto con **tu nombre y tu teléfono**, por el medio que ya usan (WhatsApp, correo…).
 **Es el mismo número para los dos bots**, así que basta con enviarlo una vez.
 
-El administrador te avisará cuando esté listo. Entonces vuelve al bot de consultas y pulsa **Iniciar** de nuevo (o escribe `/ayuda`):
+El administrador te registra en el panel de V1K y el bot te avisa por sí mismo: «Ya tienes acceso». Si no te llega el aviso, vuelve al bot de consultas y pulsa **Iniciar** (o escribe `/ayuda`):
 verás el menú con botones. Desde la mañana siguiente te llegará también el resumen diario.
 
-> El administrador solo ve **ese número**. No ve tu teléfono, tu nombre, tus contactos ni tus otras conversaciones.
+> Lo que el administrador sabe de ti es solo lo que tú le envías (nombre, teléfono y número de chat). No ve tus contactos ni tus otras conversaciones de Telegram.
 
 ## Cómo usar el bot de consultas
 
@@ -118,13 +118,13 @@ Llega a las **08:07** desde `@v1k_asistente_bot`. Léelo de arriba abajo:
 
 ## Para el administrador: dar acceso a una persona nueva
 
-Con el número de chat que te envió la persona:
+Con el nombre, el teléfono y el número de chat que te envió la persona:
 
-1. **Bot de consultas:** en Vercel (proyecto `v1k-coze-api` → Settings → Environment Variables) agrega el número a
-   `TELEGRAM_CHATS_PERMITIDOS`, separado por comas (`111111111,222222222`), y haz **Redeploy**.
-2. **Resumen diario:** en GitHub (Settings → Secrets and variables → Actions) agrega el número al secreto `TELEGRAM_CHAT_ID`,
-   también separado por comas. No hace falta redeploy. La persona debe haber pulsado **Iniciar** en `@v1k_asistente_bot`.
-3. Prueba: **Actions → Diario → Run workflow**; la persona recibe el resumen en su Telegram.
+1. Abre el panel de V1K → **Accesos de Telegram** (menú «Sistema») y pega tu **token de administrador**.
+2. Escribe nombre, teléfono y número de chat → **Dar acceso**. Si la persona ya pulsó «Iniciar», el bot le avisa solo.
+3. Listo: puede usar el bot y recibirá el resumen de la mañana. No hay que tocar Vercel, GitHub ni hacer *Redeploy*.
 
-Para quitar a alguien, borra su número de las dos listas. Detalles técnicos y solución de problemas:
+<img src="assets/telegram-accesos.svg" alt="El administrador escribe el número de chat y el teléfono en el módulo Accesos del panel y el bot reconoce a la persona" width="100%" />
+
+Para quitar a alguien usa **Revocar** o **Quitar** en el mismo módulo. Detalles técnicos y solución de problemas:
 [`BOT_TELEGRAM.md`](BOT_TELEGRAM.md) y [`OPERACION.md`](OPERACION.md).

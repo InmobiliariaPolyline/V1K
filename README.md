@@ -7,7 +7,7 @@
 <img src="docs/assets/badges/sincroniza.svg" alt="Sincroniza 3 apps" />
 <img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1333 OK" />
 <img src="docs/assets/badges/api.svg" alt="API solo lectura" />
-<img src="docs/assets/badges/roles.svg" alt="Roles 5 con RLS" />
+<img src="docs/assets/badges/roles.svg" alt="Roles 6 con RLS" />
 <br />
 <img src="docs/assets/badges/base.svg" alt="Base Neon central" />
 <img src="docs/assets/badges/hosting.svg" alt="Hosting Vercel" />
@@ -69,7 +69,14 @@ registrarte con tu número, buscar los bots, pulsar «Iniciar» y pedir tu acces
 
 <img src="docs/assets/telegram-uso.svg" alt="Ejemplo de conversación con el bot de consultas: se pide /resumen y responde con lo urgente y los botones del menú; a la derecha, los ocho comandos" width="100%" />
 
-Para el administrador: poner en marcha y dar acceso a otra persona está en [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md).
+**Dar acceso desde el panel.** El administrador no tiene que tocar Vercel ni GitHub: en el panel, sección **Accesos de Telegram**, entra con su
+token de administrador (distinto del de solo lectura), escribe el nombre, el teléfono y el número de chat de la persona y pulsa **Dar acceso**. El bot le
+avisa y desde ese momento puede usarlo y recibir el resumen de la mañana. También puede **revocar** o **quitar** a alguien. El número de chat es lo que
+autoriza; el teléfono es solo el registro del administrador. Los nombres y teléfonos viven en una tabla que solo toca un 6.º rol, `writer_accesos`.
+
+<img src="docs/assets/telegram-accesos.svg" alt="Cuatro pasos para dar acceso: la persona pulsa Iniciar y recibe su número de chat, el administrador lo escribe en el módulo Accesos del panel con nombre y teléfono, queda guardado en la base y el bot le avisa que ya tiene acceso" width="100%" />
+
+Puesta en marcha y administración: [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md).
 
 ### Qué pasa cuando una app guarda datos
 
@@ -78,7 +85,7 @@ Para el administrador: poner en marcha y dar acceso a otra persona está en [`do
 ## Panel web
 
 La raíz del proyecto de Vercel es un **panel de solo lectura** que se abre con el token de la API y muestra lo mismo
-que consulta el agente, **sin gastar créditos de Coze**. Tiene diez secciones:
+que consulta el agente, **sin gastar créditos de Coze**. Tiene once secciones:
 
 | Sección | Qué muestra |
 |---|---|
@@ -93,7 +100,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene diez secciones:
 | **Agente de Coze** | Preguntas sugeridas con botón de copiar y las herramientas que tiene el agente |
 | **Sistema** | Latencia, frescura, preferencias, atajos de teclado y el diagrama de la arquitectura |
 
-<img src="docs/assets/panel-secciones.svg" alt="Las diez secciones del panel, resaltadas una a una" width="100%" />
+<img src="docs/assets/panel-secciones.svg" alt="Las once secciones del panel, resaltadas una a una" width="100%" />
 
 <img src="docs/assets/panel.svg" alt="Inicio del Panel V1K con datos de ejemplo" width="100%" />
 
@@ -129,7 +136,8 @@ V1K/
 ├── db/
 │   ├── 01_schema.sql              esquema `central`: 7 tablas y la vista v_stock_bajo
 │   ├── 02_roles.sql               4 roles de mínimo privilegio + seguridad por fila
-│   └── 03_historial.sql           historial diario (tabla y función de la foto) + 5.º rol, writer_historial
+│   ├── 03_historial.sql           historial diario (tabla y función de la foto) + 5.º rol, writer_historial
+│   └── 04_accesos.sql             accesos del bot de Telegram (tabla, vista de números de chat) + 6.º rol, writer_accesos
 ├── coze-api/                      API de solo lectura y panel web (Vercel)
 │   ├── api/[vista].js             función serverless: 8 rutas GET con token
 │   ├── lib/vistas.js              consultas cerradas y filtros validados (fuente del contrato)
@@ -180,7 +188,7 @@ git clone https://github.com/InmobiliariaPolyline/REAL_ESTATE_SCRAPER.git
 Los pasos completos, con las variables de cada servicio, están en
 [`docs/GUIA_PUESTA_EN_MARCHA.md`](docs/GUIA_PUESTA_EN_MARCHA.md). En resumen:
 
-1. En Neon, ejecutar `db/01_schema.sql` y luego `db/02_roles.sql` (con contraseñas nuevas para los 4 roles). Opcional: `db/03_historial.sql` para el historial y el resumen diario (ver
+1. En Neon, ejecutar `db/01_schema.sql` y luego `db/02_roles.sql` (con contraseñas nuevas para los 4 roles). Opcional: `db/04_accesos.sql` para dar acceso al bot de Telegram desde el panel (ver [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md)) y `db/03_historial.sql` para el historial y el resumen diario (ver
    [`docs/OPERACION.md`](docs/OPERACION.md)).
 2. Desplegar `coze-api` en Vercel con `DATABASE_URL_READER` y `API_TOKEN`.
 3. Poner `CENTRAL_DATABASE_URL` (cadena de su rol `writer_*`) en el servidor de cada app.
@@ -191,7 +199,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1333 comprobaciones en cuatro baterías: A 588, B 535, C 155 y D 55, todas correctas" width="100%" />
 
-Las 10 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+Las 11 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
 
 Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
@@ -210,7 +218,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 <img src="docs/assets/capas-seguridad.svg" alt="Cuatro capas: token, lista cerrada de consultas, rol de solo lectura y una base con solo resúmenes. Una petición legítima pasa; una con SQL malicioso se detiene" width="100%" />
 
 - **Coze nunca escribe** y nunca ve credenciales de las apps: solo llama a la API con un token.
-- **Mínimo privilegio:** `coze_reader` solo tiene `SELECT`; cada `writer_*` solo toca sus tablas y su fila de `sync_estado`; `writer_historial` solo lee las tablas centrales y escribe su tabla (sin poder borrarla).
+- **Mínimo privilegio:** `coze_reader` solo tiene `SELECT`; cada `writer_*` solo toca sus tablas y su fila de `sync_estado`; `writer_historial` solo lee las tablas centrales y escribe su tabla (sin poder borrarla); `writer_accesos` solo toca la tabla de accesos (nombres y teléfonos que nadie más ve).
 - **Consultas fijas:** el cliente no puede enviar SQL. Los filtros están en una lista cerrada, se validan (valores permitidos, números, fechas) y viajan siempre como parámetros; un valor no válido da un 400 que explica qué se acepta.
 - **Panel web:** CSP estricta, sin scripts ni estilos en línea, sin recursos externos y datos insertados solo como texto.
 - **Solo resúmenes:** sin presupuestos, precios, usuarios, contactos ni adjuntos.
@@ -229,6 +237,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Sincronización del Scraper (Netlify) | En producción: se dispara con cada ingesta |
 | Panel web (Vercel) | En producción: se abre con el token de la API |
 | Historial diario y resumen por Telegram | En producción: foto y resumen cada mañana a las 08:07 (Lima); lo activa `db/03_historial.sql` más 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
+| Módulo «Accesos de Telegram» del panel | Listo en el código y probado; se activa con `db/04_accesos.sql` y dos variables de Vercel (`DATABASE_URL_ACCESOS`, `ADMIN_TOKEN`) ([guía](docs/BOT_TELEGRAM.md)) |
 | Bots de Telegram (resumen diario y consultas) | En producción: `@v1k_asistente_bot` y `@v1k_consultas_bot`, de solo lectura y solo para chats autorizados ([guía para usuarios](docs/TELEGRAM_PASO_A_PASO.md)) |
 | Plugin y agente de Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](docs/coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 

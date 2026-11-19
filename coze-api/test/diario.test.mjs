@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { mensajeSeguro, tomarFoto } from '../scripts/foto-diaria.mjs';
-import { MAX_TELEGRAM, buscarChats, componerResumen, enviarAVarios, enviarTelegram, hoyEnLima, leerApi, listaDeChats, prepararMensaje } from '../scripts/resumen-diario.mjs';
+import { MAX_TELEGRAM, buscarChats, componerResumen, enviarAVarios, chatsDeLaBase, enviarTelegram, hoyEnLima, leerApi, listaDeChats, prepararMensaje } from '../scripts/resumen-diario.mjs';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let n = 0;
@@ -96,6 +96,15 @@ const respuesta = (estado, cuerpo = {}) => ({ ok: estado >= 200 && estado < 300,
   igual(await enviarAVarios({ token: 't', chats: [], texto: 'x', fetchFn: falso }), { enviados: 0, fallidos: 0 }, 'sin chats no envía');
 }
 
+// ── lista de accesos de la base ───────────────────────────────────────────────────
+{
+  const pedidas = [];
+  const lista = await chatsDeLaBase(async (q) => { pedidas.push(q); return [{ chat_id: '111111111' }, { chat_id: '222222222' }, { chat_id: 'x' }, { chat_id: '111111111' }]; });
+  igual(lista, ['111111111', '222222222'], 'chats de la base: válidos y sin repetir');
+  ok(pedidas.length === 1 && pedidas[0].includes('v_telegram_chats_activos') && !/nombre|telefono/.test(pedidas[0]), 'consulta solo la vista de números de chat');
+  igual(await chatsDeLaBase(async () => []), [], 'sin personas, lista vacía');
+}
+
 // ── API ──────────────────────────────────────────────────────────────────────────────────
 {
   const enrutada = (mapa) => async (url) => { const k = Object.keys(mapa).find((x) => url.includes(x)); if (!k) throw new Error('red'); const m = mapa[k]; return m instanceof Error ? (() => { throw m; })() : respuesta(m.estado, m.cuerpo); };
@@ -150,7 +159,9 @@ const fuente = (f) => fs.readFileSync(path.join(raiz, 'coze-api', 'scripts', f),
   const por = (frag) => pasos.find((p) => (p.run ?? '').includes(frag));
   ok(por('npm ci') && por('node scripts/foto-diaria.mjs') && por('node scripts/resumen-diario.mjs'), 'instala, toma la foto y envía el resumen');
   igual(por('foto-diaria').env, { HISTORIAL_DATABASE_URL: '${{ secrets.HISTORIAL_DATABASE_URL }}' }, 'la foto solo ve su propio secreto');
-  igual(Object.keys(por('resumen-diario').env).sort(), ['API_TOKEN', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'], 'el resumen ve la API y Telegram, no la base');
+  igual(Object.keys(por('resumen-diario').env).sort(), ['API_TOKEN', 'HISTORIAL_DATABASE_URL', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_CHAT_ID'], 'el resumen ve la API, Telegram y la base solo para leer la lista de accesos');
+  const res = fs.readFileSync(path.join(raiz, 'coze-api', 'scripts', 'resumen-diario.mjs'), 'utf8');
+  ok(/central\.v_telegram_chats_activos/.test(res) && !/telegram_accesos\b/.test(res.replace(/v_telegram_chats_activos/g, '')), 'el resumen lee solo la vista de números de chat, nunca la tabla con nombres y teléfonos');
   ok(por('resumen-diario')['if'] === '${{ !cancelled() }}', 'el resumen sale aunque la foto falle');
   ok(pasos.indexOf(por('foto-diaria')) < pasos.indexOf(por('resumen-diario')), 'primero la foto, luego el resumen (así incluye el día de hoy)');
   ok(!/echo|cat |set -x|--mostrar|upload-artifact/.test(t.replace(/^\s*#.*$/gm, '')), 'el flujo no imprime, no sube archivos ni usa --mostrar: el registro es público');

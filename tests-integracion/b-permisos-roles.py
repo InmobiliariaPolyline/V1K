@@ -1,4 +1,4 @@
-"""BATERÍA B — matriz de permisos de los 5 roles contra el Neon REAL.
+"""BATERÍA B — matriz de permisos de los 6 roles contra el Neon REAL.
 Cada prueba corre dentro de un SAVEPOINT que se deshace, y toda la sesión termina con ROLLBACK: no deja nada.
 No imprime contraseñas."""
 import re
@@ -10,8 +10,8 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent  # raíz del repositorio V1K
 texto = open(RAIZ / "db" / "conexiones.local.txt", encoding="utf-8").read()
-URL = {m.group(1): m.group(2) for m in re.finditer(r"(?m)^(coze_reader|writer_scraper|writer_planner|writer_mrp|writer_historial) = (\S+)$", texto)}
-assert len(URL) == 5, "faltan cadenas de conexión en db/conexiones.local.txt (¿ya se creó writer_historial con db/03_historial.sql?)"
+URL = {m.group(1): m.group(2) for m in re.finditer(r"(?m)^(coze_reader|writer_scraper|writer_planner|writer_mrp|writer_historial|writer_accesos) = (\S+)$", texto)}
+assert len(URL) == 6, "faltan cadenas de conexión en db/conexiones.local.txt (¿ya se crearon writer_historial con db/03_historial.sql y writer_accesos con db/04_accesos.sql?)"
 
 TABLAS = {  # tabla -> (columna cualquiera, dueño)
     "planner_proyectos": ("proyecto_id", "writer_planner"),
@@ -22,10 +22,12 @@ TABLAS = {  # tabla -> (columna cualquiera, dueño)
     "scraper_resumen": ("portal", "writer_scraper"),
     "sync_estado": ("app", None),
     "historial_diario": ("dia", "writer_historial"),
+    "telegram_accesos": ("chat_id", "writer_accesos"),
 }
 # Lo único que writer_historial puede LEER además de su propia tabla (para tomar la foto diaria)
 LECTURA_HISTORIAL = {"planner_proyectos", "mrp_stock", "mrp_pedidos", "scraper_propiedades", "scraper_resumen", "historial_diario"}
 VISTA = "v_stock_bajo"
+VISTA_CHATS = "v_telegram_chats_activos"  # solo números de chat: la leen el bot (coze_reader) y el resumen diario (writer_historial)
 OPS = ["SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE"]
 
 total = ok = 0
@@ -105,6 +107,10 @@ def sql_op(op, tabla, col):
 
 
 def permitido(rol, tabla, op):
+    if tabla == "telegram_accesos":  # nombres y teléfonos: solo el rol de accesos, y sin TRUNCATE
+        return rol == "writer_accesos" and op in ("SELECT", "INSERT", "UPDATE", "DELETE")
+    if rol == "writer_accesos":
+        return False  # no toca nada más
     if rol == "coze_reader":
         return op == "SELECT"
     if rol == "writer_historial":
@@ -253,6 +259,28 @@ try:
             check("[coze_reader] NO puede ejecutar tomar_foto_diaria() (no escribe)", st in ("42501", "25006"), f"-> {st}")
             st, filas, _n = s.intenta("SELECT dia FROM central.historial_diario ORDER BY dia DESC LIMIT 1")
             check("[coze_reader] lee el historial", st is None, f"-> {st}")
+            st, filas, _n = s.intenta(f"SELECT * FROM central.{VISTA_CHATS} LIMIT 1")
+            check("[coze_reader] lee la vista de números de chat (para el bot)", st is None, f"-> {st}")
+            check("[coze_reader] la vista solo expone el número de chat", st is None and len(s.conn.execute(f"SELECT * FROM central.{VISTA_CHATS} LIMIT 0").description) == 1)
+            st, _f, _n = s.intenta("SELECT nombre, telefono FROM central.telegram_accesos")
+            check("[coze_reader] NO ve nombres ni teléfonos de los accesos", st == "42501", f"-> {st}")
+        elif rol == "writer_accesos":
+            st, filas, _n = s.intenta("SELECT rolconnlimit FROM pg_roles WHERE rolname = current_user")
+            check("[writer_accesos] máximo 3 conexiones", filas and filas[0][0] == 3, f"-> {filas}")
+            st, filas, _n = s.intenta("SHOW statement_timeout")
+            check("[writer_accesos] statement_timeout=5s", filas and filas[0][0] == "5s", f"-> {filas}")
+            st, _f, _n = s.intenta("INSERT INTO central.telegram_accesos (chat_id, nombre, telefono) VALUES (999999991, 'Prueba', '+51 999 888 777')")
+            check("[writer_accesos] puede dar de alta a alguien (se deshace)", st is None, f"-> {st}")
+            st, _f, _n = s.intenta("INSERT INTO central.telegram_accesos (chat_id, nombre, telefono) VALUES (-5, 'Grupo', '+51 999 888 777')")
+            check("[writer_accesos] la tabla rechaza un chat negativo (CHECK)", st == "23514", f"-> {st}")
+            st, _f, _n = s.intenta("INSERT INTO central.telegram_accesos (chat_id, nombre, telefono) VALUES (999999992, 'Prueba', 'no es un teléfono')")
+            check("[writer_accesos] la tabla rechaza un teléfono inválido (CHECK)", st == "23514", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
+            check("[writer_accesos] NO puede ejecutar tomar_foto_diaria()", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT 1 FROM central.sync_estado LIMIT 1")
+            check("[writer_accesos] NO lee sync_estado", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta("SELECT 1 FROM central.historial_diario LIMIT 1")
+            check("[writer_accesos] NO lee el historial", st == "42501", f"-> {st}")
         elif rol == "writer_historial":
             st, filas, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
             check("[writer_historial] puede tomar la foto diaria (una fila)", st is None and filas and len(filas) == 1, f"-> {st}")
@@ -268,10 +296,14 @@ try:
             check("[writer_historial] puede insertar un día (se deshace)", st is None, f"-> {st}")
             st, _f, _n = s.intenta("DELETE FROM central.historial_diario WHERE false")
             check("[writer_historial] NO puede borrar del historial", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta(f"SELECT chat_id FROM central.{VISTA_CHATS} LIMIT 1")
+            check("[writer_historial] lee la vista de números de chat (para el resumen diario)", st is None, f"-> {st}")
         else:
             propia = rol.split("_")[1]
             st, _f, _n = s.intenta("SELECT * FROM central.tomar_foto_diaria()")
             check(f"[{rol}] NO puede ejecutar tomar_foto_diaria()", st == "42501", f"-> {st}")
+            st, _f, _n = s.intenta(f"SELECT 1 FROM central.{VISTA_CHATS} LIMIT 1")
+            check(f"[{rol}] NO lee la vista de números de chat", st == "42501", f"-> {st}")
             st, filas, _n = s.intenta("SELECT app FROM central.sync_estado")
             apps = [f[0] for f in (filas or [])]
             check(f"[rls] {rol} solo ve su fila de sync_estado", set(apps) <= {propia}, f"-> {apps}")

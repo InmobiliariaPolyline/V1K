@@ -1,4 +1,4 @@
-# Pruebas automáticas en cada cambio. No usan secretos ni red: corren las 10 suites de coze-api
+# Pruebas automáticas en cada cambio. No usan secretos ni red: corren las 11 suites de coze-api
 # (humo, consultas y filtros, contrato OpenAPI, panel e ilustraciones). Las baterías contra el sistema real
 # (tests-integracion/) se ejecutan a mano porque necesitan credenciales.
 name: CI

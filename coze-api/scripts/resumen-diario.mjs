@@ -5,6 +5,7 @@
 // Telegram: en el registro se escribe únicamente «enviado (N caracteres)». Para verlo en tu equipo, con tus propios datos:
 //   API_TOKEN=... node scripts/resumen-diario.mjs --mostrar         (arma el mensaje y lo muestra, sin enviarlo)
 //   TELEGRAM_BOT_TOKEN=... node scripts/resumen-diario.mjs --buscar-chat   (muestra el número de tu chat, tras escribirle «hola» al bot)
+import { neon } from '@neondatabase/serverless';
 import { fileURLToPath } from 'node:url';
 import { fechaCorta, nombreDia, plural, relativoDias } from '../public/js/nucleo/formato.js';
 import { generarAlertas, saludGlobal } from '../public/js/nucleo/insights.js';
@@ -88,6 +89,12 @@ export async function enviarAVarios({ token, chats, texto, fetchFn = globalThis.
   return { enviados, fallidos };
 }
 
+/** Números de chat con acceso dado desde el módulo «Accesos» del panel. Lee SOLO la vista de números activos (sin nombres ni teléfonos). */
+export async function chatsDeLaBase(consultar) {
+  const filas = await consultar('SELECT chat_id FROM central.v_telegram_chats_activos');
+  return listaDeChats(filas.map((f) => f.chat_id).join(','));
+}
+
 /** Chats que le han escrito al bot (para saber el número de tu chat). */
 export async function buscarChats(token, fetchFn = globalThis.fetch) {
   const r = await fetchFn(`https://api.telegram.org/bot${token}/getUpdates`, { signal: AbortSignal.timeout(20000) });
@@ -147,8 +154,14 @@ async function principal() {
 
   if (arg.includes('--mostrar')) { console.log(error ? `ERROR: ${error}` : texto); return; }
 
-  const chats = listaDeChats(process.env.TELEGRAM_CHAT_ID);
-  if (!tokenTg || !chats.length) { console.error('Faltan los secretos TELEGRAM_BOT_TOKEN y/o TELEGRAM_CHAT_ID.'); process.exit(2); }
+  // Destinatarios: los del secreto TELEGRAM_CHAT_ID (administrador) y los dados de alta en el módulo «Accesos»
+  let chats = listaDeChats(process.env.TELEGRAM_CHAT_ID);
+  const urlBase = process.env.HISTORIAL_DATABASE_URL;
+  if (urlBase) {
+    try { const sql = neon(urlBase); chats = [...new Set([...chats, ...(await chatsDeLaBase((q) => sql.query(q)))])]; }
+    catch { console.error('No se pudo leer la lista de accesos; se envía solo a los chats del secreto.'); }
+  }
+  if (!tokenTg || !chats.length) { console.error('Falta el secreto TELEGRAM_BOT_TOKEN o no hay a quién enviarlo (TELEGRAM_CHAT_ID o personas en «Accesos»).'); process.exit(2); }
   if (error) {
     // Aviso corto: mejor saber que falló que no recibir nada
     await enviarAVarios({ token: tokenTg, chats, texto: `V1K · no pude armar el resumen de hoy: ${error}. Revisa Actions → Vigilancia.` });

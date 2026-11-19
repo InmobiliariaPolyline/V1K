@@ -241,7 +241,7 @@ export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyE
 
   if (!permitidos?.has(chatId)) {
     if (cb?.id) acciones.push({ metodo: 'answerCallbackQuery', cuerpo: { callback_query_id: cb.id, text: 'Este bot es privado.' } });
-    else enviar({ text: `🔒 Este bot es privado.\nTu número de chat es ${chatId}. Pídele al administrador que lo autorice.` });
+    else enviar({ text: `🔒 Este bot es privado.\nTu número de chat es ${chatId}. Envíaselo al administrador, con tu teléfono, para que te dé acceso.` });
     return acciones;
   }
 
@@ -274,12 +274,12 @@ export async function procesarUpdate(update, { consultar, permitidos, hoy = hoyE
 const cmdAyudaCorta = () => ({ text: 'Soy un bot de consultas: usa /ayuda o los botones. No entiendo mensajes libres.' });
 
 // ── Manejador del webhook (se le inyectan las dependencias para poder probarlo) ─────────
-export function crearManejador({ env = process.env, consultar, fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date() } = {}) {
+export function crearManejador({ env = process.env, consultar, chatsExtra = async () => [], fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date() } = {}) {
   return async function manejador(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Solo POST' }); }
     const token = env.TELEGRAM_BOT_COMANDOS_TOKEN;
-    if (!token || !env.TELEGRAM_WEBHOOK_SECRET || !env.TELEGRAM_CHATS_PERMITIDOS) return res.status(503).json({ error: 'No configurado' });
+    if (!token || !env.TELEGRAM_WEBHOOK_SECRET) return res.status(503).json({ error: 'No configurado' });
     if (!secretoValido(req.headers?.['x-telegram-bot-api-secret-token'], env.TELEGRAM_WEBHOOK_SECRET)) return res.status(401).json({ error: 'No autorizado' });
 
     let update = req.body;
@@ -289,7 +289,10 @@ export function crearManejador({ env = process.env, consultar, fetchFn = globalT
     const chat = update.callback_query?.message?.chat?.id ?? update.message?.chat?.id;
     if (chat === undefined || !limitar(String(chat), ahora().getTime())) return res.status(200).json({ ok: true }); // ráfaga: se ignora en silencio
 
-    const acciones = await procesarUpdate(update, { consultar, permitidos: chatsPermitidos(env.TELEGRAM_CHATS_PERMITIDOS), hoy: hoyEnLima(ahora()) });
+    // Autorizados: los de la variable (administradores) y los que da de alta el módulo «Accesos»; si la base falla, solo los de la variable
+    const permitidos = chatsPermitidos(env.TELEGRAM_CHATS_PERMITIDOS);
+    try { for (const c of await chatsExtra()) permitidos.add(String(c)); } catch { /* la lista de la base no está disponible: se sigue solo con la variable */ }
+    const acciones = await procesarUpdate(update, { consultar, permitidos, hoy: hoyEnLima(ahora()) });
     for (const a of acciones) {
       try {
         const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) });

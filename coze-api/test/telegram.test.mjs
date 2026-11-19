@@ -280,10 +280,31 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
 
   r = resFalsa(); await crear({})(reqFalsa('POST', SECRETO, msg('/resumen')), r);
   igual(r.codigo, 503, 'sin configurar → 503');
-  for (const faltante of Object.keys(ENTORNO)) {
+  for (const faltante of ['TELEGRAM_BOT_COMANDOS_TOKEN', 'TELEGRAM_WEBHOOK_SECRET']) {
     r = resFalsa(); const env = { ...ENTORNO }; delete env[faltante];
     await crear(env)(reqFalsa('POST', SECRETO, msg('/resumen')), r);
     igual(r.codigo, 503, `sin ${faltante} → 503`);
+  }
+
+  // Accesos dados desde el módulo del panel (la lista viene de la base): se suman a los administradores de la variable
+  {
+    salidas.length = 0;
+    const sinAdmins = { ...ENTORNO }; delete sinAdmins.TELEGRAM_CHATS_PERMITIDOS;
+    r = resFalsa(); await crear(sinAdmins, { chatsExtra: async () => ['424242424'] })(reqFalsa('POST', SECRETO, msg('/frescura', 424242424)), r);
+    ok(r.codigo === 200 && salidas.length === 1 && salidas[0].cuerpo.text.includes('Datos al día'), 'una persona dada de alta en «Accesos» usa el bot aunque la variable de administradores esté vacía');
+    salidas.length = 0;
+    r = resFalsa(); await crear(ENTORNO, { chatsExtra: async () => ['424242424'] })(reqFalsa('POST', SECRETO, msg('/frescura', 123456789)), r);
+    ok(salidas.length === 1 && salidas[0].cuerpo.text.includes('Datos al día'), 'los administradores de la variable siguen funcionando junto con la lista de la base');
+    salidas.length = 0;
+    r = resFalsa(); await crear(ENTORNO, { chatsExtra: async () => ['424242424'] })(reqFalsa('POST', SECRETO, msg('/frescura', 555000111)), r);
+    ok(salidas.length === 1 && salidas[0].cuerpo.text.includes('privado') && salidas[0].cuerpo.text.includes('555000111'), 'quien no está en ninguna lista recibe «privado» y su número de chat');
+    salidas.length = 0;
+    r = resFalsa(); await crear(ENTORNO, { chatsExtra: async () => { throw new Error('base caída'); } })(reqFalsa('POST', SECRETO, msg('/frescura', 123456789)), r);
+    ok(r.codigo === 200 && salidas.length === 1 && salidas[0].cuerpo.text.includes('Datos al día'), 'si la base falla, los administradores de la variable siguen atendidos');
+    salidas.length = 0;
+    r = resFalsa(); await crear(ENTORNO, { chatsExtra: async () => { throw new Error('base caída'); } })(reqFalsa('POST', SECRETO, msg('/frescura', 424242424)), r);
+    ok(salidas.length === 1 && salidas[0].cuerpo.text.includes('privado'), 'si la base falla, una persona de la lista NO entra por error (falla cerrado)');
+    salidas.length = 0;
   }
 
   r = resFalsa(); await crear()(reqFalsa('POST', undefined, msg('/resumen')), r);
@@ -408,7 +429,9 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
   ok(!/\b9\d{2}[ -]\d{3}[ -]\d{3}\b|\+51\s?9\d{8}/.test(guia + admin + readme), 'ningún teléfono de persona en la documentación pública');
   for (const comando of NOMBRES_COMANDOS) ok(guia.includes(`/${comando}`), `la guía documenta /${comando}`);
   for (const img of [...guia.matchAll(/src="assets\/([\w.-]+\.svg)"/g)].map((m) => m[1])) ok(fs.existsSync(path.join(raiz, 'docs', 'assets', img)), `la guía usa docs/assets/${img}, que existe`);
-  ok(guia.includes('TELEGRAM_CHATS_PERMITIDOS') && guia.includes('TELEGRAM_CHAT_ID'), 'la guía dice dónde agregar a una persona nueva (las dos listas)');
+  ok(guia.includes('Accesos de Telegram') && guia.includes('token de administrador') && guia.includes('nombre, el teléfono y el número de chat'), 'la guía explica cómo el administrador da acceso desde el módulo del panel');
+  ok(/teléfono/.test(guia) && /Paso 5 · Enviar tu número de chat y tu teléfono/.test(guia), 'la guía le pide a la persona su número de chat y su teléfono');
+  ok(admin.includes('db/04_accesos.sql') && admin.includes('ADMIN_TOKEN') && admin.includes('DATABASE_URL_ACCESOS'), 'la guía del administrador explica cómo activar el módulo');
   ok(admin.includes('TELEGRAM_PASO_A_PASO.md'), 'la guía del administrador enlaza la de usuarios');
   ok(readme.includes('docs/TELEGRAM_PASO_A_PASO.md') && readme.includes('docs/BOT_TELEGRAM.md'), 'el README enlaza las dos guías');
   const wf = leer('.github', 'workflows', 'diario.yml');

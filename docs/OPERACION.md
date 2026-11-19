@@ -7,7 +7,7 @@ Todo lo de aquí abajo respeta eso.
 
 | Qué | Cuándo | Para qué | Dónde se ve |
 |---|---|---|---|
-| **CI** (`.github/workflows/ci.yml`) | En cada push a `main` y en cada solicitud de cambios | Corre `npm test` de `coze-api` (10 suites sin red) con Node 20 y 22, y verifica que no se versionen secretos | Pestaña **Actions** y la marca ✓/✗ de cada commit |
+| **CI** (`.github/workflows/ci.yml`) | En cada push a `main` y en cada solicitud de cambios | Corre `npm test` de `coze-api` (11 suites sin red) con Node 20 y 22, y verifica que no se versionen secretos | Pestaña **Actions** y la marca ✓/✗ de cada commit |
 | **Vigilancia** (`.github/workflows/vigilancia.yml`) | Cada 6 horas (y a mano: **Actions → Vigilancia → Run workflow**) | Comprueba desde fuera que la API y el panel respondan y que cada app haya sincronizado hace poco | Pestaña **Actions** y la etiqueta **vigilancia** en **Issues** |
 | **Diario** (`.github/workflows/diario.yml`) | Cada mañana, 08:07 de Lima (y a mano) | Toma la foto diaria del historial en Neon y te manda el resumen por Telegram | **Actions → Diario** y tu chat de Telegram |
 | **Dependabot** (`.github/dependabot.yml`) | Semanal (npm) y mensual (acciones) | Abre solicitudes de cambios cuando hay versiones nuevas o vulnerabilidades | **Pull requests**, etiqueta *dependencias* |
@@ -82,6 +82,8 @@ Para **ver el mensaje en tu equipo** sin enviarlo: `API_TOKEN=<token> node scrip
 
 Además del resumen de la mañana existe un **bot de consultas** (comandos y botones, solo lectura). Es otro bot y otra función de
 Vercel (`/api/telegram`): se activa con 3 variables de Vercel, no con secretos de GitHub. Guía completa: [`BOT_TELEGRAM.md`](BOT_TELEGRAM.md). Para explicarle a otra persona cómo registrarse en Telegram y encontrar los dos bots: [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md).
+
+**Accesos.** Quién usa el bot y recibe el resumen se administra desde el módulo **Accesos de Telegram** del panel (token de administrador; 6.º rol de la base, `writer_accesos`). Se activa con `db/04_accesos.sql` y dos variables de Vercel (`DATABASE_URL_ACCESOS`, `ADMIN_TOKEN`): ver [`BOT_TELEGRAM.md`](BOT_TELEGRAM.md). Para **rotar el token de administrador**: valor nuevo en Vercel → *Redeploy*.
 
 ## 4. Qué hacer según el problema
 
