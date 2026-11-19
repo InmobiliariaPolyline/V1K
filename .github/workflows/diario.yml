@@ -4,7 +4,7 @@
 #   HISTORIAL_DATABASE_URL  cadena de conexión del rol writer_historial (solo escribe en central.historial_diario)
 #   API_TOKEN               el mismo token de la API que usa la vigilancia
 #   TELEGRAM_BOT_TOKEN      el token que te da @BotFather al crear tu bot
-#   TELEGRAM_CHAT_ID        el número de tu chat con el bot
+#   TELEGRAM_CHAT_ID        el número de tu chat con el bot (o varios, separados por comas)
 #
 # El repositorio es público y el registro de esta ejecución también: los scripts NO escriben números ni nombres del negocio,
 # solo «foto tomada» y «resumen enviado (N caracteres)». El contenido viaja únicamente a Telegram.

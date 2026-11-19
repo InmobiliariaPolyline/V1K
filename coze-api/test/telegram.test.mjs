@@ -17,7 +17,7 @@ const ok = (c, m) => { n++; assert.ok(c, m); };
 const igual = (a, b, m) => { n++; assert.deepEqual(a, b, m); };
 
 const HOY = '2026-11-19';
-const PERMITIDOS = chatsPermitidos('5878860971, -1001234567890');
+const PERMITIDOS = chatsPermitidos('123456789, -1001234567890');
 
 // ── Datos ficticios por vista ────────────────────────────────────────────────────────────
 const DATOS = {
@@ -59,8 +59,8 @@ function crearConsulta(extra = {}) {
   fn.llamadas = llamadas;
   return fn;
 }
-const msg = (texto, chat = 5878860971) => ({ update_id: 1, message: { message_id: 1, chat: { id: chat, type: 'private' }, text: texto } });
-const boton = (data, chat = 5878860971) => ({ update_id: 2, callback_query: { id: 'cb1', data, message: { message_id: 9, chat: { id: chat } } } });
+const msg = (texto, chat = 123456789) => ({ update_id: 1, message: { message_id: 1, chat: { id: chat, type: 'private' }, text: texto } });
+const boton = (data, chat = 123456789) => ({ update_id: 2, callback_query: { id: 'cb1', data, message: { message_id: 9, chat: { id: chat } } } });
 const ejecutar = (update, consultar = crearConsulta()) => procesarUpdate(update, { consultar, permitidos: PERMITIDOS, hoy: HOY, panel: 'https://ejemplo.test' });
 const envios = (acciones) => acciones.filter((a) => a.metodo === 'sendMessage');
 
@@ -132,7 +132,7 @@ igual(parsearPropiedades("miraflores'; DROP TABLE x;--").distrito.includes('drop
   igual(consulta.llamadas.length, 0, 'tampoco consulta');
 
   igual(await ejecutar({}, consulta), [], 'update vacío no hace nada');
-  igual(await ejecutar({ edited_message: { chat: { id: 5878860971 }, text: '/resumen' } }, consulta), [], 'tipos de update no soportados se ignoran');
+  igual(await ejecutar({ edited_message: { chat: { id: 123456789 }, text: '/resumen' } }, consulta), [], 'tipos de update no soportados se ignoran');
   igual(await procesarUpdate(msg('/resumen'), { consultar: consulta, permitidos: new Set(), hoy: HOY }).then((x) => consulta.llamadas.length), 0, 'sin lista de permitidos nadie entra');
 }
 
@@ -224,7 +224,7 @@ for (const c of NOMBRES_COMANDOS) {
   const raro = envios(await ejecutar(msg('/borrartodo')))[0].cuerpo.text;
   ok(raro.includes('No conozco') && raro.includes('/ayuda'), 'comando desconocido');
   ok(!envios(await ejecutar(msg('/<b>x')))[0]?.cuerpo?.parse_mode, 'el eco de un comando raro no va en HTML');
-  const foto = envios(await ejecutar({ message: { chat: { id: 5878860971 }, photo: [{}] } }))[0].cuerpo.text;
+  const foto = envios(await ejecutar({ message: { chat: { id: 123456789 }, photo: [{}] } }))[0].cuerpo.text;
   ok(foto.includes('texto'), 'mensajes que no son texto');
 
   const b = await ejecutar(boton('c:proyectos:atrasado'));
@@ -265,7 +265,7 @@ for (const c of NOMBRES_COMANDOS) {
 // ── El manejador del webhook ─────────────────────────────────────────────────────────────
 const SECRETO = 's'.repeat(40);
 const TOKEN = '1234567890:AAExampleTokenQueNoEsReal_abcdefghijk';
-const ENTORNO = { TELEGRAM_BOT_COMANDOS_TOKEN: TOKEN, TELEGRAM_WEBHOOK_SECRET: SECRETO, TELEGRAM_CHATS_PERMITIDOS: '5878860971' };
+const ENTORNO = { TELEGRAM_BOT_COMANDOS_TOKEN: TOKEN, TELEGRAM_WEBHOOK_SECRET: SECRETO, TELEGRAM_CHATS_PERMITIDOS: '123456789' };
 const resFalsa = () => { const r = { cabeceras: {}, codigo: 0, cuerpo: null, setHeader(k, v) { this.cabeceras[k] = v; }, status(c) { this.codigo = c; return this; }, json(c) { this.cuerpo = c; return this; } }; return r; };
 const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secreto === undefined ? {} : { 'x-telegram-bot-api-secret-token': secreto }, body: cuerpo });
 
@@ -296,7 +296,7 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
   igual(r.codigo, 200, 'con secreto → 200');
   igual(salidas.length, 1, 'una llamada a Telegram');
   ok(salidas[0].url === `https://api.telegram.org/bot${TOKEN}/sendMessage`, 'va a sendMessage de Telegram');
-  igual(salidas[0].cuerpo.chat_id, 5878860971, 'al chat que escribió');
+  igual(salidas[0].cuerpo.chat_id, 123456789, 'al chat que escribió');
   ok(!JSON.stringify(r.cuerpo).includes(TOKEN), 'el token nunca vuelve en la respuesta');
 
   salidas.length = 0;
@@ -391,4 +391,28 @@ const reqFalsa = (metodo, secreto, cuerpo) => ({ method: metodo, headers: secret
   igual(llamadas.length, 5, 'solo hubo las 5 llamadas válidas (2 de instalar, 2 de info, 1 de borrar): la configuración inválida no llamó a Telegram');
 }
 
-console.log(`OK: bot de Telegram — ${n} comprobaciones (comandos, autorización, secreto del webhook, escape de datos, errores y script del webhook)`);
+// ── Documentación para quien usa los bots ────────────────────────────────────────────────
+{
+  const raiz = path.join(aqui, '..', '..');
+  const leer = (...p) => fs.readFileSync(path.join(raiz, ...p), 'utf8');
+  const guia = leer('docs', 'TELEGRAM_PASO_A_PASO.md');
+  const admin = leer('docs', 'BOT_TELEGRAM.md');
+  const readme = leer('README.md');
+  for (const usuario of ['v1k_consultas_bot', 'v1k_asistente_bot']) {
+    ok(guia.includes(`@${usuario}`) && guia.includes(`t.me/${usuario}`), `la guía menciona @${usuario} y su enlace directo`);
+    ok(readme.includes(`@${usuario}`), `el README menciona @${usuario}`);
+  }
+  for (const palabra of ['lupa', 'INICIAR', 'número de chat', '+51', 'administrador', 'código']) ok(guia.includes(palabra), `la guía explica «${palabra}»`);
+  ok(/Nunca (se lo des|compartas)/i.test(guia), 'la guía advierte de no compartir el código de verificación');
+  ok(/falsas|parecidos/.test(guia), 'la guía advierte de cuentas falsas con nombres parecidos');
+  ok(!/\b9\d{2}[ -]\d{3}[ -]\d{3}\b|\+51\s?9\d{8}/.test(guia + admin + readme), 'ningún teléfono de persona en la documentación pública');
+  for (const comando of NOMBRES_COMANDOS) ok(guia.includes(`/${comando}`), `la guía documenta /${comando}`);
+  for (const img of [...guia.matchAll(/src="assets\/([\w.-]+\.svg)"/g)].map((m) => m[1])) ok(fs.existsSync(path.join(raiz, 'docs', 'assets', img)), `la guía usa docs/assets/${img}, que existe`);
+  ok(guia.includes('TELEGRAM_CHATS_PERMITIDOS') && guia.includes('TELEGRAM_CHAT_ID'), 'la guía dice dónde agregar a una persona nueva (las dos listas)');
+  ok(admin.includes('TELEGRAM_PASO_A_PASO.md'), 'la guía del administrador enlaza la de usuarios');
+  ok(readme.includes('docs/TELEGRAM_PASO_A_PASO.md') && readme.includes('docs/BOT_TELEGRAM.md'), 'el README enlaza las dos guías');
+  const wf = leer('.github', 'workflows', 'diario.yml');
+  ok(/varios, separados por comas/.test(wf), 'el flujo diario documenta que TELEGRAM_CHAT_ID admite varios');
+}
+
+console.log(`OK: bot de Telegram — ${n} comprobaciones (comandos, autorización, secreto del webhook, escape de datos, errores, script del webhook y guías)`);

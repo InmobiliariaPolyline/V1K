@@ -4,6 +4,9 @@ Un bot de Telegram que **responde con los datos reales** de las tres apps median
 inteligencia artificial (no cuesta nada, responde al instante y no puede inventar datos) y es privado: solo contesta a los chats que
 tú autorices.
 
+> **Para quien lo va a usar** (registrarse en Telegram, buscar los bots, pedir acceso): [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md).
+> Esta página es para quien lo **administra**. Además de este bot existe el **bot del resumen diario** (`@v1k_asistente_bot`), que solo envía.
+
 > No es un segundo Coze: no entiende preguntas libres. Para eso está el agente de Coze. El bot es el atajo para lo que más se pregunta.
 
 ## Qué puedes pedirle
@@ -58,6 +61,19 @@ Cada respuesta trae botones para pasar a otra consulta sin escribir. Si escribes
    Publica también el menú de comandos que aparece al escribir «/».
 5. **Probar.** Abre el bot, escribe `/resumen`. Para ver el estado del webhook: `node scripts/telegram-webhook.mjs --info`
    (muestra mensajes pendientes y el último error de Telegram, nunca el token).
+
+## Dar o quitar acceso a una persona
+
+La persona se registra en Telegram, busca `@v1k_consultas_bot` y pulsa **Iniciar**; el bot le contesta su **número de chat** y ella te lo envía
+(guía para ella: [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md)). Es el mismo número para los dos bots.
+
+| Para… | Dónde se agrega el número (separado por comas) | Hace falta |
+|---|---|---|
+| Que use el bot de consultas | Vercel → variable `TELEGRAM_CHATS_PERMITIDOS` | *Redeploy* |
+| Que reciba el resumen de la mañana | GitHub → secreto `TELEGRAM_CHAT_ID` | Nada más (y que haya pulsado **Iniciar** en `@v1k_asistente_bot`) |
+
+Para quitar a alguien, borra su número de las dos listas. El número de teléfono **no** sirve para autorizar a nadie: Telegram solo
+identifica a las personas por este número de chat. No lo escribas en el repositorio (es público).
 
 ## Si algo falla
 

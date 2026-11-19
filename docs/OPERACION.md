@@ -59,6 +59,8 @@ ese historial en la sección **Tendencias**. La foto la toma el rol `writer_hist
    Imprime algo como `chat 123456789 (private) Ana`: ese número es tu `TELEGRAM_CHAT_ID`.
 4. **Crear 3 secretos nuevos** en GitHub (**Settings → Secrets and variables → Actions**; `API_TOKEN` ya existe):
    `HISTORIAL_DATABASE_URL` (la cadena de `writer_historial`, en `db/conexiones.local.txt`), `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`.
+   `TELEGRAM_CHAT_ID` admite **varios números separados por comas** (`111111111,222222222`): cada persona recibe el resumen. Si una no lo recibe,
+   el registro lo dice («1 chat no lo recibió») sin mostrar números: casi siempre es que no pulsó **Iniciar** en el bot.
 5. **Probarlo:** **Actions → Diario → Run workflow**. Debe terminar en verde, mostrar «Foto del día AAAA-MM-DD tomada.» y
    «Resumen enviado (N caracteres).», y el mensaje debe llegarte al celular.
 
@@ -79,7 +81,7 @@ Para **ver el mensaje en tu equipo** sin enviarlo: `API_TOKEN=<token> node scrip
 ### Bot de consultas
 
 Además del resumen de la mañana existe un **bot de consultas** (comandos y botones, solo lectura). Es otro bot y otra función de
-Vercel (`/api/telegram`): se activa con 3 variables de Vercel, no con secretos de GitHub. Guía completa: [`BOT_TELEGRAM.md`](BOT_TELEGRAM.md).
+Vercel (`/api/telegram`): se activa con 3 variables de Vercel, no con secretos de GitHub. Guía completa: [`BOT_TELEGRAM.md`](BOT_TELEGRAM.md). Para explicarle a otra persona cómo registrarse en Telegram y encontrar los dos bots: [`TELEGRAM_PASO_A_PASO.md`](TELEGRAM_PASO_A_PASO.md).
 
 ## 4. Qué hacer según el problema
 

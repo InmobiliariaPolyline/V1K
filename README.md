@@ -12,6 +12,7 @@
 <img src="docs/assets/badges/base.svg" alt="Base Neon central" />
 <img src="docs/assets/badges/hosting.svg" alt="Hosting Vercel" />
 <img src="docs/assets/badges/agente.svg" alt="Agente Coze" />
+<img src="docs/assets/badges/telegram.svg" alt="Telegram 2 bots" />
 
 </div>
 
@@ -49,12 +50,26 @@ stock, pedidos, propiedades y precios medianos) y te manda por **Telegram** un r
 La foto la escribe un 5.º rol, `writer_historial`, que solo puede leer las tablas centrales y escribir su propia tabla. Las apps no
 cambian. El historial alimenta la sección **Tendencias** del panel. Cómo activarlo: [`docs/OPERACION.md`](docs/OPERACION.md).
 
-### Bot de consultas por Telegram
+### Los dos bots de Telegram
 
-Un bot **privado y de solo lectura** que contesta con los datos reales mediante comandos y botones (`/resumen`, `/proyectos`,
-`/materiales`, `/pedidos`, `/propiedades venta miraflores hasta 300000`, `/frescura`, `/tendencias`). No usa IA: responde al
-instante, no cuesta nada y no puede inventar. Solo atiende a los chats autorizados y solo lo puede llamar Telegram (secreto de
-webhook). Guía: [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md).
+<img src="docs/assets/telegram-bots.svg" alt="Dos bots de Telegram: el asistente envía el resumen cada mañana a las 08:07 y el bot de consultas responde cuando le escribes" width="100%" />
+
+| Bot | Usuario | Qué hace |
+|---|---|---|
+| **Resumen diario** | `@v1k_asistente_bot` | Te escribe **solo** cada mañana a las 08:07 (hora de Lima): lo urgente, los próximos días y los cambios de la semana. Solo envía. |
+| **Consultas** | `@v1k_consultas_bot` | **Tú preguntas** con comandos y botones (`/resumen`, `/proyectos`, `/materiales`, `/pedidos`, `/propiedades venta miraflores hasta 300000`, `/frescura`, `/tendencias`) y responde al instante. |
+
+Los dos son **privados y de solo lectura**, no usan IA (no cuestan nada y no pueden inventar datos) y solo atienden a los chats que el
+administrador autorice. El de consultas además exige un secreto de webhook, de modo que solo Telegram puede llamarlo.
+
+**¿Nunca usaste Telegram?** La guía [`docs/TELEGRAM_PASO_A_PASO.md`](docs/TELEGRAM_PASO_A_PASO.md) explica, desde cero, cómo instalarlo,
+registrarte con tu número, buscar los bots, pulsar «Iniciar» y pedir tu acceso:
+
+<img src="docs/assets/telegram-registro.svg" alt="Seis pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, copiar tu número de chat y enviárselo al administrador" width="100%" />
+
+<img src="docs/assets/telegram-uso.svg" alt="Ejemplo de conversación con el bot de consultas: se pide /resumen y responde con lo urgente y los botones del menú; a la derecha, los ocho comandos" width="100%" />
+
+Para el administrador: poner en marcha y dar acceso a otra persona está en [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md).
 
 ### Qué pasa cuando una app guarda datos
 
@@ -214,7 +229,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Sincronización del Scraper (Netlify) | En producción: se dispara con cada ingesta |
 | Panel web (Vercel) | En producción: se abre con el token de la API |
 | Historial diario y resumen por Telegram | En producción: foto y resumen cada mañana a las 08:07 (Lima); lo activa `db/03_historial.sql` más 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
-| Bot de consultas por Telegram | En producción: `@v1k_consultas_bot`, solo lectura y solo para chats autorizados ([guía](docs/BOT_TELEGRAM.md)) |
+| Bots de Telegram (resumen diario y consultas) | En producción: `@v1k_asistente_bot` y `@v1k_consultas_bot`, de solo lectura y solo para chats autorizados ([guía para usuarios](docs/TELEGRAM_PASO_A_PASO.md)) |
 | Plugin y agente de Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](docs/coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 
 ## Documentación
@@ -228,7 +243,8 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | [`docs/PRUEBAS_REALIZADAS.md`](docs/PRUEBAS_REALIZADAS.md) | Resultados de las baterías y fallos encontrados |
 | [`docs/PRESENTACION.md`](docs/PRESENTACION.md) | Guion de presentación de 10 minutos: resumen de una página, demo del panel paso a paso, preguntas probables y lista de verificación |
 | [`docs/OPERACION.md`](docs/OPERACION.md) | Pruebas automáticas (CI), vigilancia cada 6 horas, qué hacer según la alerta y cómo rotar el token |
-| [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md) | Bot de consultas por Telegram: comandos, seguridad, puesta en marcha en 5 pasos y solución de problemas |
+| [`docs/TELEGRAM_PASO_A_PASO.md`](docs/TELEGRAM_PASO_A_PASO.md) | Guía para quien usa los bots: instalar Telegram, registrarse, buscar los dos bots, pedir acceso, comandos y cómo leer el resumen |
+| [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md) | Administración del bot de consultas: seguridad, puesta en marcha en 5 pasos, dar y quitar acceso y solución de problemas |
 | [`docs/CALIDAD_DE_DATOS.md`](docs/CALIDAD_DE_DATOS.md) | Revisión de los datos reales: inventario sin cargar en el MRP y alquileres «por m²» en el Scraper, y qué se corrigió |
 | [`coze-api/README.md`](coze-api/README.md) | Endpoints de la API y cómo conectarla a Coze |
 | [`tests-integracion/README.md`](tests-integracion/README.md) | Cómo ejecutar las baterías |

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="580" viewBox="0 0 1280 580" role="img" aria-labelledby="t d">
+  <title id="t">Cómo empezar con Telegram en seis pasos</title>
+  <desc id="d">Seis pasos para quien nunca usó Telegram: uno, instalar Telegram desde la tienda de aplicaciones o telegram.org; dos, registrarse con el número de teléfono y el código que llega por mensaje, sin compartirlo; tres, buscar el bot con la lupa escribiendo su usuario exacto, v1k_consultas_bot o v1k_asistente_bot; cuatro, pulsar el botón Iniciar; cinco, copiar el número de chat que responde el bot; seis, enviarlo al administrador para que autorice el acceso. El número de ejemplo es ficticio.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1015"/><stop offset="1" stop-color="#0a0c10"/></linearGradient>
+    <radialGradient id="gB" cx="0.1" cy="0.05" r="0.6"><stop offset="0" stop-color="#38bdf8" stop-opacity="0.16"/><stop offset="1" stop-color="#38bdf8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="gV" cx="0.95" cy="1" r="0.55"><stop offset="0" stop-color="#8b5cf6" stop-opacity="0.16"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.09"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.03"/></linearGradient>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M36 0H0V36" fill="none" stroke="#ffffff" stroke-opacity="0.035"/></pattern>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+    <style>
+    @keyframes p1 { 0%, 3% { opacity: 0; transform: translateY(14px); } 6%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    @keyframes p2 { 0%, 18% { opacity: 0; transform: translateY(14px); } 21%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    @keyframes p3 { 0%, 33% { opacity: 0; transform: translateY(14px); } 36%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    @keyframes p4 { 0%, 48% { opacity: 0; transform: translateY(14px); } 51%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    @keyframes p5 { 0%, 63% { opacity: 0; transform: translateY(14px); } 66%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    @keyframes p6 { 0%, 78% { opacity: 0; transform: translateY(14px); } 81%, 94% { opacity: 1; transform: none; } 97%, 100% { opacity: 0; transform: none; } }
+    .p1 { animation: p1 18s ease-out infinite; } .p2 { animation: p2 18s ease-out infinite; } .p3 { animation: p3 18s ease-out infinite; }
+    .p4 { animation: p4 18s ease-out infinite; } .p5 { animation: p5 18s ease-out infinite; } .p6 { animation: p6 18s ease-out infinite; }
+    @keyframes cursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    .cursor { animation: cursor 1s steps(1) infinite; }
+    @keyframes latido { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+    .latido { animation: latido 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes sube { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .sube { animation: sube 2s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .anim { display: none; } }</style>
+  </defs>
+  <rect width="1280" height="580" rx="28" fill="url(#bg)"/>
+  <rect width="1280" height="580" rx="28" fill="url(#grid)"/>
+  <rect width="1280" height="580" rx="28" fill="url(#gB)"/>
+  <rect width="1280" height="580" rx="28" fill="url(#gV)"/>
+  <rect x="1" y="1" width="1278" height="578" rx="27" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif">
+    <text x="40" y="50" font-size="13" font-weight="700" letter-spacing="3" fill="#7dd3fc">SI NUNCA USASTE TELEGRAM · SEIS PASOS</text>
+
+    <!-- Paso 1 -->
+    <g class="p1"><g transform="translate(40 76)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#38bdf8" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#38bdf8" fill-opacity="0.25"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#e0f2fe">1</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Instalar Telegram</text>
+      <rect x="110" y="66" width="56" height="56" rx="15" fill="#38bdf8" fill-opacity="0.25" stroke="#38bdf8" stroke-opacity="0.7"/>
+      <path d="M124 96 L152 83 L146 110 L138 102 L132 108 L132 100 Z" fill="#e0f2fe"/>
+      <g class="sube"><path d="M214 72 V104 M200 92 L214 106 L228 92" fill="none" stroke="#7dd3fc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+      <rect x="196" y="112" width="36" height="5" rx="2.5" fill="#7dd3fc" fill-opacity="0.6"/>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Play Store, App Store o telegram.org</text>
+      <text x="24" y="178" font-size="13" fill="#8b949e">Es gratis y funciona también en computadora</text>
+    </g></g>
+
+    <!-- Paso 2 -->
+    <g class="p2"><g transform="translate(460 76)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#a78bfa" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#a78bfa" fill-opacity="0.28"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#ede9fe">2</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Registrarte con tu número</text>
+      <rect x="92" y="62" width="54" height="64" rx="10" fill="none" stroke="#c4b5fd" stroke-width="2"/><rect x="108" y="66" width="22" height="3.5" rx="1.7" fill="#c4b5fd"/>
+      <text x="119" y="102" text-anchor="middle" font-size="14" font-weight="700" fill="#ddd6fe">+51</text>
+      <path d="M156 94 H182" stroke="#9aa4b2" stroke-width="2"/><path d="M178 89 L184 94 L178 99" fill="none" stroke="#9aa4b2" stroke-width="2"/>
+      <g fill="#a78bfa" fill-opacity="0.22" stroke="#a78bfa" stroke-opacity="0.6">
+        <rect x="196" y="78" width="26" height="32" rx="7"/><rect x="226" y="78" width="26" height="32" rx="7"/><rect x="256" y="78" width="26" height="32" rx="7"/><rect x="286" y="78" width="26" height="32" rx="7"/>
+      </g>
+      <g font-size="16" font-weight="700" fill="#ede9fe" text-anchor="middle"><text x="209" y="101">4</text><text x="239" y="101">8</text><text x="269" y="101">2</text><text x="299" y="101">7</text></g>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Tu celular con +51 y el código que te llega</text>
+      <text x="24" y="178" font-size="13" fill="#fda4af">Nunca compartas ese código con nadie</text>
+    </g></g>
+
+    <!-- Paso 3 -->
+    <g class="p3"><g transform="translate(880 76)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#22d3ee" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#22d3ee" fill-opacity="0.25"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#cffafe">3</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Buscar el bot</text>
+      <rect x="24" y="68" width="312" height="44" rx="22" fill="#ffffff" fill-opacity="0.07" stroke="#22d3ee" stroke-opacity="0.6"/>
+      <circle cx="52" cy="89" r="8" fill="none" stroke="#67e8f9" stroke-width="2.4"/><path d="M58 95 L65 102" stroke="#67e8f9" stroke-width="2.4" stroke-linecap="round"/>
+      <text x="78" y="95" font-size="16" font-family="Consolas,'Courier New',monospace" fill="#e6edf3">v1k_consultas_bot</text><rect class="cursor" x="244" y="80" width="2" height="20" fill="#67e8f9"/>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Toca la lupa y escribe el usuario exacto</text>
+      <text x="24" y="178" font-size="13" fill="#8b949e">o abre el enlace t.me/v1k_consultas_bot</text>
+    </g></g>
+
+    <!-- Paso 4 -->
+    <g class="p4"><g transform="translate(40 304)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#4ade80" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#4ade80" fill-opacity="0.25"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#dcfce7">4</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Pulsar «Iniciar»</text>
+      <circle cx="58" cy="94" r="17" fill="#38bdf8" fill-opacity="0.22" stroke="#38bdf8" stroke-opacity="0.7"/><path d="M50 96 L67 88 L63 103 L58 98 L55 101 L55 96 Z" fill="#e0f2fe"/>
+      <text x="86" y="90" font-size="13.5" font-weight="700" fill="#e6edf3">V1K Consultas</text><text x="86" y="107" font-size="11.5" font-family="Consolas,'Courier New',monospace" fill="#7dd3fc">@v1k_consultas_bot</text>
+      <g class="latido"><rect x="220" y="76" width="116" height="38" rx="19" fill="#38bdf8" fill-opacity="0.9"/><text x="278" y="100" text-anchor="middle" font-size="14" font-weight="800" fill="#082f49" letter-spacing="1">INICIAR</text></g>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">El botón azul está al pie del chat</text>
+      <text x="24" y="178" font-size="13" fill="#8b949e">Sin esto, el bot no puede escribirte</text>
+    </g></g>
+
+    <!-- Paso 5 -->
+    <g class="p5"><g transform="translate(460 304)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#fbbf24" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#fbbf24" fill-opacity="0.25"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#fef3c7">5</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Copiar tu número de chat</text>
+      <rect x="24" y="64" width="312" height="64" rx="16" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14"/>
+      <text x="40" y="88" font-size="13" fill="#c9d1d9">Este bot es privado.</text>
+      <text x="40" y="110" font-size="13" fill="#c9d1d9">Tu número de chat es <tspan font-weight="800" fill="#fde68a" font-family="Consolas,'Courier New',monospace">123456789</tspan></text>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Mantén presionado el mensaje para copiar</text>
+      <text x="24" y="178" font-size="13" fill="#8b949e">Es el mismo número para los dos bots</text>
+    </g></g>
+
+    <!-- Paso 6 -->
+    <g class="p6"><g transform="translate(880 304)">
+      <g filter="url(#sh)"><rect width="360" height="200" rx="22" fill="url(#glass)" stroke="#f472b6" stroke-opacity="0.55"/></g>
+      <circle cx="34" cy="36" r="16" fill="#f472b6" fill-opacity="0.25"/><text x="34" y="42" text-anchor="middle" font-size="16" font-weight="800" fill="#fce7f3">6</text>
+      <text x="62" y="43" font-size="19" font-weight="700" fill="#f0f6fc">Enviarlo al administrador</text>
+      <g class="sube"><circle cx="76" cy="94" r="22" fill="#38bdf8" fill-opacity="0.2" stroke="#38bdf8" stroke-opacity="0.7"/><path d="M64 97 L90 85 L83 108 L77 101 L72 105 L72 98 Z" fill="#e0f2fe"/></g>
+      <path d="M112 94 H190" stroke="#9aa4b2" stroke-width="2" stroke-dasharray="5 5"/><path d="M184 88 L192 94 L184 100" fill="none" stroke="#9aa4b2" stroke-width="2"/>
+      <rect x="206" y="68" width="128" height="52" rx="14" fill="#4ade80" fill-opacity="0.12" stroke="#4ade80" stroke-opacity="0.55"/>
+      <text x="270" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#e6edf3">Administrador</text>
+      <path d="M246 104 l6 6 l12 -13" fill="none" stroke="#4ade80" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><text x="274" y="108" font-size="11.5" fill="#86efac">autoriza</text>
+      <text x="24" y="156" font-size="13.5" fill="#c9d1d9">Por WhatsApp o el medio que ya usan</text>
+      <text x="24" y="178" font-size="13" fill="#8b949e">Te avisa cuando ya tienes acceso</text>
+    </g></g>
+
+    <!-- Progreso y nota -->
+    <rect x="40" y="532" width="1200" height="6" rx="3" fill="#ffffff" fill-opacity="0.07"/>
+    <rect class="anim" x="40" y="532" width="0" height="6" rx="3" fill="#38bdf8"><animate attributeName="width" values="0;1200;1200;0" keyTimes="0;0.94;0.97;1" dur="18s" repeatCount="indefinite"/></rect>
+    <text x="640" y="562" text-anchor="middle" font-size="13" fill="#8b949e">El administrador solo ve tu número de chat: no ve tu teléfono, tus contactos ni tus conversaciones.</text>
+  </g>
+</svg>

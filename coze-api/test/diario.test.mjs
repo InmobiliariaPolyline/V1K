@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import YAML from 'yaml';
 import { mensajeSeguro, tomarFoto } from '../scripts/foto-diaria.mjs';
-import { MAX_TELEGRAM, buscarChats, componerResumen, enviarTelegram, hoyEnLima, leerApi, prepararMensaje } from '../scripts/resumen-diario.mjs';
+import { MAX_TELEGRAM, buscarChats, componerResumen, enviarAVarios, enviarTelegram, hoyEnLima, leerApi, listaDeChats, prepararMensaje } from '../scripts/resumen-diario.mjs';
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 let n = 0;
@@ -80,6 +80,20 @@ const respuesta = (estado, cuerpo = {}) => ({ ok: estado >= 200 && estado < 300,
   const chats = await buscarChats('t', async () => respuesta(200, { result: [{ message: { chat: { id: 7, type: 'private', first_name: 'Ana' } } }, { message: { chat: { id: 7, type: 'private', first_name: 'Ana' } } }, { channel_post: { chat: { id: -100, type: 'channel', title: 'Canal' } } }, { edited: 1 }] }));
   igual(chats, [{ id: 7, tipo: 'private', nombre: 'Ana' }, { id: -100, tipo: 'channel', nombre: 'Canal' }], 'chats únicos que le escribieron al bot');
   igual(await buscarChats('t', async () => respuesta(200, {})), [], 'sin mensajes todavía');
+}
+
+// ── varios destinatarios ─────────────────────────────────────────────────────────
+{
+  igual(listaDeChats('123456, -100987 ,abc,12;123456'), ['123456', '-100987'], 'lista de chats: solo números válidos y sin repetir');
+  igual(listaDeChats(undefined), [], 'sin secreto no hay chats');
+  igual(listaDeChats('123456789'), ['123456789'], 'un solo chat sigue funcionando como antes');
+  const vistos = [];
+  const falso = async (url, opc) => { const c = JSON.parse(opc.body).chat_id; vistos.push(c); return respuesta(c === '222' ? 400 : 200); };
+  const r = await enviarAVarios({ token: '123:ABC-def', chats: ['111', '222', '333'], texto: 'hola', fetchFn: falso });
+  igual(vistos, ['111', '222', '333'], 'se intenta con cada chat aunque uno falle');
+  igual(r, { enviados: 2, fallidos: 1 }, 'cuenta los enviados y los fallidos');
+  ok(!JSON.stringify(r).includes('222'), 'el resultado nunca incluye números de chat');
+  igual(await enviarAVarios({ token: 't', chats: [], texto: 'x', fetchFn: falso }), { enviados: 0, fallidos: 0 }, 'sin chats no envía');
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────────────────

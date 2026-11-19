@@ -76,6 +76,18 @@ export async function enviarTelegram({ token, chatId, texto, fetchFn = globalThi
   return { estado: r.status };
 }
 
+/** «123, -456;abc» → ['123', '-456'] (solo números de chat válidos, sin repetir). TELEGRAM_CHAT_ID admite varios, separados por comas. */
+export const listaDeChats = (texto) => [...new Set(String(texto ?? '').split(/[\s,;]+/).filter((x) => /^-?\d{3,20}$/.test(x)))];
+
+/** Envía el mismo texto a cada chat; si uno falla, los demás lo reciben igual. Devuelve solo cuántos (nunca números de chat). */
+export async function enviarAVarios({ token, chats, texto, fetchFn = globalThis.fetch }) {
+  let enviados = 0, fallidos = 0;
+  for (const chatId of chats) {
+    try { await enviarTelegram({ token, chatId, texto, fetchFn }); enviados++; } catch { fallidos++; }
+  }
+  return { enviados, fallidos };
+}
+
 /** Chats que le han escrito al bot (para saber el número de tu chat). */
 export async function buscarChats(token, fetchFn = globalThis.fetch) {
   const r = await fetchFn(`https://api.telegram.org/bot${token}/getUpdates`, { signal: AbortSignal.timeout(20000) });
@@ -135,16 +147,17 @@ async function principal() {
 
   if (arg.includes('--mostrar')) { console.log(error ? `ERROR: ${error}` : texto); return; }
 
-  const chatId = process.env.TELEGRAM_CHAT_ID ?? '';
-  if (!tokenTg || !chatId) { console.error('Faltan los secretos TELEGRAM_BOT_TOKEN y/o TELEGRAM_CHAT_ID.'); process.exit(2); }
+  const chats = listaDeChats(process.env.TELEGRAM_CHAT_ID);
+  if (!tokenTg || !chats.length) { console.error('Faltan los secretos TELEGRAM_BOT_TOKEN y/o TELEGRAM_CHAT_ID.'); process.exit(2); }
   if (error) {
     // Aviso corto: mejor saber que falló que no recibir nada
-    await enviarTelegram({ token: tokenTg, chatId, texto: `V1K · no pude armar el resumen de hoy: ${error}. Revisa Actions → Vigilancia.` });
+    await enviarAVarios({ token: tokenTg, chats, texto: `V1K · no pude armar el resumen de hoy: ${error}. Revisa Actions → Vigilancia.` });
     console.error('El resumen no se pudo armar; se avisó por Telegram.');
     process.exit(1);
   }
-  await enviarTelegram({ token: tokenTg, chatId, texto });
-  console.log(`Resumen enviado (${texto.length} caracteres).`);
+  const { enviados, fallidos } = await enviarAVarios({ token: tokenTg, chats, texto });
+  console.log(`Resumen enviado (${texto.length} caracteres) a ${enviados} ${enviados === 1 ? 'chat' : 'chats'}.`);
+  if (fallidos) { console.error(`${fallidos} ${fallidos === 1 ? 'chat no lo recibió' : 'chats no lo recibieron'}: revisa que cada persona le haya escrito «hola» al bot.`); process.exitCode = 1; }
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
