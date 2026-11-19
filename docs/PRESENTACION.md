@@ -29,7 +29,7 @@ Planner · MRP · Scraper  →  Neon (resúmenes)  →  API de solo lectura  →
 | Respuesta de la API | unos **150 a 250 ms** (antes: 20 a 90 s esperando a las apps) |
 | Herramientas del agente | **8**, todas de solo lectura (una, `resumen_general`, trae todo en una llamada) |
 | Panel web | **11 secciones**, tema claro/oscuro, móvil, modo demostración sin token |
-| Comprobaciones contra el sistema real | **1,333** (A: 588 · B: 535 · C: 155 · D: 55), todas correctas |
+| Comprobaciones contra el sistema real | **1,538** (A: 638 · B: 690 · C: 155 · D: 55), todas correctas |
 | Pruebas automáticas sin red (en cada cambio) | **11 suites**, p. ej. panel 1,087 e ilustraciones 1,445 comprobaciones |
 | Roles de base de datos | **5**, cada uno con el mínimo privilegio |
 | Automatización | CI en cada cambio, vigilancia cada 6 h, foto diaria y resumen por Telegram cada mañana |
@@ -49,7 +49,7 @@ Planner · MRP · Scraper  →  Neon (resúmenes)  →  API de solo lectura  →
 | **2:30 – 4:00** | **Demo del panel** (modo demostración) | Ver sección 3 de este documento. | Panel, botón «Explorar con datos de ejemplo» |
 | **4:00 – 5:30** | **El agente de Coze** | La conversación: una sola llamada a `resumen_general`, respuesta con proyectos, stock y pedidos. Ver el plan B abajo. | `assets/chat-agente.svg` o la pregunta del día |
 | **5:30 – 6:30** | Seguridad | Cuatro capas: token, lista cerrada de consultas, rol de solo lectura, base con solo resúmenes. Un SQL malicioso se detiene en la lista cerrada. | `assets/capas-seguridad.svg` |
-| **6:30 – 7:30** | Pruebas | 1,333 comprobaciones en cuatro baterías contra el sistema real; qué errores encontraron (sección 4). | `assets/pruebas-baterias.svg` |
+| **6:30 – 7:30** | Pruebas | 1,538 comprobaciones en cuatro baterías contra el sistema real; qué errores encontraron (sección 4). | `assets/pruebas-baterias.svg` |
 | **7:30 – 8:30** | Automatización | CI en GitHub, vigilancia cada 6 h y el resumen diario: **mostrar el Telegram en el celular**. | Celular y pestaña Actions |
 | **8:30 – 9:30** | Lo que descubrió con los datos reales | Inventario del MRP sin cargar y alquileres «por m²»: cómo se detectó y qué se corrigió. | `CALIDAD_DE_DATOS.md` |
 | **9:30 – 10:00** | Cierre | Qué sigue (sección 6) y agradecimiento. | — |

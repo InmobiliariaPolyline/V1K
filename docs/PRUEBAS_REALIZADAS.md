@@ -6,8 +6,8 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
 
 | Batería | Qué prueba | Resultado |
 |---|---|---|
-| **A. API en vivo** | 588 comprobaciones sobre 434 peticiones reales: matriz de autenticación (13 variantes × 8 rutas), 6 métodos HTTP, nombres de ruta hostiles, 40 valores del parámetro `q` (inyección SQL, unicode, comodines, 10.000 caracteres, byte nulo), forma de cada respuesta contra el OpenAPI, **filtros** (valores válidos que filtran de verdad y 15 casos no válidos que dan 400 con mensaje), **`resumen_general`** coherente con las demás vistas, **panel web** (cada uno de los 24 módulos JS, hojas de estilo e imágenes publicados con su tipo y cabeceras, idénticos a los del repositorio; CSP; sin token en el código; archivos internos no publicados; vistas solo del panel con token y fuera del contrato de Coze), ráfaga de 60 peticiones simultáneas | **588 / 588** (tras corregir 2 fallos) |
-| **B. Permisos de los 5 roles** | 535 comprobaciones en Neon real: cada rol × cada tabla × 5 operaciones, 29 operaciones de DDL y escape (crear/alterar/borrar, `SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, atributos de los roles, contraseñas falsas, sin SSL | **535 / 535** |
+| **A. API en vivo** | 638 comprobaciones sobre 460 peticiones reales: matriz de autenticación (13 variantes × 8 rutas), 6 métodos HTTP, nombres de ruta hostiles, 40 valores del parámetro `q` (inyección SQL, unicode, comodines, 10.000 caracteres, byte nulo), forma de cada respuesta contra el OpenAPI, **filtros** (valores válidos que filtran de verdad y 15 casos no válidos que dan 400 con mensaje), **`resumen_general`** coherente con las demás vistas, **panel web** (cada uno de los 24 módulos JS, hojas de estilo e imágenes publicados con su tipo y cabeceras, idénticos a los del repositorio; CSP; sin token en el código; archivos internos no publicados; vistas solo del panel con token y fuera del contrato de Coze), ráfaga de 60 peticiones simultáneas | **638 / 638** (tras corregir 2 fallos) |
+| **B. Permisos de los 6 roles** | 690 comprobaciones en Neon real: cada rol × cada tabla × 5 operaciones, 29 operaciones de DDL y escape (crear/alterar/borrar, `SET ROLE`, `COPY … TO PROGRAM`, leer archivos), seguridad por fila de `sync_estado`, atributos de los roles, contraseñas falsas, sin SSL | **690 / 690** |
 | **C. Código real de sync** | El módulo de cada app contra Neon con su rol, con datos extremos: vacío, 501 materiales, 300 proyectos × 20 tareas, 10.000 propiedades, textos hostiles, números enormes, reemplazo e idempotencia, fallo del origen. Para el Scraper, además, el controlador HTTP de Neon que usa Netlify | MRP **60 / 60**, Scraper **49 / 49**, Planner **46 / 46** (2 casos informativos que no pueden ocurrir con datos reales) |
 | **D. Datos reales** | 55 comprobaciones de integridad de lo que hay ahora en la base central, y que cada vista de la API (las consultas se toman de `lib/vistas.js`) devuelva exactamente lo que hay en la base, fila por fila | **55 / 55** (con datos de las tres apps) |
 
@@ -20,6 +20,10 @@ de cada app. Los scripts están en [`tests-integracion/`](../tests-integracion) 
    (`numeric field overflow`). **Corregido y fusionado** (MRP: PR #4, Scraper: PR #2).
 4. **No corregido, porque no puede ocurrir con datos reales:** un byte nulo o un carácter UTF-16 inválido en un texto
    (Postgres no puede guardarlos) y claves duplicadas en el origen (lo impiden las claves primarias y únicas).
+5. **Permisos (módulo Accesos, descubierto por la batería B en vivo):** `coze_reader` podía leer la tabla con nombres y teléfonos porque
+   `02_roles.sql` le da `SELECT` por defecto sobre toda tabla nueva del esquema. Ninguna ruta de la API la exponía y estaba vacía, pero
+   rompía la promesa de privacidad. **Corregido** (`REVOKE` en `db/04_accesos.sql`, aplicado en Neon), con una prueba local que reproduce ese
+   permiso por defecto: falla sin el arreglo y pasa con él.
 
 ## Pruebas automáticas de `coze-api` (sin red)
 

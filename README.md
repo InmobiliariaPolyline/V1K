@@ -5,7 +5,7 @@
 <br />
 
 <img src="docs/assets/badges/sincroniza.svg" alt="Sincroniza 3 apps" />
-<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1333 OK" />
+<img src="docs/assets/badges/pruebas.svg" alt="Pruebas 1538 OK" />
 <img src="docs/assets/badges/api.svg" alt="API solo lectura" />
 <img src="docs/assets/badges/roles.svg" alt="Roles 6 con RLS" />
 <br />
@@ -119,7 +119,7 @@ que consulta el agente, **sin gastar créditos de Coze**. Tiene once secciones:
   <tr>
     <td width="33%"><img src="docs/assets/card-solo-lectura.svg" alt="Solo lectura" width="100%" /></td>
     <td width="33%"><img src="docs/assets/card-rapida.svg" alt="Respuesta en unos 150 ms" width="100%" /></td>
-    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="1333 comprobaciones" width="100%" /></td>
+    <td width="33%"><img src="docs/assets/card-pruebas.svg" alt="1538 comprobaciones" width="100%" /></td>
   </tr>
   <tr>
     <td width="33%"><img src="docs/assets/card-opcional.svg" alt="Apagado por defecto" width="100%" /></td>
@@ -197,7 +197,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 ## Pruebas
 
-<img src="docs/assets/pruebas-baterias.svg" alt="1333 comprobaciones en cuatro baterías: A 588, B 535, C 155 y D 55, todas correctas" width="100%" />
+<img src="docs/assets/pruebas-baterias.svg" alt="1538 comprobaciones en cuatro baterías: A 638, B 690, C 155 y D 55, todas correctas" width="100%" />
 
 Las 11 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
@@ -208,8 +208,8 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 
 | Batería | Qué comprueba | Resultado |
 |---|---|---|
-| **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones, webhook del bot de Telegram cerrado | 588 / 588 |
-| **B · Permisos** | Los 5 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 535 / 535 |
+| **A · API en vivo** | Autenticación, métodos, rutas hostiles, inyección SQL, filtros y errores 400, `resumen_general`, panel y cabeceras de seguridad, ráfaga de 60 peticiones, webhook del bot de Telegram cerrado | 638 / 638 |
+| **B · Permisos** | Los 6 roles en Neon: cada tabla × operación, DDL, escapes, RLS, contraseñas falsas | 690 / 690 |
 | **C · Sincronización** | El código real del MRP, el Planner y el Scraper con datos extremos | 60 · 46 · 49 |
 | **D · Datos reales** | Integridad de lo que hay en la base y que la API devuelva lo mismo, fila por fila | 55 / 55 |
 
@@ -237,7 +237,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | Sincronización del Scraper (Netlify) | En producción: se dispara con cada ingesta |
 | Panel web (Vercel) | En producción: se abre con el token de la API |
 | Historial diario y resumen por Telegram | En producción: foto y resumen cada mañana a las 08:07 (Lima); lo activa `db/03_historial.sql` más 4 secretos de GitHub ([guía](docs/OPERACION.md)) |
-| Módulo «Accesos de Telegram» del panel | Listo en el código y probado; se activa con `db/04_accesos.sql` y dos variables de Vercel (`DATABASE_URL_ACCESOS`, `ADMIN_TOKEN`) ([guía](docs/BOT_TELEGRAM.md)) |
+| Módulo «Accesos de Telegram» del panel | En producción: se activa con `db/04_accesos.sql` y dos variables de Vercel (`DATABASE_URL_ACCESOS`, `ADMIN_TOKEN`) ([guía](docs/BOT_TELEGRAM.md)) |
 | Bots de Telegram (resumen diario y consultas) | En producción: `@v1k_asistente_bot` y `@v1k_consultas_bot`, de solo lectura y solo para chats autorizados ([guía para usuarios](docs/TELEGRAM_PASO_A_PASO.md)) |
 | Plugin y agente de Coze | Creados; falta actualizar el plugin a 8 herramientas ([guía](docs/coze/GUIA_SKILLS.md)) y la prueba conversacional (créditos) |
 

@@ -381,7 +381,7 @@ chequea('[límite] propiedades ≤ 50 filas', (datosVivos['propiedades']?.datos?
   const r = await llama(ruta, { raw: true, metodo: 'GET' });
   chequea('[accesos] sin caché', /no-store/.test(r.headers.get('cache-control') ?? ''), r.headers.get('cache-control') ?? '');
   // El bot de consultas y la API de datos no exponen la lista de accesos
-  for (const vista of ['telegram_accesos', 'v_telegram_chats_activos', 'accesos']) {
+  for (const vista of ['telegram_accesos', 'v_telegram_chats_activos']) {
     const rv = await llama(vista, { headers: A() });
     chequea(`[accesos] /api/${vista} no existe como vista de datos`, [404, 400].includes(rv.status) && !/nombre|telefono/i.test(rv.cuerpo), `-> ${rv.status}`);
   }

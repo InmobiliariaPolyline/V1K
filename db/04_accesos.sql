@@ -38,6 +38,16 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON central.telegram_accesos TO writer_acces
 ALTER ROLE writer_accesos SET statement_timeout = '5s';
 ALTER ROLE writer_accesos CONNECTION LIMIT 3;
 
+-- OJO: 02_roles.sql da a coze_reader SELECT por defecto sobre TODA tabla nueva del esquema (ALTER DEFAULT PRIVILEGES). Esta tabla tiene
+-- nombres y teléfonos, así que se le quita explícitamente: coze_reader (el bot y la API) solo lee la vista de números de chat.
+REVOKE ALL ON central.telegram_accesos FROM PUBLIC;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'coze_reader') THEN
+    REVOKE ALL ON central.telegram_accesos FROM coze_reader;
+  END IF;
+END $$;
+
 -- El bot (coze_reader) y el resumen diario (writer_historial) leen SOLO la vista de números de chat
 DO $$
 BEGIN

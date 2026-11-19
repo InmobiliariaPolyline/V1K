@@ -17,6 +17,8 @@ const igual = (a, b, m) => { n++; assert.deepEqual(a, b, m); };
 const pg = new PGlite();
 await pg.exec(leer('db', '01_schema.sql'));
 await pg.exec("CREATE ROLE coze_reader LOGIN PASSWORD 'x';"); // existen antes que 03 y 04, como en Neon
+// Igual que 02_roles.sql: coze_reader recibe SELECT por defecto en toda tabla nueva del esquema (así se coló en producción la tabla de accesos)
+await pg.exec('GRANT USAGE ON SCHEMA central TO coze_reader; ALTER DEFAULT PRIVILEGES IN SCHEMA central GRANT SELECT ON TABLES TO coze_reader;');
 const sql03 = leer('db', '03_historial.sql');
 const sql04 = leer('db', '04_accesos.sql');
 await pg.exec(sql03);
