@@ -18,19 +18,24 @@ Son **16 comandos** en el bot de consultas, agrupados en el menú «/» y en `/a
 | Hoy | `/resumen` (`/ahora`) | Lo urgente y los cambios de la semana |
 | | `/alertas` | Solo lo que requiere atención, con botones al detalle |
 | | `/agenda` | Hitos y llegadas de pedidos de los próximos 7, 14 o 30 días, por día |
-| Operación | `/proyectos` | **Tabla** con estado, avance, fin y tareas atrasadas; filtros por estado; páginas |
+| Operación | `/proyectos` | **Gráfico** de avance por proyecto (estado, fin, tareas atrasadas); filtros por estado; páginas |
 | | `/proyecto V7K` | La ficha de un proyecto con sus próximos hitos |
 | | `/materiales` | Los que están bajo su mínimo (tarjetas con barra), con el aviso del inventario sin cargar |
-| | `/stock` | **Tabla** de materiales por categoría |
+| | `/stock` | **Gráfico** de materiales por categoría (faltante total) |
 | | `/pedidos` | Órdenes abiertas; filtros `vencidos`, `pendiente`, `enviada`, `parcial` |
 | Mercado | `/propiedades` | Avisos con filtros (operación, distrito, tipo, precio), mediana y avisos de precio dudoso |
-| | `/mercado` | **Tabla** de precio mediano por distrito, en venta y en alquiler |
-| | `/portales` | **Tabla** de avisos por portal |
+| | `/mercado` | **Gráfico** del precio mediano por distrito, en venta y en alquiler |
+| | `/portales` | **Gráfico** de avisos por portal |
 | Herramientas | `/buscar torre` | Busca en proyectos, materiales, pedidos y propiedades a la vez |
 | | `/frescura` | Hace cuánto sincronizó cada app |
-| | `/tendencias` (`/semana`) | **Tabla** de cambios frente a hace 7 días |
+| | `/tendencias` (`/semana`) | **Gráfico** con un minigráfico por métrica, frente a hace 7 días |
 | Ayuda | `/guia` | Cuándo usar Coze, los bots o el panel |
 | | `/ayuda` | La lista de comandos |
+
+**Gráficos.** `/proyectos`, `/stock`, `/mercado`, `/portales` y `/tendencias` responden con un **gráfico como imagen** (barras de avance, barras por categoría o distrito, minigráficos de tendencia) con el mismo
+estilo de las ilustraciones del repositorio, y debajo el resumen, la lectura y los botones. Telegram no muestra SVG, así que el servidor dibuja el SVG como PNG con **resvg** y la fuente **Inter**
+(`coze-api/assets/fonts/`, licencia OFL) y lo envía con `sendPhoto`. Si el gráfico no se pudiera dibujar o Telegram lo rechazara, el bot envía **el mismo contenido en texto** (con tabla), así que nunca se queda sin responder.
+El código está en `lib/graficos.js` (SVG, puro y probado) y `lib/imagenes.js` (SVG → PNG).
 
 **Cada respuesta** trae un encabezado con totales, los datos en tarjetas (`<blockquote>`) o en tablas (`<pre>`, monoespaciado), una línea **💡 de lectura** y el **pie de frescura**
 («🕒 MRP ✅ hace 20 h»), que avisa cuando los datos tienen más de un día. Las listas largas se paginan con botones y los filtros son botones. Todo es de solo lectura.

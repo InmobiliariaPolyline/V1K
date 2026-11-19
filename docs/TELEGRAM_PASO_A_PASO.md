@@ -100,10 +100,10 @@ Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** 
 
 | Para saber… | Escribe o pulsa | Ejemplos |
 |---|---|---|
-| Cómo van todos los proyectos (tabla) | `/proyectos` | `/proyectos atrasado` · `/proyectos en curso` · `/proyectos torre` |
+| Cómo van todos los proyectos (gráfico) | `/proyectos` | `/proyectos atrasado` · `/proyectos en curso` · `/proyectos torre` |
 | La ficha de un proyecto, con sus hitos | `/proyecto` | `/proyecto V7K` (o toca su nombre en la tabla) |
 | Qué materiales faltan | `/materiales` | `/materiales cemento` |
-| Materiales por categoría (tabla) | `/stock` | |
+| Materiales por categoría (gráfico) | `/stock` | |
 | Qué pedidos esperan llegar | `/pedidos` | `/pedidos vencidos` · `/pedidos parcial` · `/pedidos aceros` |
 
 **Mercado**
@@ -111,8 +111,8 @@ Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** 
 | Para saber… | Escribe o pulsa | Ejemplos |
 |---|---|---|
 | Avisos de propiedades con filtros | `/propiedades` | `/propiedades venta miraflores hasta 300000` · `/propiedades alquiler oficina` |
-| Precio mediano por distrito (tabla) | `/mercado` | `/mercado venta` · `/mercado alquiler` |
-| Avisos por portal (tabla) | `/portales` | |
+| Precio mediano por distrito (gráfico) | `/mercado` | `/mercado venta` · `/mercado alquiler` |
+| Avisos por portal (gráfico) | `/portales` | |
 
 **Herramientas y ayuda**
 
@@ -120,11 +120,11 @@ Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** 
 |---|---|---|
 | Algo en todo a la vez | `/buscar` | `/buscar torre` · `/buscar cemento` · `/buscar OC-1040` |
 | Si los datos están al día | `/frescura` | |
-| Qué cambió en la semana (tabla) | `/tendencias` | disponible desde el segundo día de historial |
+| Qué cambió en la semana (gráfico) | `/tendencias` | disponible desde el segundo día de historial |
 | Qué usar para cada cosa | `/guia` | Coze, los bots o el panel |
 | Ver todos los comandos | `/ayuda` | |
 
-**Cada respuesta trae** un resumen arriba (totales, avance medio…), los datos en tarjetas o en una tabla, una línea **💡** con la lectura («2 de 10 proyectos están atrasados») y de cuándo son los datos
+Los comandos con (gráfico) responden con una **imagen**: tócala para verla en grande. **Cada respuesta trae** un resumen arriba (totales, avance medio…), los datos en tarjetas o en una tabla, una línea **💡** con la lectura («2 de 10 proyectos están atrasados») y de cuándo son los datos
 (**🕒** «MRP ✅ hace 20 h»; si pasan de un día, avisa que pueden estar desactualizados). Las listas largas tienen botones **‹ Anterior** y **Siguiente ›**, y los filtros son botones: no hace falta escribir.
 
 ### ¿Cuál uso: Coze, el bot de consultas, el del resumen o el panel?

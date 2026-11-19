@@ -1,5 +1,9 @@
 {
   "outputDirectory": "public",
+  "functions": {
+    "api/telegram.js": { "includeFiles": "assets/fonts/**" },
+    "api/telegram-resumen.js": { "includeFiles": "assets/fonts/**" }
+  },
   "headers": [
     {
       "source": "/(.*)",

@@ -115,10 +115,10 @@ function conAnimacion(chat, panel, variante, caption, teclado) {
 
 /**
  * procesarUpdate(update, { consultar, permitidos, revocados, hoy, panel, hora, bot }) → [{ metodo, cuerpo, alternativa? }] (llamadas a la API de Telegram).
- * `bot` es 'consultas' (todos los comandos) o 'resumen' (briefing). `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
+ * `bot` es 'consultas' (todos los comandos) o 'resumen' (briefing). Con `graficos`, los comandos que tienen gráfico lo envían como foto (el texto queda de respaldo). `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
  * Los botones de un mensaje de texto EDITAN ese mismo mensaje (la conversación no se llena de respuestas); si no se puede editar, se envía uno nuevo.
  */
-export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas' }) {
+export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas', graficos = false }) {
   const cb = update?.callback_query;
   const msg = update?.message;
   const chat = cb?.message?.chat?.id ?? msg?.chat?.id;
@@ -182,6 +182,10 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
   try {
     const r = await COMANDOS[cmd]({ args: orden.args, consultar, hoy, panel, bot });
     const cuerpo = { text: r.html, parse_mode: 'HTML', reply_markup: r.teclado ?? menu(), disable_web_page_preview: true };
+    if (graficos && r.grafico) { // un gráfico como foto; si no se puede dibujar o enviar, sale el mismo contenido en texto
+      acciones.push({ metodo: 'sendPhoto', imagen: r.grafico.svg, cuerpo: { chat_id: chat, caption: r.grafico.caption, parse_mode: 'HTML', reply_markup: r.teclado ?? menu() }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } });
+      return acciones;
+    }
     const editable = typeof cb?.message?.text === 'string' && cb.message.message_id !== undefined;
     if (editable) acciones.push({ metodo: 'editMessageText', cuerpo: { chat_id: chat, message_id: cb.message.message_id, ...cuerpo }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } });
     else enviar(cuerpo);
@@ -200,10 +204,21 @@ const MODOS = {
   resumen: { token: 'TELEGRAM_BOT_RESUMEN_TOKEN', secreto: 'TELEGRAM_RESUMEN_WEBHOOK_SECRET' },
 };
 
+/** Dibuja un SVG como PNG cargando el motor solo cuando hace falta (si no está disponible, falla y se envía el texto). */
+const renderizarPorDefecto = async (svg) => (await import('./imagenes.js')).renderizarPng(svg);
+
 /** Llama a la API de Telegram; si la acción trae una alternativa y falla (salvo «message is not modified»), prueba con ella. */
-async function ejecutar(fetchFn, token, accion) {
+async function ejecutar(fetchFn, token, accion, renderizar) {
   const llamar = async (a) => {
-    const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) });
+    let init;
+    if (a.imagen) { // una foto se sube como archivo (multipart): primero se dibuja el gráfico
+      const png = await renderizar(a.imagen);
+      const form = new FormData();
+      for (const [k, v] of Object.entries(a.cuerpo)) form.append(k, v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v));
+      form.append('photo', new Blob([png], { type: 'image/png' }), 'grafico.png');
+      init = { method: 'POST', body: form };
+    } else init = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) };
+    const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, init);
     if (r.ok) return { ok: true };
     let descripcion = '';
     try { descripcion = String((await r.json())?.description ?? ''); } catch { /* sin cuerpo */ }
@@ -219,7 +234,7 @@ async function ejecutar(fetchFn, token, accion) {
   }
 }
 
-export function crearManejador({ modo = 'consultas', env = process.env, consultar, chatsExtra = async () => [], chatsRevocados = async () => [], fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date() } = {}) {
+export function crearManejador({ modo = 'consultas', env = process.env, consultar, chatsExtra = async () => [], chatsRevocados = async () => [], fetchFn = globalThis.fetch, limitar = crearLimitador(), ahora = () => new Date(), renderizar = renderizarPorDefecto, graficos = true } = {}) {
   const vars = MODOS[modo] ?? MODOS.consultas;
   return async function manejador(req, res) {
     res.setHeader('Cache-Control', 'no-store');
@@ -242,8 +257,8 @@ export function crearManejador({ modo = 'consultas', env = process.env, consulta
     let revocados = new Set();
     try { revocados = new Set((await chatsRevocados()).map(String)); } catch { /* sin la lista de revocados, se les trata como «bot privado» */ }
     const hora = horaEnLima(ahora());
-    const acciones = await procesarUpdate(update, { consultar, permitidos, revocados, hoy: hoyEnLima(ahora()), hora, bot: modo === 'resumen' ? 'resumen' : 'consultas' });
-    for (const a of acciones) await ejecutar(fetchFn, token, a);
+    const acciones = await procesarUpdate(update, { consultar, permitidos, revocados, hoy: hoyEnLima(ahora()), hora, bot: modo === 'resumen' ? 'resumen' : 'consultas', graficos });
+    for (const a of acciones) await ejecutar(fetchFn, token, a, renderizar);
     return res.status(200).json({ ok: true }); // siempre 200: Telegram reintenta si no
   };
 }

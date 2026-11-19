@@ -7,9 +7,10 @@
 //   · botones que llevan al siguiente paso lógico (filtros, detalle, página siguiente, volver al menú)
 //   · el bot de consultas lo sabe todo; el del resumen es un «briefing» con pocos comandos
 //   · la guía (/guia) explica cuándo usar cada cosa: Coze, estos bots o el panel
-import { compacto, diasEntre, dinero, estadoFrescura, fechaCorta, haceHoras, mediana, normalizar, numero, plural, relativoDias, soloFecha, sumarDias, urlSegura } from '../public/js/nucleo/formato.js';
+import { NOMBRE_APP, compacto, diasEntre, dinero, estadoFrescura, fechaCorta, haceHoras, mediana, normalizar, numero, plural, relativoDias, soloFecha, sumarDias, urlSegura } from '../public/js/nucleo/formato.js';
 import { generarAlertas, inventarioSinCargar, precioDudoso, saludGlobal } from '../public/js/nucleo/insights.js';
-import { compararCon } from '../public/js/nucleo/tendencias.js';
+import { compararCon, serieDe } from '../public/js/nucleo/tendencias.js';
+import { COLORES, graficoBarras, graficoMercado, graficoProyectos, graficoTendencias } from './graficos.js';
 import { componerResumenHtml } from '../scripts/resumen-diario.mjs';
 import { BOT_CONSULTAS, BOT_RESUMEN, barra, diaCorto, esc, lectura, paginaDe, pieDatos, recortar, separarPagina, tablaPre, tarjeta, titulo } from './telegram-diseno.js';
 
@@ -128,6 +129,17 @@ const MARCA = { peligro: '🔴', aviso: '🟡', info: '🔹' };
 const frescuraDe = async (consultar) => { try { return await consultar('frescura', {}); } catch { return []; } };
 const pie = (fr, apps) => pieDatos(fr, apps, { estado: estadoFrescura, haceHoras });
 const dia = (v) => String(v ?? '').slice(0, 10);
+/** «Planner hace 1 día · MRP hace 5 h»: el pie de frescura para dentro de una imagen (sin emojis ni etiquetas). */
+const pieSimple = (fr, apps) => (fr ?? []).filter((f) => apps.includes(f.app)).map((f) => `${NOMBRE_APP[f.app] ?? f.app} ${haceHoras(Number(f.hace_horas))}`).join(' · ');
+/** Une partes en orden de importancia sin pasar del límite de un pie de foto de Telegram (1024); lo que no cabe se descarta. */
+function captionSeguro(partes, max = 960) {
+  const salida = [];
+  let largo = 0;
+  for (const p of partes.filter(Boolean)) { if (largo + p.length + 2 > max && salida.length) break; salida.push(p); largo += p.length + 2; }
+  return salida.join('\n\n');
+}
+/** Añade un gráfico al resultado: se envía como foto con el pie de foto; el texto (`html`) queda de respaldo si no se puede dibujar. */
+const conGrafico = (resultado, svg, caption) => ({ ...resultado, grafico: { svg, caption } });
 const corto = (n) => compacto(n).replace(' ', '');   // 212.9 K → 212.9K (cabe mejor en una tabla)
 
 /** Une partes (separadas por línea en blanco) sin pasar del límite de Telegram: si no caben, avisa cuántas tarjetas faltaron. */
@@ -208,7 +220,7 @@ async function cmdProyectos({ args, consultar, hoy, bot }) {
   if (!lista.length) return sinDatos(cab, 'No hay proyectos con ese filtro.', bot, [[boton('📁 Ver todos', 'proyectos')]]);
   const cuenta = (e) => lista.filter((p) => p.estado === e).length;
   const resumen = ESTADOS_PROYECTO.filter((e) => cuenta(e)).map((e) => `${ICONO_ESTADO[e]} ${cuenta(e)} ${e === 'atrasado' ? (cuenta(e) === 1 ? 'atrasado' : 'atrasados') : e === 'terminado' ? (cuenta(e) === 1 ? 'terminado' : 'terminados') : e}`).join(' · ');
-  const info = paginaDe(lista, pagina, 10);
+  const info = paginaDe(lista, pagina, 8);
   const tabla = tablaPre(
     [{ titulo: 'Proyecto', ancho: 13 }, { titulo: 'Estado', ancho: 6 }, { titulo: 'Av.', ancho: 4, alinea: 'der' }, { titulo: 'Fin', ancho: 5 }, { titulo: 'Tar', ancho: 3, alinea: 'der' }],
     info.filas.map((p) => [p.nombre, CORTO_ESTADO[p.estado] ?? p.estado, `${numero(Number(p.avance_pct) || 0, 0)}%`, fechaCorta(dia(p.fin)).slice(0, 5), String(p.tareas_atrasadas ?? 0)]));
@@ -219,7 +231,7 @@ async function cmdProyectos({ args, consultar, hoy, bot }) {
     pie(fr, ['planner']),
   ];
   const detalle = info.filas.slice(0, 4).map((p) => boton(`🔍 ${recortar(p.nombre, 14)}`, 'proyecto', argSeguro(p.nombre))).filter((b) => b.callback_data.length > 12);
-  return {
+  const resultado = {
     html: `${cab}\n${resumen}\n\n${cierre.filter(Boolean).join('\n\n')}`,
     teclado: teclado(bot, [
       detalle.slice(0, 2), detalle.slice(2, 4),
@@ -227,6 +239,12 @@ async function cmdProyectos({ args, consultar, hoy, bot }) {
       filaPaginas('proyectos', texto, info),
     ]),
   };
+  const filtroPlano = estado ? ` · ${estado}` : texto ? ` · «${texto}»` : '';
+  const grafico = graficoProyectos({
+    titulo: `Proyectos${filtroPlano}`, sub: `${plural(lista.length, 'proyecto', 'proyectos')} · avance medio ${numero(avance, 0)} %${info.paginas > 1 ? ` · página ${info.pagina} de ${info.paginas}` : ''}`, pie: `Datos: ${pieSimple(fr, ['planner'])}`,
+    filas: info.filas.map((p) => ({ nombre: p.nombre, estado: p.estado, avance: Number(p.avance_pct) || 0, finTexto: p.fin ? `fin ${fechaCorta(dia(p.fin)).slice(0, 5)} · ${relativoDias(dia(p.fin), hoy)}` : '', tareas: Number(p.tareas_atrasadas) || 0 })),
+  });
+  return conGrafico(resultado, grafico, captionSeguro([`${cab}\n${resumen}`, atrasados ? lectura(`${plural(atrasados, 'proyecto está atrasado', 'proyectos están atrasados')} (${numero((atrasados / lista.length) * 100, 0)} % de los mostrados).`) : '', '<i>Toca un proyecto para ver su ficha.</i>', pie(fr, ['planner'])]));
 }
 
 async function cmdProyecto({ args, consultar, hoy, bot }) {
@@ -291,7 +309,10 @@ async function cmdStock({ consultar, bot }) {
   const mensaje = [cab, tabla, '<i>Mat = materiales · Baj = bajo el mínimo · Sin = sin existencias · Falta = unidades faltantes</i>',
     lectura(total && sin / total >= 0.9 ? `${numero(sin, 0)} de ${numero(total, 0)} materiales figuran sin existencias: el inventario real no se ha cargado, así que los faltantes son mínimos de partida.` : `${numero(bajos, 0)} de ${numero(total, 0)} materiales están bajo su mínimo.`),
     pie(fr, ['mrp'])].filter(Boolean).join('\n\n');
-  return { html: mensaje, teclado: teclado(bot, [[boton('📦 Ver materiales', 'materiales'), boton('🚚 Pedidos', 'pedidos')]]) };
+  const lecturaTexto = total && sin / total >= 0.9 ? `${numero(sin, 0)} de ${numero(total, 0)} materiales figuran sin existencias: el inventario real no se ha cargado, así que los faltantes son mínimos de partida.` : `${numero(bajos, 0)} de ${numero(total, 0)} materiales están bajo su mínimo.`;
+  const grafico = graficoBarras({ titulo: 'Stock por categoría', sub: `${plural(total, 'material', 'materiales')} · ${numero(bajos, 0)} bajo el mínimo · faltante total`, color: COLORES.ambar, pie: `Datos: ${pieSimple(fr, ['mrp'])}`,
+    filas: filas.slice(0, 8).map((f) => ({ etiqueta: f.categoria, valor: Number(f.faltante_total) || 0, textoValor: corto(Number(f.faltante_total) || 0), sub: `${plural(f.materiales, 'material', 'materiales')} · ${numero(f.sin_existencias, 0)} sin existencias` })) });
+  return conGrafico({ html: mensaje, teclado: teclado(bot, [[boton('📦 Ver materiales', 'materiales'), boton('🚚 Pedidos', 'pedidos')]]) }, grafico, captionSeguro([cab, lectura(lecturaTexto), pie(fr, ['mrp'])]));
 }
 
 async function cmdPedidos({ args, consultar, hoy, bot }) {
@@ -358,7 +379,11 @@ async function cmdMercado({ args, consultar, bot }) {
   const partes = [!operacion || operacion === 'VENTA' ? bloque('VENTA', '🟢', 'Venta (US$)', '') : '', !operacion || operacion === 'ALQUILER' ? bloque('ALQUILER', '🔵', 'Alquiler (US$ por mes)', '') : ''].filter(Boolean);
   if (!partes.length) return sinDatos(cab, 'Todavía no hay avisos suficientes para comparar distritos.', bot);
   const mensaje = [cab, ...partes, lectura('La mediana no se deja engañar por avisos con precio mal publicado. Los distritos con menos de 5 avisos son solo orientativos.'), pie(fr, ['scraper'])].join('\n\n');
-  return { html: mensaje, teclado: teclado(bot, [[boton('🟢 Venta', 'mercado', 'venta'), boton('🔵 Alquiler', 'mercado', 'alquiler')], [boton('🌐 Portales', 'portales'), boton('🏠 Propiedades', 'propiedades')]]) };
+  const filasDe = (op) => distritos.filter((d) => d.operacion === op).slice(0, operacion ? 10 : 5).map((d) => ({ etiqueta: d.distrito, valor: Number(d.precio_mediano_usd) || 0, textoValor: d.precio_mediano_usd ? corto(Number(d.precio_mediano_usd)) : '—', sub: plural(d.avisos, 'aviso', 'avisos') }));
+  const grafico = graficoMercado({ titulo: 'Mercado', sub: `precio mediano por distrito${resumen ? ` · ${numero(resumen.propiedades?.total_catalogo ?? 0, 0)} avisos en el catálogo` : ''}`, pie: `Datos: ${pieSimple(fr, ['scraper'])}`,
+    venta: !operacion || operacion === 'VENTA' ? filasDe('VENTA') : [], alquiler: !operacion || operacion === 'ALQUILER' ? filasDe('ALQUILER') : [] });
+  return conGrafico({ html: mensaje, teclado: teclado(bot, [[boton('🟢 Venta', 'mercado', 'venta'), boton('🔵 Alquiler', 'mercado', 'alquiler')], [boton('🌐 Portales', 'portales'), boton('🏠 Propiedades', 'propiedades')]]) }, grafico,
+    captionSeguro([cab, lectura('La mediana no se deja engañar por avisos con precio mal publicado. Los distritos con menos de 5 avisos son solo orientativos.'), pie(fr, ['scraper'])]));
 }
 
 async function cmdPortales({ consultar, bot }) {
@@ -368,7 +393,10 @@ async function cmdPortales({ consultar, bot }) {
   const total = filas.reduce((a, f) => a + (Number(f.total) || 0), 0);
   const tabla = tablaPre([{ titulo: 'Portal', ancho: 11 }, { titulo: 'Operación', ancho: 9 }, { titulo: 'Total', ancho: 7, alinea: 'der' }, { titulo: 'Visto', ancho: 5 }],
     filas.map((f) => [f.portal, String(f.operacion ?? '').toLowerCase(), numero(Number(f.total) || 0, 0), fechaCorta(dia(f.ultima_vista)).slice(0, 5)]));
-  return { html: [cab, tabla, '<i>Visto = última vez que el Scraper vio avisos de ese portal</i>', lectura(`${numero(total, 0)} avisos en total entre venta y alquiler.`), pie(fr, ['scraper'])].join('\n\n'), teclado: teclado(bot, [[boton('💰 Mercado', 'mercado'), boton('🏠 Propiedades', 'propiedades')]]) };
+  const grafico = graficoBarras({ titulo: 'Avisos por portal', sub: `${numero(total, 0)} avisos en el catálogo completo`, color: COLORES.violeta, pie: `Datos: ${pieSimple(fr, ['scraper'])}`,
+    filas: [...filas].sort((a, b) => (Number(b.total) || 0) - (Number(a.total) || 0)).slice(0, 10).map((f) => ({ etiqueta: `${f.portal} · ${String(f.operacion ?? '').toLowerCase()}`, valor: Number(f.total) || 0, textoValor: numero(Number(f.total) || 0, 0), sub: `visto por última vez el ${fechaCorta(dia(f.ultima_vista)).slice(0, 5)}` })) });
+  return conGrafico({ html: [cab, tabla, '<i>Visto = última vez que el Scraper vio avisos de ese portal</i>', lectura(`${numero(total, 0)} avisos en total entre venta y alquiler.`), pie(fr, ['scraper'])].join('\n\n'), teclado: teclado(bot, [[boton('💰 Mercado', 'mercado'), boton('🏠 Propiedades', 'propiedades')]]) }, grafico,
+    captionSeguro([cab, lectura(`${numero(total, 0)} avisos en total entre venta y alquiler.`), pie(fr, ['scraper'])]));
 }
 
 // ── Herramientas: buscar, frescura, tendencias ───────────────────────────────────────────
@@ -429,7 +457,10 @@ async function cmdTendencias({ consultar, bot }) {
     cmp.filas.map((f) => [CORTAS[f.clave] ?? f.etiqueta, num(f.antes, f.formato), num(f.ahora, f.formato), f.delta === null || f.delta === 0 ? '=' : `${f.delta > 0 ? '+' : '−'}${num(Math.abs(f.delta), f.formato)}`]));
   const mejor = cmp.filas.filter((f) => f.tono === 'mejor').map((f) => CORTAS[f.clave] ?? f.etiqueta), peor = cmp.filas.filter((f) => f.tono === 'peor').map((f) => CORTAS[f.clave] ?? f.etiqueta);
   const lect = [mejor.length ? `🟢 Mejoró: ${esc(mejor.join(', '))}.` : '', peor.length ? `🔴 Empeoró: ${esc(peor.join(', '))}.` : '', !mejor.length && !peor.length ? 'Sin cambios relevantes en lo que se sigue.' : ''].filter(Boolean).join(' ');
-  return { html: [titulo('📈', 'Tendencias', `${plural(cmp.dias, 'día', 'días')} · desde el ${fechaCorta(cmp.desde)}`), tabla, lectura(lect)].join('\n\n'), teclado: teclado(bot, [[boton('🚨 Alertas', 'alertas'), boton('📋 Resumen', 'resumen')]]) };
+  const subTitulo = `${plural(cmp.dias, 'día', 'días')} · desde el ${fechaCorta(cmp.desde)}`;
+  const grafico = graficoTendencias({ titulo: 'Tendencias', sub: subTitulo, pie: 'Verde: mejoró · rojo: empeoró · celeste: sin juicio',
+    tarjetas: cmp.filas.map((f) => ({ nombre: CORTAS[f.clave] ?? f.etiqueta, valorTexto: num(f.ahora, f.formato), deltaTexto: f.delta === null || f.delta === 0 ? '=' : `${f.delta > 0 ? '+' : '−'}${num(Math.abs(f.delta), f.formato)}`, tono: f.tono, serie: serieDe(historial, f.clave).map((p) => p.valor).slice(-10) })) });
+  return conGrafico({ html: [titulo('📈', 'Tendencias', subTitulo), tabla, lectura(lect)].join('\n\n'), teclado: teclado(bot, [[boton('🚨 Alertas', 'alertas'), boton('📋 Resumen', 'resumen')]]) }, grafico, captionSeguro([titulo('📈', 'Tendencias', subTitulo), lectura(lect)]));
 }
 
 // ── Ayuda y guía ─────────────────────────────────────────────────────────────────────────

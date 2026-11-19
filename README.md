@@ -57,7 +57,7 @@ cambian. El historial alimenta la sección **Tendencias** del panel. Cómo activ
 | Bot | Usuario | Qué hace |
 |---|---|---|
 | **Resumen diario** | `@v1k_asistente_bot` | Te escribe **solo** cada mañana a las 08:07 (hora de Lima): lo urgente, los próximos días y los cambios de la semana. Y responde a un «briefing» de 6 comandos (`/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`). |
-| **Consultas** | `@v1k_consultas_bot` | **Tú preguntas** con **16 comandos** y botones (`/alertas`, `/agenda`, `/proyectos`, `/proyecto V7K`, `/materiales`, `/stock`, `/pedidos vencidos`, `/propiedades venta miraflores hasta 300000`, `/mercado`, `/portales`, `/buscar torre`, `/tendencias`, `/guia`…) y responde al instante, con tablas, tarjetas, una lectura y la frescura de los datos. |
+| **Consultas** | `@v1k_consultas_bot` | **Tú preguntas** con **16 comandos** y botones (`/alertas`, `/agenda`, `/proyectos`, `/proyecto V7K`, `/materiales`, `/stock`, `/pedidos vencidos`, `/propiedades venta miraflores hasta 300000`, `/mercado`, `/portales`, `/buscar torre`, `/tendencias`, `/guia`…) y responde al instante, con **gráficos como imagen**, tarjetas, una lectura y la frescura de los datos. |
 
 `/guia` explica **cuándo usar cada cosa**: los comandos son gratis e instantáneos; Coze (con IA) entiende preguntas libres pero gasta créditos; el panel sirve para gráficos y exportar.
 
@@ -210,7 +210,7 @@ Los pasos completos, con las variables de cada servicio, están en
 
 <img src="docs/assets/pruebas-baterias.svg" alt="1543 comprobaciones en cuatro baterías: A 638, B 695, C 155 y D 55, todas correctas" width="100%" />
 
-Las 13 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
+Las 14 suites sin red de `coze-api` corren solas en cada cambio (**CI**) y cada 6 horas una **vigilancia** comprueba que la API
 y el panel respondan y que las tres apps sincronicen: ver [`docs/OPERACION.md`](docs/OPERACION.md).
 
 Seis baterías contra el sistema real, que se pueden repetir cuando se quiera. Las que escriben en la base lo hacen dentro de una transacción
