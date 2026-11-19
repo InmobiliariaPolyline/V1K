@@ -74,7 +74,7 @@ recuadro que se copia al tocarlo** junto con los pasos para pedirlo. Los mensaje
 <img src="docs/assets/bot-resumen.jpg" alt="Fotograma de la animación del resumen diario: sol y las alertas de la mañana" width="32%" />
 </p>
 
-<img src="docs/assets/telegram-registro.svg" alt="Seis pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, copiar tu número de chat y enviárselo al administrador" width="100%" />
+<img src="docs/assets/telegram-registro.svg" alt="Ocho pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, tocar tu número de chat para copiarlo, enviarlo al administrador, que lo registra en el panel, y el bot te avisa que ya tienes acceso" width="100%" />
 
 <img src="docs/assets/telegram-uso.svg" alt="Ejemplo de conversación con el bot de consultas: se pide /resumen y responde con lo urgente y los botones del menú; a la derecha, los ocho comandos" width="100%" />
 

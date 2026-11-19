@@ -335,6 +335,10 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   const leer = (...p) => fs.readFileSync(path.join(raiz, ...p), 'utf8');
   const readme = leer('README.md'), guia = leer('docs', 'TELEGRAM_PASO_A_PASO.md'), admin = leer('docs', 'BOT_TELEGRAM.md');
   for (const v of ['bienvenida', 'privado', 'resumen']) ok(readme.includes(`docs/assets/bot-${v}.jpg`) && fs.existsSync(path.join(raiz, 'docs', 'assets', `bot-${v}.jpg`)), `el README muestra bot-${v}.jpg y existe`);
+  ok(/El número de chat, en una frase/.test(guia) && /No tienes que buscarlo/.test(guia) && /paso 7/.test(guia), 'la guía explica en una frase qué es el número de chat y cómo se consigue');
+  const reg = leer('docs', 'assets', 'telegram-registro.svg');
+  ok(/ocho pasos/i.test(reg) && /módulo Accesos de Telegram/.test(reg) && /Copiado/.test(reg) && /Ya tienes acceso/.test(reg), 'la animación de registro llega hasta el módulo del administrador y el aviso «Ya tienes acceso»');
+  ok(/Ocho pasos/.test(guia) && /Ocho pasos/.test(readme), 'la guía y el README describen los ocho pasos');
   ok(/Tu acceso fue revocado/.test(guia) && /v_telegram_chats_revocados/.test(admin) && /acceso fue revocado/.test(admin), 'las guías explican el aviso de acceso revocado');
   ok(/recuadro/.test(guia) && /Toca el número/.test(guia) && /Hazlo en los dos bots/.test(guia), 'la guía explica la bienvenida y que el número se copia al tocarlo');
   ok(guia.includes('assets/bot-privado.jpg') && fs.existsSync(path.join(raiz, 'docs', 'assets', 'bot-privado.jpg')), 'la guía muestra la animación de acceso privado');

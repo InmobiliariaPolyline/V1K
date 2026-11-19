@@ -3,7 +3,13 @@
 Esta guía es para **quien va a usar los bots**, aunque nunca haya usado Telegram. En unos 10 minutos tendrás tu cuenta, encontrarás
 los dos bots y sabrás qué pedirles. No necesitas saber de programación.
 
-<img src="assets/telegram-registro.svg" alt="Los seis pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, copiar tu número de chat y enviárselo al administrador" width="100%" />
+<img src="assets/telegram-registro.svg" alt="Ocho pasos: instalar Telegram, registrarte con tu teléfono, buscar el bot, pulsar Iniciar, tocar tu número de chat para copiarlo, enviarlo al administrador con tu nombre y teléfono, el administrador lo registra en el panel y el bot te avisa que ya tienes acceso" width="100%" />
+
+## El número de chat, en una frase
+
+El **número de chat** es el número que Telegram le asigna a tu cuenta. **No tienes que buscarlo**: el bot te lo muestra solo cuando pulsas **Iniciar** (dentro de un recuadro, junto al candado). Lo **tocas y se copia**, y se lo
+envías al administrador (paso 6) junto con tu nombre y tu teléfono. Él lo escribe en el módulo **Accesos de Telegram** del panel (paso 7) y el bot te avisa «Ya tienes acceso» (paso 8). Es lo único que hace falta: el teléfono
+solo queda como registro del administrador, y lo que te autoriza es ese número.
 
 ## Los dos bots
 
