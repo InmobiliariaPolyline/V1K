@@ -265,6 +265,7 @@ que termina en `ROLLBACK`. Detalle en [`tests-integracion/`](tests-integracion) 
 | [`docs/OPERACION.md`](docs/OPERACION.md) | Pruebas automáticas (CI), vigilancia cada 6 horas, qué hacer según la alerta y cómo rotar el token |
 | [`docs/TELEGRAM_PASO_A_PASO.md`](docs/TELEGRAM_PASO_A_PASO.md) | Guía para quien usa los bots: instalar Telegram, registrarse, buscar los dos bots, pedir acceso, comandos y cómo leer el resumen |
 | [`docs/BOT_TELEGRAM.md`](docs/BOT_TELEGRAM.md) | Administración del bot de consultas: seguridad, puesta en marcha en 5 pasos, dar y quitar acceso y solución de problemas |
+| [`docs/TRASPASO.md`](docs/TRASPASO.md) | Dejar todo en manos de otra persona: transferir los bots en @BotFather, pasar accesos y servicios, mapa de secretos (solo nombres) y verificación final |
 | [`docs/CALIDAD_DE_DATOS.md`](docs/CALIDAD_DE_DATOS.md) | Revisión de los datos reales: inventario sin cargar en el MRP y alquileres «por m²» en el Scraper, y qué se corrigió |
 | [`coze-api/README.md`](coze-api/README.md) | Endpoints de la API y cómo conectarla a Coze |
 | [`tests-integracion/README.md`](tests-integracion/README.md) | Cómo ejecutar las baterías |
