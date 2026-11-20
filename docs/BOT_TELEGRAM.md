@@ -112,7 +112,7 @@ En la misma pantalla: **Revocar** (sin acceso, pero queda en la lista), **Reacti
 
 **Qué ve una persona revocada.** Si alguien a quien pulsaste **Revocar** intenta usar un comando o toca un botón del menú, el bot le dice claro que **su acceso fue revocado**
 (no el «bot privado» de quien nunca tuvo acceso): un aviso emergente, el menú desaparece y queda el mensaje con su número de chat y qué hacer si cree que es un error. Con «Iniciar» recibe
-la animación de acceso revocado. Al **Reactivar**, vuelve a funcionar en menos de 15 segundos. Quien **Quitaste** de la lista (borrada) vuelve a ver «acceso privado». Los
+la animación de acceso revocado. Al **Reactivar**, vuelve a funcionar **al instante** en los dos bots (si el bot lo veía como revocado, confirma con la base sin usar su memoria de 15 s; una revocación nueva sí tarda hasta 15 s en notarse). Quien **Quitaste** de la lista (borrada) vuelve a ver «acceso privado». Los
 administradores fijos nunca se tratan como revocados.
 
 **Quién ve qué.** La tabla con nombres y teléfonos (`central.telegram_accesos`) solo la toca el rol `writer_accesos`, y solo desde el módulo. El bot y el resumen

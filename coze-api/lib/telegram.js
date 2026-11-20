@@ -271,6 +271,10 @@ export function crearManejador({ modo = 'consultas', env = process.env, consulta
     try { for (const c of await chatsExtra()) permitidos.add(String(c)); } catch { /* la lista de la base no está disponible: se sigue solo con la variable */ }
     let revocados = new Set();
     try { revocados = new Set((await chatsRevocados()).map(String)); } catch { /* sin la lista de revocados, se les trata como «bot privado» */ }
+    if (!permitidos.has(String(chat)) && revocados.has(String(chat))) { // figura como revocado: se confirma con la base SIN memoria, así devolverle el acceso vale al instante en los dos bots
+      try { for (const c of await chatsExtra({ fresco: true })) permitidos.add(String(c)); } catch { /* se queda como estaba */ }
+      if (permitidos.has(String(chat))) revocados = new Set(); else { try { revocados = new Set((await chatsRevocados({ fresco: true })).map(String)); } catch { /* se queda como estaba */ } }
+    }
     const hora = horaEnLima(ahora());
     const acciones = await procesarUpdate(update, { consultar, permitidos, revocados, hoy: hoyEnLima(ahora()), hora, bot: modo === 'resumen' ? 'resumen' : 'consultas', graficos, ahora: ahora(), administradores });
     for (const a of acciones) await ejecutar(fetchFn, token, a, renderizar);

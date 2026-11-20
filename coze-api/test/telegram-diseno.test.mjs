@@ -180,6 +180,38 @@ ok(pasosDeAcceso('123456789').includes('<code>123456789</code>') && pasosDeAcces
   igual(consultas, 2, 'pasado el tiempo, se vuelve a leer (un acceso revocado deja de valer en segundos)');
   const rota = crearLectorDeChats(async () => { throw new Error('base caída con secretos'); }, { ahora: () => 0 });
   igual(await rota(), [], 'si la base falla, devuelve vacío (falla cerrado)');
+  // un fallo pasajero NO se guarda en memoria: el siguiente mensaje vuelve a preguntar
+  let falla = true, intentos = 0;
+  const pasajero = crearLectorDeChats(async () => { intentos++; if (falla) throw new Error('timeout'); return [{ chat_id: 111 }]; }, { ttlMs: 60_000, ahora: () => 0 });
+  igual(await pasajero(), [], 'con la base caída devuelve vacío');
+  falla = false;
+  igual([await pasajero(), intentos], [['111'], 2], 'un error pasajero no deja a nadie bloqueado: el siguiente mensaje consulta de nuevo (sin esperar los 15 s)');
+  // leer({ fresco: true }) se salta la memoria
+  let dato = [{ chat_id: 1 }]; let lecturas = 0;
+  const memo = crearLectorDeChats(async () => { lecturas++; return dato; }, { ttlMs: 60_000, ahora: () => 0 });
+  await memo(); dato = [{ chat_id: 2 }];
+  igual([await memo(), await memo({ fresco: true }), await memo(), lecturas], [['1'], ['2'], ['2'], 2], 'con «fresco» se relee la base y lo nuevo queda en memoria');
+}
+
+// ── Devolver el acceso a un revocado vale AL INSTANTE (en los dos bots), aunque la memoria de 15 s diga lo contrario ──
+{
+  const SECRETO = 's'.repeat(40);
+  let activo = false; // estado de la base: la persona empieza revocada y luego se le devuelve el acceso
+  const sqlFalso = async (texto) => (/revocados/.test(texto) ? (activo ? [] : [{ chat_id: '777888999' }]) : (activo ? [{ chat_id: '777888999' }] : []));
+  const res = () => ({ codigo: 0, setHeader() {}, status(c) { this.codigo = c; return this; }, json() { return this; } });
+  for (const modo of ['consultas', 'resumen']) {
+    activo = false;
+    const env = modo === 'resumen' ? { TELEGRAM_BOT_RESUMEN_TOKEN: '1234567890:AAExampleTokenQueNoEsReal_abcdefghijk', TELEGRAM_RESUMEN_WEBHOOK_SECRET: SECRETO } : { TELEGRAM_BOT_COMANDOS_TOKEN: '1234567890:AAExampleTokenQueNoEsReal_abcdefghijk', TELEGRAM_WEBHOOK_SECRET: SECRETO };
+    const textos = [];
+    const fetchFalso = async (url, init) => { if (!url.endsWith('/sendChatAction')) textos.push(JSON.parse(init.body).text ?? ''); return { ok: true, status: 200, json: async () => ({ ok: true }) }; };
+    const manejador = crearManejador({ modo, env, consultar: sin, fetchFn: fetchFalso, chatsExtra: crearLectorDeChats(sqlFalso, { ttlMs: 3_600_000 }), chatsRevocados: crearLectorDeRevocados(sqlFalso, { ttlMs: 3_600_000 }) });
+    const mandar = () => manejador({ method: 'POST', headers: { 'x-telegram-bot-api-secret-token': SECRETO }, body: msg('/ayuda', 777888999) }, res());
+    await mandar();
+    ok(/revocado/.test(textos.at(-1)), `${modo}: revocado, recibe el aviso`);
+    activo = true; // el administrador le devuelve el acceso (la memoria de una hora todavía diría «revocado»)
+    await mandar();
+    ok(!/revocado/.test(textos.at(-1)) && /Asistente V1K|Resumen diario V1K/.test(textos.at(-1)), `${modo}: al devolverle el acceso lo atiende al instante, sin esperar la memoria`);
+  }
 }
 
 // ── El resumen diario con diseño ─────────────────────────────────────────────────────────
