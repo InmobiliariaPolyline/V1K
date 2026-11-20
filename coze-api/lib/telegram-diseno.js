@@ -104,3 +104,9 @@ export function diaCorto(iso) {
   const dias = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
   return `${dias[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
+
+/** «17:45»: la hora y el minuto en Lima de un instante (el gráfico dice cuándo se generó). */
+export function horaMinutoLima(ahora = new Date()) {
+  const d = new Date(ahora.getTime() - 5 * 3_600_000);
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+}

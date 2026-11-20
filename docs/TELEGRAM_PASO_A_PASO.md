@@ -124,7 +124,7 @@ Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** 
 | Qué usar para cada cosa | `/guia` | Coze, los bots o el panel |
 | Ver todos los comandos | `/ayuda` | |
 
-Los comandos con (gráfico) responden con una **imagen**: tócala para verla en grande. **Cada respuesta trae** un resumen arriba (totales, avance medio…), los datos en tarjetas o en una tabla, una línea **💡** con la lectura («2 de 10 proyectos están atrasados») y de cuándo son los datos
+Los comandos con (gráfico) responden con una **imagen** hecha con los datos de ese momento: tócala para verla en grande. Abajo dice qué tan nuevos son los datos y a qué hora se generó; toca **🔄 Actualizar** para volver a consultar y cambiar la imagen en el mismo mensaje. **Cada respuesta trae** un resumen arriba (totales, avance medio…), los datos en tarjetas o en una tabla, una línea **💡** con la lectura («2 de 10 proyectos están atrasados») y de cuándo son los datos
 (**🕒** «MRP ✅ hace 20 h»; si pasan de un día, avisa que pueden estar desactualizados). Las listas largas tienen botones **‹ Anterior** y **Siguiente ›**, y los filtros son botones: no hace falta escribir.
 
 ### ¿Cuál uso: Coze, el bot de consultas, el del resumen o el panel?

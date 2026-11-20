@@ -163,6 +163,70 @@ const llamar = async (cmd, extra = {}, respuestas = {}) => {
   ok(fallo.r.codigo === 200, 'siempre 200 para que Telegram no reintente, incluso si todo falla');
 }
 
+// ── El gráfico se genera con los datos de ese momento, y el botón «Actualizar» lo refresca ──
+{
+  const AHORA = new Date('2026-11-19T22:45:00Z'); // 17:45 en Lima
+  const datos1 = { ...DATOS, proyectos: [{ nombre: 'V7K', estado: 'atrasado', avance_pct: '40', fin: '2026-10-31', tareas_atrasadas: 1 }] };
+  const datos2 = { ...DATOS, proyectos: [{ nombre: 'V7K', estado: 'en curso', avance_pct: '55', fin: '2026-10-31', tareas_atrasadas: 0 }] };
+  const de = (d) => async (vista) => d[vista] ?? [];
+  const svgDe = async (d, cmd = '/proyectos', extra = {}) => (await correr(cmd, { consultar: de(d), graficos: true, ahora: AHORA, ...extra })).find((a) => a.metodo === 'sendPhoto').imagen;
+  const antes = await svgDe(datos1), despues = await svgDe(datos2);
+  ok(antes !== despues && antes.includes('40 %') && despues.includes('55 %') && !despues.includes('40 %'), 'si cambian los datos (por ejemplo el avance en el Planner), el gráfico siguiente es distinto');
+  ok(antes.includes('atrasado') && despues.includes('en curso'), 'y también cambia el estado que muestra');
+  ok(antes.includes('gráfico de las 17:45') && antes.includes('Planner hace 5 h'), 'cada gráfico dice a qué hora se generó y qué tan viejos son los datos de la app');
+  const consultas = [];
+  await correr('/proyectos', { consultar: async (v, f) => { consultas.push(v); return DATOS[v] ?? []; }, graficos: true });
+  await correr('/proyectos', { consultar: async (v, f) => { consultas.push(v); return DATOS[v] ?? []; }, graficos: true });
+  ok(consultas.filter((v) => v === 'proyectos').length === 2, 'cada pedido consulta la base otra vez (no se guarda en caché)');
+
+  // El botón «Actualizar» de cada gráfico
+  const botonesDe = (acciones) => acciones.flatMap((a) => (a.cuerpo?.reply_markup?.inline_keyboard ?? []).flat());
+  const esperados = { '/proyectos': 'c:proyectos:p1', '/stock': 'c:stock', '/mercado venta': 'c:mercado:venta', '/portales': 'c:portales', '/tendencias': 'c:tendencias' };
+  for (const [cmd, dato] of Object.entries(esperados)) {
+    const b = botonesDe(await correr(cmd, { graficos: true })).find((x) => x.text === '🔄 Actualizar');
+    ok(b && b.callback_data === dato, `${cmd}: botón «Actualizar» que repite el mismo comando (${dato})`);
+  }
+  igual(botonesDe(await correr('/proyectos atrasado', { graficos: true })).find((x) => x.text === '🔄 Actualizar').callback_data, 'c:proyectos:atrasado p1', 'conserva el filtro y la página');
+
+  // Tocarlo sobre un gráfico lo reemplaza en su mismo mensaje
+  const sobreFoto = (data, mensaje = { photo: [{ file_id: 'x' }] }) => ({ callback_query: { id: 'cb7', data, message: { chat: { id: CHAT }, message_id: 88, ...mensaje } } });
+  const r1 = await procesarUpdate(sobreFoto('c:proyectos:p1'), { consultar: de(datos2), permitidos: new Set([String(CHAT)]), hoy: '2026-11-19', graficos: true, ahora: AHORA });
+  igual(r1[0].metodo, 'answerCallbackQuery', 'el botón se contesta primero');
+  ok(r1[0].cuerpo.text.includes('17:45'), 'con un aviso emergente con la hora del gráfico nuevo');
+  const e = r1.find((a) => a.metodo === 'editMessageMedia');
+  ok(e && e.archivo === 'foto' && e.cuerpo.message_id === 88 && e.cuerpo.media.media === 'attach://foto' && e.cuerpo.media.type === 'photo', 'sobre una foto se edita la imagen del mismo mensaje');
+  ok(e.imagen.includes('55 %') && e.cuerpo.media.caption.length <= 1024 && e.cuerpo.reply_markup.inline_keyboard.length >= 1, 'con el gráfico nuevo, el pie de foto y los botones');
+  igual(e.alternativa.metodo, 'sendPhoto', 'si no se puede editar, se envía una foto nueva');
+  ok(!r1.some((a) => a.metodo === 'sendMessage'), 'sin mensajes de más');
+  const r2 = await procesarUpdate(sobreFoto('c:proyectos:p1', { text: 'menú' }), { consultar: de(datos2), permitidos: new Set([String(CHAT)]), hoy: '2026-11-19', graficos: true, ahora: AHORA });
+  ok(r2.some((a) => a.metodo === 'sendPhoto') && !r2.some((a) => a.metodo === 'editMessageMedia'), 'sobre un mensaje de texto se envía la foto (no se puede editar texto a foto)');
+  const r3 = await procesarUpdate(sobreFoto('c:alertas'), { consultar: de(DATOS), permitidos: new Set([String(CHAT)]), hoy: '2026-11-19', graficos: true, ahora: AHORA });
+  ok(r3.some((a) => a.metodo === 'sendMessage') && !r3.some((a) => a.metodo === 'editMessageMedia'), 'si el nuevo contenido no es un gráfico, se envía un mensaje (no se puede convertir una foto en texto)');
+  ok(!r3[0].cuerpo.text, 'y el aviso emergente solo sale cuando hay gráfico');
+
+  // El manejador sube la imagen nueva con el archivo adjunto
+  const llamadasEdicion = [];
+  const fetchEd = (respuestas = {}) => async (url, init) => {
+    const metodo = url.split('/').pop();
+    llamadasEdicion.push({ metodo, init });
+    const r = respuestas[metodo];
+    return r ? { ok: false, status: r.status, json: async () => ({ ok: false, description: r.descripcion }) } : { ok: true, status: 200, json: async () => ({ ok: true }) };
+  };
+  const enviar = async (respuestas) => { llamadasEdicion.length = 0; const rr = res(); await crearManejador({ env, consultar: de(datos2), fetchFn: fetchEd(respuestas) })({ method: 'POST', headers: { 'x-telegram-bot-api-secret-token': SECRETO }, body: sobreFoto('c:proyectos:p1') }, rr); return rr; };
+  await enviar();
+  const edicion = llamadasEdicion.find((l) => l.metodo === 'editMessageMedia');
+  ok(edicion && edicion.init.body instanceof FormData, 'editMessageMedia se envía como formulario multipart');
+  const f = edicion.init.body;
+  igual([f.get('chat_id'), f.get('message_id')], [String(CHAT), '88'], 'con el chat y el mensaje a reemplazar');
+  igual(JSON.parse(f.get('media')).media, 'attach://foto', 'el medio apunta al archivo adjunto «foto»');
+  ok(f.get('foto') instanceof Blob && Buffer.from(await f.get('foto').arrayBuffer()).subarray(0, 8).equals(PNG), 'y el archivo adjunto es el PNG nuevo');
+  ok(!llamadasEdicion.some((l) => l.metodo === 'sendPhoto'), 'si la edición funciona no se envía otra foto');
+  await enviar({ editMessageMedia: { status: 400, descripcion: 'Bad Request: message to edit not found' } });
+  igual(llamadasEdicion.map((l) => l.metodo).filter((m) => m !== 'answerCallbackQuery'), ['editMessageMedia', 'sendPhoto'], 'si no se puede editar, se envía una foto nueva');
+  await enviar({ editMessageMedia: { status: 400, descripcion: 'Bad Request: message is not modified: specified new message content and reply markup are exactly the same' } });
+  ok(!llamadasEdicion.some((l) => l.metodo === 'sendPhoto'), 'si el gráfico quedó igual, no se envía una foto repetida');
+}
+
 // ── Despliegue ───────────────────────────────────────────────────────────────────────────
 {
   const raiz = path.join(aqui, '..');

@@ -12,7 +12,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { normalizar } from '../public/js/nucleo/formato.js';
 import { hoyEnLima } from '../scripts/resumen-diario.mjs';
 import { COMANDOS, COMANDOS_DEL_BOT, ESTADOS_PROYECTO, MAX_ARGUMENTO, MAX_MENSAJE, NOMBRES_COMANDOS, estadoProyecto, fechaHoraLima, parsearPropiedades, resolverComando, tecladoMenu } from './telegram-comandos.js';
-import { BASE_PUBLICA, BOT_CONSULTAS, BOT_RESUMEN, codigo, esc, horaEnLima, nombreCorto, pasosDeAcceso, saludoDe, tarjeta } from './telegram-diseno.js';
+import { BASE_PUBLICA, BOT_CONSULTAS, BOT_RESUMEN, codigo, esc, horaEnLima, horaMinutoLima, nombreCorto, pasosDeAcceso, saludoDe, tarjeta } from './telegram-diseno.js';
 
 export { BOT_CONSULTAS, BOT_RESUMEN, ESTADOS_PROYECTO, MAX_ARGUMENTO, MAX_MENSAJE, NOMBRES_COMANDOS, esc, estadoProyecto, fechaHoraLima, parsearPropiedades, tecladoMenu };
 
@@ -118,7 +118,7 @@ function conAnimacion(chat, panel, variante, caption, teclado) {
  * `bot` es 'consultas' (todos los comandos) o 'resumen' (briefing). Con `graficos`, los comandos que tienen gráfico lo envían como foto (el texto queda de respaldo). `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
  * Los botones de un mensaje de texto EDITAN ese mismo mensaje (la conversación no se llena de respuestas); si no se puede editar, se envía uno nuevo.
  */
-export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas', graficos = false }) {
+export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas', graficos = false, ahora = new Date() }) {
   const cb = update?.callback_query;
   const msg = update?.message;
   const chat = cb?.message?.chat?.id ?? msg?.chat?.id;
@@ -180,10 +180,17 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
   }
   if (!cb && cmd !== 'ayuda' && cmd !== 'guia') acciones.push({ metodo: 'sendChatAction', cuerpo: { chat_id: chat, action: 'typing' } });
   try {
-    const r = await COMANDOS[cmd]({ args: orden.args, consultar, hoy, panel, bot });
+    const generado = horaMinutoLima(ahora);
+    const r = await COMANDOS[cmd]({ args: orden.args, consultar, hoy, panel, bot, generado });
     const cuerpo = { text: r.html, parse_mode: 'HTML', reply_markup: r.teclado ?? menu(), disable_web_page_preview: true };
     if (graficos && r.grafico) { // un gráfico como foto; si no se puede dibujar o enviar, sale el mismo contenido en texto
-      acciones.push({ metodo: 'sendPhoto', imagen: r.grafico.svg, cuerpo: { chat_id: chat, caption: r.grafico.caption, parse_mode: 'HTML', reply_markup: r.teclado ?? menu() }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } });
+      const foto = { metodo: 'sendPhoto', imagen: r.grafico.svg, archivo: 'photo', cuerpo: { chat_id: chat, caption: r.grafico.caption, parse_mode: 'HTML', reply_markup: r.teclado ?? menu() }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } };
+      const esFoto = Array.isArray(cb?.message?.photo) && cb.message.message_id !== undefined;
+      if (esFoto) { // un botón sobre un gráfico lo REEMPLAZA en su mismo mensaje (datos nuevos, sin llenar el chat); si no se puede editar, se envía uno nuevo
+        acciones.push({ metodo: 'editMessageMedia', imagen: r.grafico.svg, archivo: 'foto', cuerpo: { chat_id: chat, message_id: cb.message.message_id, media: { type: 'photo', media: 'attach://foto', caption: r.grafico.caption, parse_mode: 'HTML' }, reply_markup: r.teclado ?? menu() }, alternativa: foto });
+      } else acciones.push(foto);
+      const respuesta = acciones.find((a) => a.metodo === 'answerCallbackQuery');
+      if (respuesta) respuesta.cuerpo.text = `🔄 Gráfico de las ${generado} (datos de la base en este momento)`;
       return acciones;
     }
     const editable = typeof cb?.message?.text === 'string' && cb.message.message_id !== undefined;
@@ -215,7 +222,7 @@ async function ejecutar(fetchFn, token, accion, renderizar) {
       const png = await renderizar(a.imagen);
       const form = new FormData();
       for (const [k, v] of Object.entries(a.cuerpo)) form.append(k, v !== null && typeof v === 'object' ? JSON.stringify(v) : String(v));
-      form.append('photo', new Blob([png], { type: 'image/png' }), 'grafico.png');
+      form.append(a.archivo ?? 'photo', new Blob([png], { type: 'image/png' }), 'grafico.png');
       init = { method: 'POST', body: form };
     } else init = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(a.cuerpo) };
     const r = await fetchFn(`https://api.telegram.org/bot${token}/${a.metodo}`, init);

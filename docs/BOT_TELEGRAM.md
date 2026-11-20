@@ -35,6 +35,10 @@ Son **16 comandos** en el bot de consultas, agrupados en el menú «/» y en `/a
 **Gráficos.** `/proyectos`, `/stock`, `/mercado`, `/portales` y `/tendencias` responden con un **gráfico como imagen** (barras de avance, barras por categoría o distrito, minigráficos de tendencia) con el mismo
 estilo de las ilustraciones del repositorio, y debajo el resumen, la lectura y los botones. Telegram no muestra SVG, así que el servidor dibuja el SVG como PNG con **resvg** y la fuente **Inter**
 (`coze-api/assets/fonts/`, licencia OFL) y lo envía con `sendPhoto`. Si el gráfico no se pudiera dibujar o Telegram lo rechazara, el bot envía **el mismo contenido en texto** (con tabla), así que nunca se queda sin responder.
+**Datos en el momento.** El gráfico no es una imagen guardada: **se genera cada vez que se pide**, consultando la base central en ese instante (sin caché), así que si algo cambia
+en el Planner, el MRP o el Scraper y la app ya sincronizó, el gráfico siguiente es distinto. Cada imagen dice abajo **qué tan viejos son los datos de la app** («Planner hace 5 h») y **a qué hora se generó**
+(«gráfico de las 17:45», hora de Lima). La foto enviada es una instantánea y no se actualiza sola: el botón **🔄 Actualizar** (y los demás botones del gráfico) **reemplazan la imagen en el mismo mensaje**
+con una consulta nueva, sin llenar el chat de fotos repetidas, y avisan con «Gráfico de las HH:MM». El tramo app → base central depende de la sincronización de cada app (al guardar y con un respaldo periódico).
 El código está en `lib/graficos.js` (SVG, puro y probado) y `lib/imagenes.js` (SVG → PNG).
 
 **Cada respuesta** trae un encabezado con totales, los datos en tarjetas (`<blockquote>`) o en tablas (`<pre>`, monoespaciado), una línea **💡 de lectura** y el **pie de frescura**
