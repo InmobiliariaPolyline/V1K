@@ -78,15 +78,22 @@ Es lo esperado: el bot solo atiende a las personas que el administrador autoriz�
 **Es el mismo número para los dos bots**, así que basta con enviarlo una vez.
 
 El administrador te registra en el panel de V1K y el bot te avisa por sí mismo: «Ya tienes acceso». Si no te llega el aviso, vuelve al bot de consultas y pulsa **Iniciar** otra vez: te recibe con su animación de bienvenida, te saluda por tu nombre y
-verás el menú con botones. Desde la mañana siguiente te llegará también el resumen diario.
+verás el **panel de Inicio** (tu nombre, tu número de chat, tu acceso y cómo está todo) con el menú de botones, y abajo, junto a donde escribes, unos **atajos fijos**. Desde la mañana siguiente te llegará también el resumen diario.
 
 > Lo que el administrador sabe de ti es solo lo que tú le envías (nombre, teléfono y número de chat). No ve tus contactos ni tus otras conversaciones de Telegram.
 
 ## Cómo usar el bot de consultas
 
-Toca los botones o escribe los comandos. Si olvidas alguno, el botón **Menú** (abajo a la izquierda) los lista.
+Toca los botones o escribe los comandos. En cualquier momento, el botón **🏠 Inicio** (o el atajo fijo de abajo, o `/inicio`) te lleva al **inicio de todo**: ahí ves tu nombre, tu **número de chat** y cómo está todo. Si olvidas un comando, `/ayuda` los lista.
 
 <img src="assets/telegram-uso.svg" alt="Ejemplo de conversación: se pide /resumen y el bot responde con lo urgente, los datos al día y los botones del menú" width="100%" />
+
+**Inicio**
+
+| Para saber… | Escribe o pulsa | Ejemplos |
+|---|---|---|
+| El inicio de todo: quién eres, tu número de chat y cómo está todo | `/inicio` | también el atajo **🏠 Inicio** de abajo |
+| Cómo te ve el asistente (nombre, número de chat y acceso) | `/cuenta` | `/yo` · `/perfil` |
 
 **Hoy**
 

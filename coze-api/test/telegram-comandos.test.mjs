@@ -2,9 +2,9 @@
 // (páginas, filtros, detalle) y qué entiende cada bot. Todo con datos ficticios y sin red.
 import assert from 'node:assert/strict';
 import { VISTAS } from '../lib/vistas.js';
-import { CATALOGO, COMANDOS_DEL_BOT, MENU_DE_COMANDOS, NOMBRES_COMANDOS, argSeguro, resolverComando, tecladoMenu } from '../lib/telegram-comandos.js';
+import { CATALOGO, COMANDOS_DEL_BOT, MENU_DE_COMANDOS, NOMBRES_COMANDOS, argSeguro, atajoDe, resolverComando, tecladoFijo, tecladoMenu } from '../lib/telegram-comandos.js';
 import { procesarUpdate } from '../lib/telegram.js';
-import { diaCorto, paginaDe, pieDatos, recortar, separarPagina, tablaPre } from '../lib/telegram-diseno.js';
+import { diaCorto, identidadDe, paginaDe, pieDatos, recortar, separarPagina, tablaPre, tarjetaIdentidad } from '../lib/telegram-diseno.js';
 
 let n = 0;
 const ok = (c, m) => { n++; assert.ok(c, m); };
@@ -73,14 +73,15 @@ const botonesDe = (cuerpo) => (cuerpo.reply_markup?.inline_keyboard ?? []).flat(
 
 // ── Catálogo ─────────────────────────────────────────────────────────────────────────────
 igual(NOMBRES_COMANDOS.length, CATALOGO.length, 'cada comando del catálogo está en el menú');
-ok(CATALOGO.length >= 16, `hay ${CATALOGO.length} comandos`);
-for (const nuevo of ['alertas', 'agenda', 'proyecto', 'stock', 'mercado', 'portales', 'buscar', 'guia']) ok(NOMBRES_COMANDOS.includes(nuevo), `existe /${nuevo}`);
-igual([resolverComando('ahora'), resolverComando('HOY'), resolverComando('semana'), resolverComando('datos'), resolverComando('menu'), resolverComando('guía'), resolverComando('nada')], ['resumen', 'resumen', 'tendencias', 'frescura', 'ayuda', 'guia', undefined], 'alias de los comandos');
+igual(CATALOGO.length, 18, `hay ${CATALOGO.length} comandos`);
+for (const nuevo of ['inicio', 'cuenta', 'alertas', 'agenda', 'proyecto', 'stock', 'mercado', 'portales', 'buscar', 'guia']) ok(NOMBRES_COMANDOS.includes(nuevo), `existe /${nuevo}`);
+igual([resolverComando('ahora'), resolverComando('HOY'), resolverComando('semana'), resolverComando('datos'), resolverComando('menu'), resolverComando('guía'), resolverComando('nada'), resolverComando('home'), resolverComando('yo'), resolverComando('Perfil')], ['resumen', 'resumen', 'tendencias', 'frescura', 'ayuda', 'guia', undefined, 'inicio', 'cuenta', 'cuenta'], 'alias de los comandos');
 for (const bot of Object.keys(MENU_DE_COMANDOS)) {
   ok(MENU_DE_COMANDOS[bot].every((c) => /^[a-z_]{1,32}$/.test(c.command) && c.description.length >= 3 && c.description.length <= 256), `menú «/» válido para Telegram (${bot})`);
   ok(new Set(MENU_DE_COMANDOS[bot].map((c) => c.command)).size === MENU_DE_COMANDOS[bot].length, `sin comandos repetidos (${bot})`);
 }
-igual(MENU_DE_COMANDOS.resumen.map((c) => c.command), ['ahora', 'alertas', 'agenda', 'semana', 'guia', 'ayuda'], 'el bot del resumen tiene un briefing de seis comandos');
+igual(MENU_DE_COMANDOS.resumen.map((c) => c.command), ['inicio', 'cuenta', 'ahora', 'alertas', 'agenda', 'semana', 'guia', 'ayuda'], 'el bot del resumen tiene un briefing de ocho comandos (el inicio y la cuenta primero)');
+igual(MENU_DE_COMANDOS.consultas.slice(0, 2).map((c) => c.command), ['inicio', 'cuenta'], 'en el bot de consultas, Inicio y Mi cuenta encabezan el menú «/»');
 ok(COMANDOS_DEL_BOT.resumen.every((c) => COMANDOS_DEL_BOT.consultas.includes(c)), 'lo del resumen es un subconjunto de lo de consultas');
 ok(CATALOGO.every((c) => c.icono && c.titulo && c.grupo && c.desc), 'cada comando tiene icono, título, grupo y descripción');
 
@@ -105,10 +106,10 @@ ok(pieDatos([{ app: 'mrp', hace_horas: '30' }], ['mrp'], { estado: () => 'aviso'
 igual(pieDatos([], ['mrp'], { estado: () => 'ok', haceHoras: () => '' }), '', 'sin datos de frescura no hay pie');
 
 // ── Cada comando, en los dos bots ────────────────────────────────────────────────────────
-const casos = ['/resumen', '/alertas', '/agenda', '/agenda 30', '/proyectos', '/proyectos atrasado', '/proyectos p2', '/proyecto Proyecto 3', '/proyecto torre', '/proyecto zzz', '/proyecto',
+const casos = ['/inicio', '/cuenta', '/resumen', '/alertas', '/agenda', '/agenda 30', '/proyectos', '/proyectos atrasado', '/proyectos p2', '/proyecto Proyecto 3', '/proyecto torre', '/proyecto zzz', '/proyecto',
   '/materiales', '/materiales p2', '/stock', '/pedidos', '/pedidos vencidos', '/pedidos parcial', '/propiedades', '/propiedades venta miraflores', '/propiedades p2', '/mercado', '/mercado venta', '/mercado alquiler',
   '/portales', '/buscar torre', '/buscar zz', '/buscar', '/frescura', '/tendencias', '/guia', '/ayuda'];
-const permitidosPorBot = { consultas: casos, resumen: ['/ahora', '/alertas', '/agenda', '/semana', '/guia', '/ayuda'] };
+const permitidosPorBot = { consultas: casos, resumen: ['/inicio', '/cuenta', '/ahora', '/alertas', '/agenda', '/semana', '/guia', '/ayuda'] };
 for (const [bot, lista] of Object.entries(permitidosPorBot)) {
   for (const c of lista) {
     const consulta = crearConsulta();
@@ -119,7 +120,7 @@ for (const [bot, lista] of Object.entries(permitidosPorBot)) {
     ok(!/undefined|NaN|\[object|null/.test(cuerpo.text), `${bot} ${c}: sin undefined/NaN/null`);
     ok(consulta.llamadas.every((l) => Object.hasOwn(VISTAS, l.vista)), `${bot} ${c}: solo pide vistas que existen`);
     const botones = botonesDe(cuerpo);
-    ok(botones.length >= 1 && (botones.at(-1).text === '🏠 Menú' || c === '/ayuda'), `${bot} ${c}: termina con el botón «Menú» (o es el propio menú)`);
+    ok(botones.length >= 1 && (botones.at(-1).text === '🏠 Inicio' || ['/ayuda', '/inicio'].includes(c)), `${bot} ${c}: termina con el botón «Inicio» (o es el propio menú o el inicio)`);
     const permitidos = new Set(COMANDOS_DEL_BOT[bot]);
     ok(botones.every((b) => /^c:[a-z]{1,20}(:[\w ]{1,30})?$/.test(b.callback_data) && Buffer.byteLength(b.callback_data) <= 64 && permitidos.has(b.callback_data.split(':')[1]) === true || b.callback_data === 'c:ayuda'), `${bot} ${c}: botones válidos y solo hacia comandos de ese bot`);
     ok(botones.every((b) => b.text.length >= 2 && b.text.length <= 40), `${bot} ${c}: textos de botón razonables`);
@@ -277,4 +278,86 @@ for (const [bot, lista] of Object.entries(permitidosPorBot)) {
   ok(respuesta(ok1).text.includes('/buscar torre'), 'el botón «Buscar» sin texto explica cómo usarlo');
 }
 
-console.log(`OK: comandos y botones — ${n} comprobaciones (16 comandos, tablas, páginas, filtros, detalle, guía y los dos bots)`);
+// ── Inicio: quién eres (con tu número de chat), cómo está todo y el menú ─────────────────
+{
+  const de = { first_name: 'Ana', last_name: 'Pérez', username: 'ana_perez' };
+  const conUsuario = (texto, bot = 'consultas', admins = new Set(), extra = {}) => procesarUpdate({ message: { message_id: 1, chat: { id: CHAT }, from: de, text: texto } }, { consultar: crearConsulta(), permitidos: PERMITIDOS, administradores: admins, hoy: HOY, panel: 'https://ejemplo.test', hora: 9, bot, ...extra });
+
+  const i = respuesta(await conUsuario('/inicio'));
+  ok(i.text.startsWith('🏠 <b>Inicio</b>') && i.text.includes('@v1k_consultas_bot'), '/inicio: el panel de inicio del bot de consultas');
+  ok(i.text.includes('👤 <b>Ana Pérez</b> · @ana_perez') && i.text.includes('🆔 Número de chat: <code>424242424</code>'), '/inicio: tarjeta de usuario con nombre, @usuario y NÚMERO DE CHAT (se copia al tocarlo)');
+  ok(i.text.includes('✅ Acceso activo · persona autorizada'), '/inicio: una persona dada de alta en el módulo se ve como «persona autorizada»');
+  ok(/<b>Ahora mismo<\/b>/.test(i.text) && i.text.includes('🚨') && /Consultado a las \d\d:\d\d/.test(i.text) && i.text.includes('Planner'), '/inicio: cómo está todo (alertas), a qué hora se consultó y la frescura de los datos');
+  ok(equilibrado(i.text) && i.text.length < 1500, `/inicio: etiquetas equilibradas y corto (${i.text.length})`);
+  const filas = i.reply_markup.inline_keyboard;
+  ok(filas.length === 7 && filas.at(-1).map((b) => b.callback_data).join() === 'c:inicio,c:cuenta,c:ayuda', '/inicio: el menú de siempre y, al final, Actualizar · Mi cuenta · Ayuda');
+  ok(filas.flat().some((b) => b.callback_data === 'c:alertas') && filas.flat().some((b) => b.callback_data === 'c:proyectos'), '/inicio: con los botones del menú');
+
+  const admin = respuesta(await conUsuario('/inicio', 'consultas', new Set([String(CHAT)])));
+  ok(admin.text.includes('✅ Acceso activo · administrador') && !admin.text.includes('persona autorizada'), 'quien está en la variable de administradores se ve como «administrador»');
+
+  const r = respuesta(await conUsuario('/inicio', 'resumen'));
+  ok(r.text.includes('@v1k_asistente_bot') && r.text.includes('🆔 Número de chat: <code>424242424</code>') && r.text.includes('Ana Pérez'), 'el bot del resumen también muestra el inicio con el número de chat');
+  igual(r.reply_markup.inline_keyboard.at(-1).map((b) => b.callback_data), ['c:inicio', 'c:cuenta'], 'y su panel termina con Actualizar · Mi cuenta (la ayuda ya está en su menú)');
+
+  // si la base no responde, el inicio sale igual (con quién eres)
+  const roto = respuesta(await conUsuario('/inicio', 'consultas', new Set(), { consultar: async () => { throw new Error('base caída host-secreto password=x'); } }));
+  ok(roto.text.includes('<code>424242424</code>') && /No pude leer el estado/.test(roto.text) && !/secreto|password/.test(roto.text), 'sin base, el inicio igual muestra el número de chat y no filtra el error');
+
+  // Mi cuenta
+  const c = respuesta(await conUsuario('/cuenta'));
+  ok(c.text.includes('🪪 <b>Mi cuenta</b>') && c.text.includes('<code>424242424</code>') && c.text.includes('¿Para qué sirve el número de chat?'), '/cuenta: tarjeta de usuario y para qué sirve el número');
+  ok(c.text.includes('@v1k_asistente_bot') && !c.text.includes('<b>Ahora mismo</b>'), '/cuenta: nombra el otro bot y no repite el estado');
+  igual(botonesDe(c).map((b) => b.callback_data), ['c:inicio'], '/cuenta: vuelve al inicio');
+
+  // sin datos de Telegram (por ejemplo un usuario sin nombre ni @usuario) se ve «Tú»
+  const anonimo = respuesta(await procesarUpdate({ message: { message_id: 1, chat: { id: CHAT }, text: '/cuenta' } }, { consultar: crearConsulta(), permitidos: PERMITIDOS, hoy: HOY, panel: 'https://ejemplo.test' }));
+  ok(anonimo.text.includes('👤 <b>Tú</b>') && anonimo.text.includes('<code>424242424</code>'), 'sin nombre ni @usuario se muestra «Tú» y el número de chat');
+
+  // datos de Telegram hostiles
+  const hostil = respuesta(await procesarUpdate({ message: { message_id: 1, chat: { id: CHAT }, from: { first_name: '<img src=x onerror=1>', last_name: 'A\u2028B\n', username: 'no es valido<' }, text: '/cuenta' } }, { consultar: crearConsulta(), permitidos: PERMITIDOS, hoy: HOY, panel: 'https://ejemplo.test' }));
+  ok(!hostil.text.includes('<img') && !hostil.text.includes('@no es') && equilibrado(hostil.text) && !hostil.text.includes(' '), 'un nombre con HTML, separadores raros o un @usuario inválido no rompe ni se cuela');
+  igual(identidadDe({ first_name: 'x'.repeat(100) }).nombre.length, 40, 'el nombre se acota a 40 caracteres');
+  igual(identidadDe({ username: 'ab' }).usuario, '', 'un @usuario demasiado corto se descarta');
+  ok(tarjetaIdentidad({ chatId: '1', acceso: 'revocado' }).includes('🚫 Acceso revocado') && tarjetaIdentidad({ chatId: '1', acceso: 'privado' }).includes('⛔ Sin acceso todavía'), 'la tarjeta distingue revocado y sin acceso');
+
+  // el texto libre lleva al inicio (no a un «no entiendo»)
+  const libre = respuesta(await conUsuario('hola, ¿cómo va todo?'));
+  ok(libre.text.startsWith('🏠 <b>Inicio</b>') && libre.text.includes('<code>424242424</code>'), 'texto libre: lleva al inicio con tu número de chat');
+  // el botón «Inicio» de cualquier respuesta, desde un mensaje de texto, edita ese mensaje
+  const ed = await correr(boton('c:inicio'));
+  ok(ed.some((x) => x.metodo === 'editMessageText' && x.cuerpo.text.startsWith('🏠 <b>Inicio</b>')), 'el botón «🏠 Inicio» vuelve al panel en el mismo mensaje');
+  // escribir /inicio activa además los atajos; los botones y los atajos no repiten ese aviso
+  const escrito = await conUsuario('/inicio');
+  const avisos = escrito.filter((x) => x.metodo === 'sendMessage');
+  ok(avisos.length === 2 && avisos[1].cuerpo.text.includes('Atajos activados') && avisos[1].cuerpo.reply_markup.keyboard?.length === 4, '/inicio escrito: el panel y el aviso con el teclado fijo');
+  ok((await correr(boton('c:inicio'))).filter((x) => x.metodo === 'editMessageText' || x.metodo === 'sendMessage').every((x) => !x.cuerpo.text.includes('Atajos activados')), 'el botón Inicio no repite el aviso de atajos');
+  ok((await conUsuario('hola')).filter((x) => x.metodo === 'sendMessage').length === 1, 'el texto libre tampoco');
+}
+
+// ── Teclado fijo de atajos ───────────────────────────────────────────────────────────────
+{
+  for (const bot of ['consultas', 'resumen']) {
+    const k = tecladoFijo(bot);
+    const etiquetas = k.keyboard.flat().map((b) => b.text);
+    ok(k.is_persistent === true && k.resize_keyboard === true && k.input_field_placeholder.length <= 64, `${bot}: teclado persistente, ajustado y con texto de ayuda (≤ 64)`);
+    ok(etiquetas.length >= 7 && etiquetas.includes('🏠 Inicio') && etiquetas.includes('🪪 Mi cuenta') && new Set(etiquetas).size === etiquetas.length, `${bot}: atajos únicos con Inicio y Mi cuenta (${etiquetas.length})`);
+    ok(k.keyboard.every((fila) => fila.length >= 1 && fila.length <= 3 && fila.every((b) => Object.keys(b).join() === 'text')), `${bot}: filas de hasta 3 botones`);
+    for (const e of etiquetas) {
+      const orden = atajoDe(e, bot);
+      ok(orden && COMANDOS_DEL_BOT[bot].includes(orden.cmd), `${bot}: el atajo «${e}» lleva a un comando de ese bot (${orden?.cmd})`);
+      const acc = await correr(msg(e), { bot });
+      const cuerpo = respuesta(acc);
+      ok(cuerpo?.text?.length > 20 && cuerpo.parse_mode === 'HTML', `${bot}: tocar «${e}» responde`);
+    }
+  }
+  ok((await correr(msg('📋 Resumen'))).filter((x) => x.metodo === 'sendMessage').length === 1, 'tocar un atajo responde con un solo mensaje (sin el aviso de atajos)');
+  igual([atajoDe('📋 Resumen'), atajoDe('📋 Ahora', 'resumen'), atajoDe('📋 Ahora'), atajoDe('hola'), atajoDe('📋 resumen'), atajoDe('')], [{ cmd: 'resumen', args: '' }, { cmd: 'resumen', args: '' }, undefined, undefined, undefined, undefined], 'las etiquetas deben coincidir exactamente y cada bot reconoce solo las suyas');
+  ok(respuesta(await correr(msg('📋 Ahora')))?.text.startsWith('🏠 <b>Inicio</b>'), '«📋 Ahora» no es un atajo del bot de consultas: es texto libre y lleva al inicio');
+  // un atajo solo funciona para quien tiene acceso
+  const ajeno = await procesarUpdate({ message: { message_id: 1, chat: { id: 999000999 }, from: { first_name: 'X' }, text: '🚨 Alertas' } }, { consultar: crearConsulta(), permitidos: PERMITIDOS, hoy: HOY });
+  ok(ajeno.length === 1 && /privado/.test(ajeno[0].cuerpo.text) && !ajeno[0].cuerpo.text.includes('V2K'), 'un atajo tocado por alguien sin acceso solo recibe «bot privado»');
+  ok(tecladoMenu('consultas').inline_keyboard.length === 7 && tecladoMenu('resumen').inline_keyboard.length === 4 && tecladoMenu().inline_keyboard.at(-1).map((b) => b.text).join('|') === '🏠 Inicio|🪪 Mi cuenta', 'los menús en línea terminan con «Inicio» y «Mi cuenta»');
+}
+
+console.log(`OK: comandos y botones — ${n} comprobaciones (18 comandos, inicio con número de chat, atajos fijos, tablas, páginas, filtros, detalle, guía y los dos bots)`);

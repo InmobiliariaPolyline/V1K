@@ -140,7 +140,7 @@ igual(parsearPropiedades("miraflores'; DROP TABLE x;--").distrito.includes('drop
 for (const c of NOMBRES_COMANDOS) {
   const consulta = crearConsulta();
   const a = envios(await ejecutar(msg(`/${c}`), consulta));
-  igual(a.length, 1, `/${c}: una respuesta`);
+  igual(a.length, c === 'inicio' ? 2 : 1, `/${c}: ${c === 'inicio' ? 'el panel y el aviso de los atajos' : 'una respuesta'}`);
   const t = a[0].cuerpo.text;
   ok(typeof t === 'string' && t.length > 10 && t.length <= MAX_MENSAJE + 300, `/${c}: texto razonable (${t.length})`);
   ok(a[0].cuerpo.reply_markup?.inline_keyboard?.length >= 1, `/${c}: con botones`);
@@ -224,10 +224,10 @@ for (const c of NOMBRES_COMANDOS) {
 // ── Mensajes sin comando, comandos raros y botones ───────────────────────────────────────
 {
   const libre = envios(await ejecutar(msg('hola, ¿cómo van los proyectos?')))[0].cuerpo;
-  ok(libre.text.includes('/ayuda'), 'texto libre: orienta hacia /ayuda');
+  ok(libre.text.includes('Inicio') && libre.text.includes('123456789') && /Ahora mismo/.test(libre.text), 'texto libre: lleva al INICIO (con tu número de chat y el estado), no a un «no entiendo»');
   const raro = envios(await ejecutar(msg('/borrartodo')))[0].cuerpo.text;
   ok(raro.includes('No conozco') && raro.includes('/ayuda'), 'comando desconocido');
-  ok(!envios(await ejecutar(msg('/<b>x')))[0]?.cuerpo?.parse_mode, 'el eco de un comando raro no va en HTML');
+  ok(!JSON.stringify(envios(await ejecutar(msg('/<b>x'))))?.includes('<b>x'), 'un comando raro no se repite en el mensaje (no hay eco que pueda inyectar HTML)');
   const foto = envios(await ejecutar({ message: { chat: { id: 123456789 }, photo: [{}] } }))[0].cuerpo.text;
   ok(foto.includes('texto'), 'mensajes que no son texto');
 

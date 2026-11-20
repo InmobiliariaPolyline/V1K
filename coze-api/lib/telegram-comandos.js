@@ -12,7 +12,7 @@ import { generarAlertas, inventarioSinCargar, precioDudoso, saludGlobal } from '
 import { compararCon, serieDe } from '../public/js/nucleo/tendencias.js';
 import { COLORES, graficoBarras, graficoMercado, graficoProyectos, graficoTendencias } from './graficos.js';
 import { componerResumenHtml } from '../scripts/resumen-diario.mjs';
-import { BOT_CONSULTAS, BOT_RESUMEN, barra, diaCorto, esc, lectura, paginaDe, pieDatos, recortar, separarPagina, tablaPre, tarjeta, titulo } from './telegram-diseno.js';
+import { BOT_CONSULTAS, BOT_RESUMEN, barra, diaCorto, esc, lectura, paginaDe, pieDatos, recortar, separarPagina, tablaPre, tarjeta, tarjetaIdentidad, titulo } from './telegram-diseno.js';
 
 export const MAX_MENSAJE = 3800;      // el límite de Telegram es 4096 caracteres
 export const MAX_ARGUMENTO = 60;
@@ -24,6 +24,8 @@ const NOMBRE_INMUEBLE = { departamento: 'Departamento', casa: 'Casa', terreno: '
 // ── Catálogo de comandos ─────────────────────────────────────────────────────────────────
 /** Cada comando: icono, título, grupo del /ayuda, descripción corta y ejemplo. `alias` son otros nombres que lo activan. */
 export const CATALOGO = [
+  { cmd: 'inicio', icono: '🏠', titulo: 'Inicio', grupo: 'Inicio', desc: 'tu panel: quién eres y cómo está todo', alias: ['home'] },
+  { cmd: 'cuenta', icono: '🪪', titulo: 'Mi cuenta', grupo: 'Inicio', desc: 'tu número de chat y tu acceso', alias: ['yo', 'perfil'] },
   { cmd: 'resumen', icono: '📋', titulo: 'Resumen', grupo: 'Hoy', desc: 'lo urgente y los cambios de la semana', alias: ['hoy', 'ahora'] },
   { cmd: 'alertas', icono: '🚨', titulo: 'Alertas', grupo: 'Hoy', desc: 'solo lo que requiere atención' },
   { cmd: 'agenda', icono: '📅', titulo: 'Agenda', grupo: 'Hoy', desc: 'hitos y llegadas de los próximos días', ejemplo: '/agenda 7' },
@@ -48,12 +50,13 @@ export const resolverComando = (nombre) => ALIAS[normalizar(nombre)];
 /** Qué comandos entiende cada bot. El del resumen es un «briefing»: pocos y sin filtros. */
 export const COMANDOS_DEL_BOT = {
   consultas: CATALOGO.map((c) => c.cmd),
-  resumen: ['resumen', 'alertas', 'agenda', 'tendencias', 'guia', 'ayuda'],
+  resumen: ['inicio', 'cuenta', 'resumen', 'alertas', 'agenda', 'tendencias', 'guia', 'ayuda'],
 };
 /** Nombres con los que cada bot publica su menú «/» (el del resumen usa /ahora y /semana). */
 export const MENU_DE_COMANDOS = {
   consultas: CATALOGO.filter((c) => c.cmd !== 'ayuda' || true).map((c) => ({ command: c.cmd, description: `${c.desc[0].toUpperCase()}${c.desc.slice(1)}` })),
   resumen: [
+    { command: 'inicio', description: 'Tu panel: quién eres y cómo está todo' }, { command: 'cuenta', description: 'Tu número de chat y tu acceso' },
     { command: 'ahora', description: 'El resumen de hoy, ahora mismo' }, { command: 'alertas', description: 'Solo lo que requiere atención' },
     { command: 'agenda', description: 'Hitos y llegadas de los próximos días' }, { command: 'semana', description: 'Cambios frente a hace 7 días' },
     { command: 'guia', description: 'Qué usar para cada cosa' }, { command: 'ayuda', description: 'La lista de comandos' },
@@ -102,8 +105,26 @@ const MENU = {
   ],
   resumen: [[['📋 Ahora', 'resumen'], ['🚨 Alertas', 'alertas']], [['📅 Agenda', 'agenda'], ['📈 Semana', 'tendencias']], [['🧭 Guía', 'guia'], ['❓ Ayuda', 'ayuda']]],
 };
-export const tecladoMenu = (bot = 'consultas') => ({ inline_keyboard: (MENU[bot] ?? MENU.consultas).map((fila) => fila.map(([t, c]) => boton(t, c))) });
-const botonMenu = () => boton('🏠 Menú', 'ayuda');
+const filasMenu = (bot) => (MENU[bot] ?? MENU.consultas).map((fila) => fila.map(([t, c]) => boton(t, c)));
+/** El menú de botones de siempre, terminado con «Inicio» y «Mi cuenta». */
+export const tecladoMenu = (bot = 'consultas') => ({ inline_keyboard: [...filasMenu(bot), [boton('🏠 Inicio', 'inicio'), boton('🪪 Mi cuenta', 'cuenta')]] });
+/** El menú del panel de inicio: los mismos botones y, al final, actualizar el panel, mi cuenta y (en el bot de consultas) la ayuda. */
+const tecladoInicio = (bot) => ({ inline_keyboard: [...filasMenu(bot), [boton('🔄 Actualizar', 'inicio'), boton('🪪 Mi cuenta', 'cuenta'), ...(bot === 'resumen' ? [] : [boton('❓ Ayuda', 'ayuda')])]] });
+const botonMenu = () => boton('🏠 Inicio', 'inicio');
+
+// ── Teclado fijo: atajos que se quedan abajo, junto a donde se escribe, para que el inicio siempre esté a un toque ──
+const ATAJOS = {
+  consultas: [[['🏠 Inicio', 'inicio'], ['📋 Resumen', 'resumen'], ['🚨 Alertas', 'alertas']], [['📁 Proyectos', 'proyectos'], ['📦 Materiales', 'materiales'], ['🚚 Pedidos', 'pedidos']], [['📅 Agenda', 'agenda'], ['💰 Mercado', 'mercado'], ['🧭 Guía', 'guia']], [['🪪 Mi cuenta', 'cuenta']]],
+  resumen: [[['🏠 Inicio', 'inicio'], ['📋 Ahora', 'resumen'], ['🚨 Alertas', 'alertas']], [['📅 Agenda', 'agenda'], ['📈 Semana', 'tendencias'], ['🧭 Guía', 'guia']], [['🪪 Mi cuenta', 'cuenta']]],
+};
+/** El teclado fijo de cada bot (persistente: no se esconde al tocar una opción). */
+export const tecladoFijo = (bot = 'consultas') => ({ keyboard: (ATAJOS[bot] ?? ATAJOS.consultas).map((fila) => fila.map(([text]) => ({ text }))), resize_keyboard: true, is_persistent: true, input_field_placeholder: 'Toca un atajo o escribe /' });
+/** Si el texto es la etiqueta de un atajo («📋 Resumen»), el comando al que lleva; si no, undefined. */
+export function atajoDe(texto, bot = 'consultas') {
+  const t = String(texto ?? '').trim();
+  const par = (ATAJOS[bot] ?? ATAJOS.consultas).flat().find(([etiqueta]) => etiqueta === t);
+  return par ? { cmd: par[1], args: '' } : undefined;
+}
 
 /** Quita los botones que llevan a comandos que ese bot no tiene y arma el teclado (siempre termina con «Menú»). */
 function teclado(bot, filas) {
@@ -465,6 +486,47 @@ async function cmdTendencias({ consultar, bot, generado }) {
   return conGrafico({ html: [titulo('📈', 'Tendencias', subTitulo), tabla, lectura(lect)].join('\n\n'), teclado: teclado(bot, [[boton('🚨 Alertas', 'alertas'), boton('📋 Resumen', 'resumen')], [actualizar('tendencias')]]) }, grafico, captionSeguro([titulo('📈', 'Tendencias', subTitulo), lectura(lect)]));
 }
 
+// ── Inicio y cuenta ──────────────────────────────────────────────────────────────────────
+const quienEs = (usuario) => ({ chatId: usuario?.chatId ?? '', nombre: usuario?.nombre ?? '', usuario: usuario?.usuario ?? '', acceso: usuario?.acceso ?? 'autorizado' });
+
+/** El inicio de todo: quién eres (con tu número de chat), cómo está todo ahora mismo y el menú. Si no se pueden leer los datos, sale igual. */
+async function cmdInicio({ consultar, hoy, bot, usuario, generado }) {
+  const q = quienEs(usuario);
+  const cab = titulo('🏠', 'Inicio', bot === 'resumen' ? `resumen diario V1K · @${BOT_RESUMEN}` : `asistente V1K · @${BOT_CONSULTAS}`);
+  let estado;
+  try {
+    const [resumen, fr] = await Promise.all([consultar('resumen-general'), frescuraDe(consultar)]);
+    const r = resumen?.[0];
+    if (!r) throw new Error('sin datos');
+    const todas = generarAlertas(r, hoy);
+    const alertas = todas.filter((a) => a.tono !== 'ok');
+    const urgentes = alertas.filter((a) => a.tono === 'peligro').length;
+    const avisos = alertas.length - urgentes;
+    const cuenta = alertas.length ? `🚨 ${plural(urgentes, 'alerta urgente', 'alertas urgentes')} · ${plural(avisos, 'aviso', 'avisos')}` : '🚨 Sin alertas';
+    estado = [`<b>Ahora mismo</b>`, tarjeta(ESTADO_SALUD[saludGlobal(todas)], cuenta, generado ? `🕒 Consultado a las ${generado}` : ''), pie(fr, ['planner', 'mrp', 'scraper'])].filter(Boolean).join('\n');
+  } catch {
+    estado = '<i>No pude leer el estado ahora; el resto del asistente sigue disponible.</i>';
+  }
+  const pista = bot === 'resumen' ? 'Elige qué quieres ver. El resumen te llega solo cada mañana.' : 'Elige qué quieres ver. Solo leo: no modifico nada.';
+  return { html: [cab, tarjetaIdentidad(q), estado, `<i>${pista} Si no ves los atajos abajo, escribe /start.</i>`].join('\n\n'), teclado: tecladoInicio(bot) };
+}
+
+/** Mi cuenta: cómo te ve el asistente (nombre, usuario, número de chat y acceso) y para qué sirve ese número. */
+function cmdCuenta({ bot, usuario }) {
+  const q = quienEs(usuario);
+  const otro = bot === 'resumen' ? `@${BOT_CONSULTAS}` : `@${BOT_RESUMEN}`;
+  return {
+    html: [
+      titulo('🪪', 'Mi cuenta', 'así te ve el asistente'),
+      tarjetaIdentidad(q),
+      '<b>¿Para qué sirve el número de chat?</b>',
+      tarjeta('Es tu identificador en Telegram. El administrador lo usa para darte o quitarte el acceso: <b>tócalo para copiarlo</b>.'),
+      lectura(`Este es el bot ${bot === 'resumen' ? 'del resumen diario' : 'de consultas'}; el otro es ${otro}. Tu número de chat es el mismo en los dos.`),
+    ].join('\n\n'),
+    teclado: teclado(bot, []),
+  };
+}
+
 // ── Ayuda y guía ─────────────────────────────────────────────────────────────────────────
 function cmdAyuda({ bot }) {
   const comandos = CATALOGO.filter((c) => COMANDOS_DEL_BOT[bot]?.includes(c.cmd) && c.cmd !== 'ayuda');
@@ -498,7 +560,7 @@ function cmdGuia({ bot }) {
 export const COMANDOS = {
   resumen: cmdResumen, alertas: cmdAlertas, agenda: cmdAgenda, proyectos: cmdProyectos, proyecto: cmdProyecto, materiales: cmdMateriales, stock: cmdStock,
   pedidos: cmdPedidos, propiedades: cmdPropiedades, mercado: cmdMercado, portales: cmdPortales, buscar: cmdBuscar, frescura: cmdFrescura, tendencias: cmdTendencias,
-  guia: cmdGuia, ayuda: cmdAyuda,
+  guia: cmdGuia, ayuda: cmdAyuda, inicio: cmdInicio, cuenta: cmdCuenta,
 };
 
 export { BOT_RESUMEN };

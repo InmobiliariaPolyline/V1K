@@ -11,8 +11,8 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { normalizar } from '../public/js/nucleo/formato.js';
 import { hoyEnLima } from '../scripts/resumen-diario.mjs';
-import { COMANDOS, COMANDOS_DEL_BOT, ESTADOS_PROYECTO, MAX_ARGUMENTO, MAX_MENSAJE, NOMBRES_COMANDOS, estadoProyecto, fechaHoraLima, parsearPropiedades, resolverComando, tecladoMenu } from './telegram-comandos.js';
-import { BASE_PUBLICA, BOT_CONSULTAS, BOT_RESUMEN, codigo, esc, horaEnLima, horaMinutoLima, nombreCorto, pasosDeAcceso, saludoDe, tarjeta } from './telegram-diseno.js';
+import { COMANDOS, COMANDOS_DEL_BOT, ESTADOS_PROYECTO, MAX_ARGUMENTO, MAX_MENSAJE, NOMBRES_COMANDOS, estadoProyecto, fechaHoraLima, parsearPropiedades, atajoDe, resolverComando, tecladoFijo, tecladoMenu } from './telegram-comandos.js';
+import { BASE_PUBLICA, BOT_CONSULTAS, BOT_RESUMEN, codigo, esc, horaEnLima, horaMinutoLima, identidadDe, nombreCorto, pasosDeAcceso, saludoDe, tarjeta, tarjetaIdentidad } from './telegram-diseno.js';
 
 export { BOT_CONSULTAS, BOT_RESUMEN, ESTADOS_PROYECTO, MAX_ARGUMENTO, MAX_MENSAJE, NOMBRES_COMANDOS, esc, estadoProyecto, fechaHoraLima, parsearPropiedades, tecladoMenu };
 
@@ -65,12 +65,12 @@ export function textoBienvenida({ nombre = '', hora = 9 } = {}) {
 }
 
 /** Texto para quien todavía no tiene acceso: su número de chat (se copia al tocarlo) y los pasos para pedirlo. */
-export function textoPrivado(chatId, { corto = false } = {}) {
+export function textoPrivado(chatId, { corto = false, nombre = '', usuario = '' } = {}) {
   return [
     `🔒 <b>${corto ? 'Este bot es privado' : 'Acceso privado'}</b>`,
     corto ? '' : 'Este asistente es solo para personas autorizadas.',
     corto ? '' : '',
-    tarjeta(`Tu número de chat: ${codigo(chatId)}`),
+    tarjetaIdentidad({ chatId, nombre, usuario, acceso: 'privado' }),
     '',
     '<b>Para pedir acceso</b>',
     pasosDeAcceso(chatId),
@@ -78,12 +78,12 @@ export function textoPrivado(chatId, { corto = false } = {}) {
 }
 
 /** Texto para quien tuvo acceso y fue revocado: lo dice claro, muestra su número de chat y qué hacer si cree que es un error. */
-export function textoRevocado(chatId) {
+export function textoRevocado(chatId, { nombre = '', usuario = '' } = {}) {
   return [
     '🚫 <b>Tu acceso fue revocado</b>',
     'Ya no puedes usar este asistente de V1K.',
     '',
-    tarjeta(`Tu número de chat: ${codigo(chatId)}`),
+    tarjetaIdentidad({ chatId, nombre, usuario, acceso: 'revocado' }),
     '',
     '<b>¿Crees que es un error?</b>',
     'Escríbele al administrador con tu número de chat para que te dé acceso otra vez.',
@@ -91,14 +91,14 @@ export function textoRevocado(chatId) {
 }
 
 /** Texto de bienvenida del bot del resumen diario. */
-export function textoBienvenidaResumen({ autorizado, chatId, nombre = '', hora = 9 }) {
+export function textoBienvenidaResumen({ autorizado, chatId, nombre = '', hora = 9, usuario = '' }) {
   const n = nombreCorto(nombre);
-  if (!autorizado) return textoPrivado(chatId);
+  if (!autorizado) return textoPrivado(chatId, { nombre, usuario });
   return [
     `☀️ <b>${saludoDe(hora)}${n ? `, ${esc(n)}` : ''}</b>`,
     'Soy el <b>resumen diario</b> de V1K. Estás en la lista: te escribo cada mañana a las <b>08:07</b> (hora de Lima) con lo urgente y los cambios de la semana.',
     '',
-    tarjeta('📋 /ahora · 🚨 /alertas · 📅 /agenda', '📈 /semana · 🧭 /guia', `Tu número de chat: ${codigo(chatId)}`),
+    tarjeta('📋 /ahora · 🚨 /alertas · 📅 /agenda', '📈 /semana · 🧭 /guia · 🪪 /cuenta'),
     '',
     `<i>Para explorar con filtros usa @${BOT_CONSULTAS}.</i>`,
   ].join('\n');
@@ -118,9 +118,10 @@ function conAnimacion(chat, panel, variante, caption, teclado) {
  * `bot` es 'consultas' (todos los comandos) o 'resumen' (briefing). Con `graficos`, los comandos que tienen gráfico lo envían como foto (el texto queda de respaldo). `consultar(vista, filtros)` devuelve las filas de una vista (ver lib/vistas.js).
  * Los botones de un mensaje de texto EDITAN ese mismo mensaje (la conversación no se llena de respuestas); si no se puede editar, se envía uno nuevo.
  */
-export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas', graficos = false, ahora = new Date() }) {
+export async function procesarUpdate(update, { consultar = async () => { throw new Error('sin consultar'); }, permitidos, revocados = new Set(), hoy = hoyEnLima(), panel = BASE_PUBLICA, hora = horaEnLima(), bot = 'consultas', graficos = false, ahora = new Date(), administradores = new Set() }) {
   const cb = update?.callback_query;
   const msg = update?.message;
+  const quien = identidadDe((cb ?? msg)?.from); // nombre y @usuario de quien escribe o toca el botón
   const chat = cb?.message?.chat?.id ?? msg?.chat?.id;
   if (chat === undefined || chat === null) return [];
   const chatId = String(chat);
@@ -133,7 +134,7 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
     if (cb?.id) {
       acciones.push({ metodo: 'answerCallbackQuery', cuerpo: { callback_query_id: cb.id, text: revocado ? '🚫 Tu acceso fue revocado.' : 'Este bot es privado.', ...(revocado ? { show_alert: true } : {}) } });
       if (revocado) { // el menú desaparece y en su lugar queda el aviso
-        const aviso = { text: textoRevocado(chatId), parse_mode: 'HTML', disable_web_page_preview: true };
+        const aviso = { text: textoRevocado(chatId, quien), parse_mode: 'HTML', disable_web_page_preview: true };
         if (typeof cb.message?.text === 'string' && cb.message.message_id !== undefined) acciones.push({ metodo: 'editMessageText', cuerpo: { chat_id: chat, message_id: cb.message.message_id, ...aviso, reply_markup: { inline_keyboard: [] } }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...aviso } } });
         else {
           if (cb.message?.message_id !== undefined) acciones.push({ metodo: 'editMessageReplyMarkup', cuerpo: { chat_id: chat, message_id: cb.message.message_id, reply_markup: { inline_keyboard: [] } } });
@@ -143,23 +144,26 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
       return acciones;
     }
     const esInicio = parsearComando(msg?.text)?.cmd === 'start';
-    if (revocado) {
-      if (esInicio) acciones.push(conAnimacion(chat, panel, 'revocado', textoRevocado(chatId)));
-      else enviar({ text: textoRevocado(chatId), parse_mode: 'HTML' });
-    } else if (esInicio) acciones.push(conAnimacion(chat, panel, 'privado', textoPrivado(chatId)));
-    else enviar({ text: textoPrivado(chatId, { corto: true }), parse_mode: 'HTML' });
+    if (revocado) { // se le quita el teclado de atajos que pudiera tener
+      const sinAtajos = { remove_keyboard: true };
+      if (esInicio) acciones.push(conAnimacion(chat, panel, 'revocado', textoRevocado(chatId, quien), sinAtajos));
+      else enviar({ text: textoRevocado(chatId, quien), parse_mode: 'HTML', reply_markup: sinAtajos });
+    } else if (esInicio) acciones.push(conAnimacion(chat, panel, 'privado', textoPrivado(chatId, quien)));
+    else enviar({ text: textoPrivado(chatId, { corto: true, ...quien }), parse_mode: 'HTML' });
     return acciones;
   }
 
   if (cb?.id) acciones.push({ metodo: 'answerCallbackQuery', cuerpo: { callback_query_id: cb.id } });
+  const usuario = { chatId, ...quien, acceso: administradores?.has(chatId) ? 'admin' : 'autorizado' };
 
   let orden = null;
   if (cb) {
     const m = /^c:([a-z]{1,20})(?::([\w ]{1,30}))?$/.exec(String(cb.data ?? ''));
     if (m) orden = { cmd: m[1], args: m[2] ?? '' };
   } else if (typeof msg?.text === 'string') {
-    orden = parsearComando(msg.text);
-    if (!orden) { enviar({ text: 'Soy un bot de consultas: usa /ayuda o los botones. No entiendo mensajes libres.', reply_markup: menu() }); return acciones; }
+    // un comando, la etiqueta de un atajo del teclado fijo («📋 Resumen») o texto libre (que lleva al inicio, no a un «no entiendo»)
+    const atajo = parsearComando(msg.text) ? undefined : atajoDe(msg.text, bot);
+    orden = parsearComando(msg.text) ?? (atajo ? { ...atajo, atajo: true } : { cmd: 'inicio', args: '', libre: true });
   } else {
     enviar({ text: 'Solo entiendo mensajes de texto. Usa /ayuda o los botones.', reply_markup: menu() });
     return acciones;
@@ -168,7 +172,9 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
 
   if (orden.cmd === 'start') { // «Iniciar»: bienvenida con la animación y el menú
     const caption = bot === 'resumen' ? textoBienvenidaResumen({ autorizado: true, chatId, nombre: msg?.from?.first_name, hora }) : textoBienvenida({ nombre: msg?.from?.first_name, hora });
-    acciones.push(conAnimacion(chat, panel, bot === 'resumen' ? 'resumen' : 'bienvenida', caption, menu()));
+    acciones.push(conAnimacion(chat, panel, bot === 'resumen' ? 'resumen' : 'bienvenida', caption, tecladoFijo(bot))); // el teclado de atajos queda abajo desde el primer mensaje
+    const inicio = await COMANDOS.inicio({ consultar, hoy, panel, bot, generado: horaMinutoLima(ahora), usuario });
+    enviar({ text: inicio.html, parse_mode: 'HTML', reply_markup: inicio.teclado });
     return acciones;
   }
 
@@ -181,7 +187,7 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
   if (!cb && cmd !== 'ayuda' && cmd !== 'guia') acciones.push({ metodo: 'sendChatAction', cuerpo: { chat_id: chat, action: 'typing' } });
   try {
     const generado = horaMinutoLima(ahora);
-    const r = await COMANDOS[cmd]({ args: orden.args, consultar, hoy, panel, bot, generado });
+    const r = await COMANDOS[cmd]({ args: orden.args, consultar, hoy, panel, bot, generado, usuario });
     const cuerpo = { text: r.html, parse_mode: 'HTML', reply_markup: r.teclado ?? menu(), disable_web_page_preview: true };
     if (graficos && r.grafico) { // un gráfico como foto; si no se puede dibujar o enviar, sale el mismo contenido en texto
       const foto = { metodo: 'sendPhoto', imagen: r.grafico.svg, archivo: 'photo', cuerpo: { chat_id: chat, caption: r.grafico.caption, parse_mode: 'HTML', reply_markup: r.teclado ?? menu() }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } };
@@ -196,6 +202,7 @@ export async function procesarUpdate(update, { consultar = async () => { throw n
     const editable = typeof cb?.message?.text === 'string' && cb.message.message_id !== undefined;
     if (editable) acciones.push({ metodo: 'editMessageText', cuerpo: { chat_id: chat, message_id: cb.message.message_id, ...cuerpo }, alternativa: { metodo: 'sendMessage', cuerpo: { chat_id: chat, ...cuerpo } } });
     else enviar(cuerpo);
+    if (cmd === 'inicio' && !cb && !orden.atajo && !orden.libre) enviar({ text: '⌨️ <b>Atajos activados</b>\nTe quedan siempre abajo, junto a donde escribes.', parse_mode: 'HTML', reply_markup: tecladoFijo(bot) });
   } catch {
     enviar({ text: '⚠️ No pude leer los datos ahora. Intenta de nuevo en un momento.', reply_markup: menu() });
   }
@@ -259,12 +266,13 @@ export function crearManejador({ modo = 'consultas', env = process.env, consulta
     if (chat === undefined || !limitar(String(chat), ahora().getTime())) return res.status(200).json({ ok: true }); // ráfaga: se ignora en silencio
 
     // Autorizados: los de la variable (administradores) y los que da de alta el módulo «Accesos»; si la base falla, solo los de la variable
-    const permitidos = chatsPermitidos(env.TELEGRAM_CHATS_PERMITIDOS);
+    const administradores = chatsPermitidos(env.TELEGRAM_CHATS_PERMITIDOS);
+    const permitidos = new Set(administradores);
     try { for (const c of await chatsExtra()) permitidos.add(String(c)); } catch { /* la lista de la base no está disponible: se sigue solo con la variable */ }
     let revocados = new Set();
     try { revocados = new Set((await chatsRevocados()).map(String)); } catch { /* sin la lista de revocados, se les trata como «bot privado» */ }
     const hora = horaEnLima(ahora());
-    const acciones = await procesarUpdate(update, { consultar, permitidos, revocados, hoy: hoyEnLima(ahora()), hora, bot: modo === 'resumen' ? 'resumen' : 'consultas', graficos });
+    const acciones = await procesarUpdate(update, { consultar, permitidos, revocados, hoy: hoyEnLima(ahora()), hora, bot: modo === 'resumen' ? 'resumen' : 'consultas', graficos, ahora: ahora(), administradores });
     for (const a of acciones) await ejecutar(fetchFn, token, a, renderizar);
     return res.status(200).json({ ok: true }); // siempre 200: Telegram reintenta si no
   };

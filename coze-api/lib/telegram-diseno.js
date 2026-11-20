@@ -110,3 +110,29 @@ export function horaMinutoLima(ahora = new Date()) {
   const d = new Date(ahora.getTime() - 5 * 3_600_000);
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
 }
+
+// ── Identidad: cómo ve el bot a quien le escribe (el número de chat se muestra como el «usuario») ──────────────────
+/** Cómo se muestra el acceso de cada persona. */
+export const ETIQUETA_ACCESO = {
+  admin: '✅ Acceso activo · administrador',
+  autorizado: '✅ Acceso activo · persona autorizada',
+  privado: '⛔ Sin acceso todavía',
+  revocado: '🚫 Acceso revocado',
+};
+
+/** Nombre completo y @usuario de quien escribe (los datos `from` de Telegram), listos para mostrar: sin caracteres de control y acotados. */
+export function identidadDe(from) {
+  const limpio = (t) => String(t ?? '').replace(/[\p{Cc}\p{Zl}\p{Zp}]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const nombre = limpio([from?.first_name, from?.last_name].filter(Boolean).join(' ')).slice(0, 40);
+  const usuario = /^[A-Za-z0-9_]{3,32}$/.test(String(from?.username ?? '')) ? String(from.username) : '';
+  return { nombre, usuario };
+}
+
+/**
+ * La tarjeta de identidad, como un perfil de usuario: nombre y @usuario, NÚMERO DE CHAT (se copia al tocarlo) y el estado del acceso.
+ * `acceso` es 'admin' | 'autorizado' | 'privado' | 'revocado'.
+ */
+export function tarjetaIdentidad({ chatId, nombre = '', usuario = '', acceso = 'autorizado' } = {}) {
+  const quien = [nombre ? `<b>${esc(nombre)}</b>` : '', usuario ? `@${esc(usuario)}` : ''].filter(Boolean).join(' · ');
+  return tarjeta(`👤 ${quien || '<b>Tú</b>'}`, `🆔 Número de chat: ${codigo(chatId)}`, `🔑 ${ETIQUETA_ACCESO[acceso] ?? ETIQUETA_ACCESO.autorizado}`);
+}

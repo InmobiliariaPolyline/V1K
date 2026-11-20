@@ -56,8 +56,8 @@ cambian. El historial alimenta la sección **Tendencias** del panel. Cómo activ
 
 | Bot | Usuario | Qué hace |
 |---|---|---|
-| **Resumen diario** | `@v1k_asistente_bot` | Te escribe **solo** cada mañana a las 08:07 (hora de Lima): lo urgente, los próximos días y los cambios de la semana. Y responde a un «briefing» de 6 comandos (`/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`). |
-| **Consultas** | `@v1k_consultas_bot` | **Tú preguntas** con **16 comandos** y botones (`/alertas`, `/agenda`, `/proyectos`, `/proyecto V7K`, `/materiales`, `/stock`, `/pedidos vencidos`, `/propiedades venta miraflores hasta 300000`, `/mercado`, `/portales`, `/buscar torre`, `/tendencias`, `/guia`…) y responde al instante, con **gráficos como imagen**, tarjetas, una lectura y la frescura de los datos. |
+| **Resumen diario** | `@v1k_asistente_bot` | Te escribe **solo** cada mañana a las 08:07 (hora de Lima): lo urgente, los próximos días y los cambios de la semana. Y responde a un «briefing» de 8 comandos (`/inicio`, `/cuenta`, `/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`). |
+| **Consultas** | `@v1k_consultas_bot` | **Tú preguntas** con **18 comandos** y botones (`/inicio` —tu panel con tu número de chat—, `/alertas`, `/agenda`, `/proyectos`, `/proyecto V7K`, `/materiales`, `/stock`, `/pedidos vencidos`, `/propiedades venta miraflores hasta 300000`, `/mercado`, `/portales`, `/buscar torre`, `/tendencias`, `/guia`…) y responde al instante, con **gráficos como imagen**, tarjetas, una lectura y la frescura de los datos. |
 
 `/guia` explica **cuándo usar cada cosa**: los comandos son gratis e instantáneos; Coze (con IA) entiende preguntas libres pero gasta créditos; el panel sirve para gráficos y exportar.
 

@@ -11,10 +11,12 @@ tú autorices.
 
 ## Qué puedes pedirle
 
-Son **16 comandos** en el bot de consultas, agrupados en el menú «/» y en `/ayuda`; el bot del resumen tiene un «briefing» de 6 (`/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`).
+Son **18 comandos** en el bot de consultas, agrupados en el menú «/» y en `/ayuda`; el bot del resumen tiene un «briefing» de 8 (`/inicio`, `/cuenta`, `/ahora`, `/alertas`, `/agenda`, `/semana`, `/guia`, `/ayuda`).
 
 | Grupo | Comando | Qué responde |
 |---|---|---|
+| Inicio | `/inicio` (`/home`) | **El inicio de todo**: tarjeta con tu nombre, @usuario y **número de chat**, tu acceso, cómo está todo ahora mismo y el menú |
+| | `/cuenta` (`/yo`, `/perfil`) | **Mi cuenta**: cómo te ve el asistente y para qué sirve tu número de chat |
 | Hoy | `/resumen` (`/ahora`) | Lo urgente y los cambios de la semana |
 | | `/alertas` | Solo lo que requiere atención, con botones al detalle |
 | | `/agenda` | Hitos y llegadas de pedidos de los próximos 7, 14 o 30 días, por día |
@@ -45,7 +47,12 @@ El código está en `lib/graficos.js` (SVG, puro y probado) y `lib/imagenes.js` 
 («🕒 MRP ✅ hace 20 h»), que avisa cuando los datos tienen más de un día. Las listas largas se paginan con botones y los filtros son botones. Todo es de solo lectura.
 
 **Por qué tantos comandos.** Coze cobra créditos por pregunta y solo permite una al día en el plan actual; el bot de Telegram es instantáneo y gratis, así que conviene que cubra lo frecuente.
-`/guia` ayuda a decidir: primero un comando, y Coze para lo que no tenga botón. Si escribes una frase suelta, el bot te orienta a `/ayuda`.
+`/guia` ayuda a decidir: primero un comando, y Coze para lo que no tenga botón. Si escribes una frase suelta, el bot te lleva al **Inicio**.
+
+**Inicio y atajos fijos.** Al pulsar **Iniciar** (o escribir `/inicio`), ambos bots muestran el **panel de Inicio**: una tarjeta como un perfil de usuario (**nombre, @usuario, 🆔 número de chat** que se copia al tocarlo
+y 🔑 el estado del acceso: administrador, persona autorizada, sin acceso o revocado), debajo cómo está todo ahora mismo (alertas, frescura de los datos) y el menú de botones. Además se activa un **teclado fijo de atajos**
+(🏠 Inicio · 📋 Resumen · 🚨 Alertas · 📁 Proyectos…) que queda siempre abajo, junto a donde se escribe: tocar uno equivale a escribir su comando. El botón **🏠 Inicio** de cada respuesta vuelve a este panel.
+A quien se le revoca el acceso se le **quita** ese teclado y recibe el aviso con su número de chat. El administrador se reconoce porque su número está en `TELEGRAM_CHATS_PERMITIDOS`; el resto, por el módulo «Accesos».
 
 ## Cómo está protegido
 
